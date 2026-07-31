@@ -1,0 +1,6 @@
+pandas>=2.2
+numpy-financial>=1.0
+streamlit>=1.38
+yfinance>=0.2
+pre-commit>=4.0
+ruff>=0.12
