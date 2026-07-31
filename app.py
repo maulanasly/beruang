@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from io import BytesIO
+
 import pandas as pd
 import streamlit as st
 import yfinance as yf
@@ -184,6 +186,62 @@ def _append_td_entry(
     return updated.sort_values("date").reset_index(drop=True)
 
 
+def _normalize_stock_import_frame(dataframe: pd.DataFrame) -> pd.DataFrame:
+    """Normalize a stock import file into the stock ledger schema."""
+    renamed = {
+        column: column.strip().lower().replace(" ", "_") for column in dataframe.columns
+    }
+    normalized = dataframe.rename(columns=renamed).copy()
+
+    required = ["date", "current_value"]
+    missing = [column for column in required if column not in normalized.columns]
+    if missing:
+        raise ValueError(f"Missing required columns: {', '.join(missing)}")
+
+    for column in ["installment_amount", "new_share_purchases", "dividends"]:
+        if column not in normalized.columns:
+            normalized[column] = 0.0
+
+    normalized["date"] = pd.to_datetime(normalized["date"], errors="coerce")
+    normalized["current_value"] = pd.to_numeric(
+        normalized["current_value"], errors="coerce"
+    )
+    normalized["installment_amount"] = pd.to_numeric(
+        normalized["installment_amount"], errors="coerce"
+    ).fillna(0.0)
+    normalized["new_share_purchases"] = pd.to_numeric(
+        normalized["new_share_purchases"], errors="coerce"
+    ).fillna(0.0)
+    normalized["dividends"] = pd.to_numeric(
+        normalized["dividends"], errors="coerce"
+    ).fillna(0.0)
+
+    normalized = normalized.dropna(subset=["date", "current_value"])
+    return normalized[
+        [
+            "date",
+            "installment_amount",
+            "new_share_purchases",
+            "dividends",
+            "current_value",
+        ]
+    ]
+
+
+def _import_stock_entries_from_file(uploaded_file) -> pd.DataFrame:
+    """Load stock entries from a CSV file upload."""
+    if uploaded_file is None:
+        return _empty_stock_ledger()
+
+    if uploaded_file.name.lower().endswith(".csv"):
+        raw = pd.read_csv(BytesIO(uploaded_file.getvalue()))
+    else:
+        raise ValueError("Please upload a CSV file with stock entries.")
+
+    imported = _normalize_stock_import_frame(raw)
+    return imported.sort_values("date").reset_index(drop=True)
+
+
 def _fmt_percent(value: float) -> str:
     return "N/A" if pd.isna(value) else f"{value * 100:.2f}%"
 
@@ -366,7 +424,27 @@ def _render_stock_tab() -> None:
     ledger = _get_active_ledger("stock")
     if ledger.empty:
         st.info("No entries yet. Add a product and start entering monthly data.")
-        return
+
+    st.subheader("Import stock entries from file")
+    with st.container(border=True):
+        uploaded_file = st.file_uploader(
+            "CSV file with stock entries",
+            type=["csv"],
+            key="stock_import_uploader",
+            help=(
+                "Expected columns: date, installment_amount, new_share_purchases, "
+                "dividends, current_value."
+            ),
+        )
+        if uploaded_file is not None:
+            imported_ledger = _import_stock_entries_from_file(uploaded_file)
+            st.dataframe(imported_ledger, width="stretch")
+            if st.button("Import stock entries", key="stock_import_btn"):
+                updated = pd.concat([ledger, imported_ledger], ignore_index=True)
+                updated = updated.sort_values("date").reset_index(drop=True)
+                _set_active_ledger("stock", updated)
+                st.success(f"Imported {len(imported_ledger)} stock entries.")
+                st.rerun()
 
     st.subheader("Fetch Current IDX Stock Price")
     col_tck1, col_tck2, col_tck3 = st.columns(3)
@@ -443,6 +521,10 @@ def _render_stock_tab() -> None:
             _set_active_ledger("stock", updated)
             st.success("Stock entry added.")
             st.rerun()
+
+    ledger = _get_active_ledger("stock")
+    if ledger.empty:
+        return
 
     ledger = _get_active_ledger("stock")
     metrics_table, summary = _compute_stock_metrics(ledger)
