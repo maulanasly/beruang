@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
@@ -11,6 +11,10 @@ const result = ref(null)
 const showRaw = ref(false)
 const selectedLocale = ref('en-US')
 const selectedCurrency = ref('USD')
+const stockUniverseLoading = ref(false)
+const stockQuoteLoading = ref(false)
+const stockUniverseError = ref('')
+const stockQuoteStatus = ref('')
 
 const localeOptions = [
   { label: 'English (US)', value: 'en-US' },
@@ -54,6 +58,12 @@ const forms = reactive({
       { date: '2026-06-30', installment_amount: 1000, current_value: 2005 },
     ],
   },
+})
+
+const stockMarket = reactive({
+  symbols: [],
+  selectedSymbol: '',
+  targetRowIndex: 0,
 })
 
 const assetFieldConfig = {
@@ -264,6 +274,9 @@ function removeEntryRow(index) {
     return
   }
   forms[activeAsset.value].entries.splice(index, 1)
+  if (activeAsset.value === 'stocks') {
+    syncTargetRowIndex()
+  }
 }
 
 function normalizeEntries(asset, entries) {
@@ -308,6 +321,66 @@ function formatApiError(detail) {
   return {
     title: 'Request failed. Please review your input and try again.',
     lines: [],
+  }
+}
+
+function syncTargetRowIndex() {
+  const maxIndex = forms.stocks.entries.length - 1
+  if (stockMarket.targetRowIndex > maxIndex) {
+    stockMarket.targetRowIndex = maxIndex
+  }
+}
+
+async function loadKompas100Symbols() {
+  stockUniverseLoading.value = true
+  stockUniverseError.value = ''
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/market-data/idx/kompas100`)
+    const body = await response.json()
+
+    if (!response.ok) {
+      throw new Error(body?.detail || 'Failed to load IDX stock list.')
+    }
+
+    stockMarket.symbols = Array.isArray(body?.items) ? body.items : []
+    if (!stockMarket.selectedSymbol && stockMarket.symbols.length) {
+      stockMarket.selectedSymbol = stockMarket.symbols[0].symbol
+    }
+  } catch (loadError) {
+    stockUniverseError.value = loadError.message
+    stockMarket.symbols = []
+  } finally {
+    stockUniverseLoading.value = false
+  }
+}
+
+async function applyLatestMarketValue() {
+  stockQuoteStatus.value = ''
+
+  if (!stockMarket.selectedSymbol) {
+    stockQuoteStatus.value = 'Choose a stock symbol first.'
+    return
+  }
+
+  syncTargetRowIndex()
+
+  stockQuoteLoading.value = true
+  try {
+    const params = new URLSearchParams({ symbol: stockMarket.selectedSymbol })
+    const response = await fetch(`${API_BASE_URL}/api/v1/market-data/quote?${params}`)
+    const body = await response.json()
+
+    if (!response.ok) {
+      throw new Error(body?.detail || 'Unable to fetch latest quote.')
+    }
+
+    forms.stocks.entries[stockMarket.targetRowIndex].current_value = Number(body.price)
+    stockQuoteStatus.value = `Updated row ${stockMarket.targetRowIndex + 1} using ${body.symbol} (${body.currency}).`
+  } catch (quoteError) {
+    stockQuoteStatus.value = quoteError.message
+  } finally {
+    stockQuoteLoading.value = false
   }
 }
 
@@ -363,6 +436,10 @@ async function calculate() {
     isLoading.value = false
   }
 }
+
+onMounted(() => {
+  loadKompas100Symbols()
+})
 </script>
 
 <template>
@@ -412,6 +489,42 @@ async function calculate() {
           min="-1"
           max="1"
         />
+      </div>
+
+      <div class="row market-helper" v-if="activeAsset === 'stocks'">
+        <div class="rows-head">
+          <label>Live IDX Price (Kompas 100 Starter)</label>
+          <button class="mini" type="button" :disabled="stockUniverseLoading" @click="loadKompas100Symbols">
+            {{ stockUniverseLoading ? 'Refreshing...' : 'Refresh List' }}
+          </button>
+        </div>
+
+        <div class="row row-2up market-grid">
+          <div>
+            <label for="idx-symbol">Symbol</label>
+            <select id="idx-symbol" v-model="stockMarket.selectedSymbol" :disabled="stockUniverseLoading || !stockMarket.symbols.length">
+              <option value="" disabled>Select a ticker</option>
+              <option v-for="item in stockMarket.symbols" :key="item.symbol" :value="item.symbol">
+                {{ item.symbol }} - {{ item.name }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <label for="target-row">Target Ledger Row</label>
+            <select id="target-row" v-model.number="stockMarket.targetRowIndex">
+              <option v-for="(entry, index) in forms.stocks.entries" :key="`row-target-${index}`" :value="index">
+                Row {{ index + 1 }}{{ entry.date ? ` (${entry.date})` : '' }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <button class="mini" type="button" :disabled="stockQuoteLoading || !stockMarket.selectedSymbol" @click="applyLatestMarketValue">
+          {{ stockQuoteLoading ? 'Fetching Quote...' : 'Apply Latest Price to Current Value' }}
+        </button>
+
+        <p v-if="stockUniverseError" class="market-note error-text">{{ stockUniverseError }}</p>
+        <p v-if="stockQuoteStatus" class="market-note">{{ stockQuoteStatus }}</p>
       </div>
 
       <div class="row">

@@ -74,8 +74,12 @@ def calculate_xirr(dates: Iterable[pd.Timestamp], cash_flows: Iterable[float]) -
     f_low = _xnpv(low, sorted_flows, sorted_dates)
     f_high = _xnpv(high, sorted_flows, sorted_dates)
 
+    # Some valid cash-flow sets (e.g. very large gain over a short period)
+    # require extremely large positive rates before XNPV changes sign.
     expand_count = 0
-    while f_low * f_high > 0 and expand_count < 15:
+    max_expand_count = 120
+    max_high = 1e20
+    while f_low * f_high > 0 and expand_count < max_expand_count and high < max_high:
         high *= 2
         f_high = _xnpv(high, sorted_flows, sorted_dates)
         expand_count += 1

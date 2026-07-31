@@ -133,6 +133,27 @@ textarea {
   color: #b91c1c;
 }
 
+.market-helper {
+  border: 1px solid #d9e2ec;
+  background: #f8fbff;
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+
+.market-grid {
+  margin: 0.5rem 0;
+}
+
+.market-note {
+  margin: 0.35rem 0 0;
+  color: #486581;
+  font-size: 0.88rem;
+}
+
+.error-text {
+  color: #b91c1c;
+}
+
 .action {
   margin-top: 0.5rem;
   border: none;

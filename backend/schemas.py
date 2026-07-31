@@ -110,6 +110,23 @@ class StockReturnsResponse(BaseModel):
     ledger: list[StockLedgerRowResponse]
 
 
+class IdxStockItem(BaseModel):
+    symbol: str
+    name: str
+
+
+class IdxStockListResponse(BaseModel):
+    index_name: str
+    items: list[IdxStockItem]
+
+
+class StockQuoteResponse(BaseModel):
+    symbol: str
+    name: str
+    price: float
+    currency: str
+
+
 class TermDepositLedgerEntry(BaseModel):
     date: date
     installment_amount: float = Field(ge=0)

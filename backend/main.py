@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import os
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.schemas import (
+    IdxStockListResponse,
     MutualFundReturnsRequest,
     MutualFundReturnsResponse,
+    StockQuoteResponse,
     StockReturnsRequest,
     StockReturnsResponse,
     TermDepositReturnsRequest,
@@ -17,6 +19,8 @@ from backend.services import (
     calculate_mutual_fund_returns,
     calculate_stock_returns,
     calculate_term_deposit_returns,
+    get_kompas100_starter_stocks,
+    get_latest_stock_quote,
 )
 
 app = FastAPI(
@@ -77,3 +81,23 @@ def term_deposit_returns(
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     return TermDepositReturnsResponse(summary=summary, ledger=ledger_rows)
+
+
+@app.get(
+    "/api/v1/market-data/idx/kompas100",
+    response_model=IdxStockListResponse,
+)
+def kompas100_starter_stock_list() -> IdxStockListResponse:
+    return get_kompas100_starter_stocks()
+
+
+@app.get("/api/v1/market-data/quote", response_model=StockQuoteResponse)
+def latest_stock_quote(
+    symbol: str = Query(min_length=3, max_length=16),
+) -> StockQuoteResponse:
+    try:
+        return get_latest_stock_quote(symbol)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc

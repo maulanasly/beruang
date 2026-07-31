@@ -37,6 +37,7 @@ make dev-all BACKEND_PORT=8001 FRONTEND_PORT=5174
 - In `make dev-frontend`, Vite proxies `/api/*` to `http://localhost:${BACKEND_PORT}` (default `8000`).
 - Default frontend requests use relative paths such as `/api/v1/...`.
 - To override API host, set `VITE_API_BASE_URL` in the frontend environment.
+- Stock mode now includes a live quote helper sourced from yfinance, using an IDX Kompas 100 starter ticker list.
 
 Examples:
 
@@ -58,6 +59,12 @@ make dev-frontend BACKEND_PORT=8001 FRONTEND_PORT=5174
 - **Cash-flow adjusted MoM returns** — mutual funds and stocks
 - **APY-based term deposit projections** — with prorated interest and future value
 - **XIRR / ROI** — annualized returns using exact-date cash flows
+- **Live stock quote helper** — fetch latest market value for IDX symbols from yfinance and apply to stock ledger rows
+
+## Market Data Endpoints
+
+- `GET /api/v1/market-data/idx/kompas100` — returns starter IDX symbols list (Kompas 100 seed set)
+- `GET /api/v1/market-data/quote?symbol=BBCA.JK` — returns latest quote from yfinance
 
 ## Project Structure
 
