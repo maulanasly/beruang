@@ -317,3 +317,30 @@ async def test_term_deposit_returns_validation_error_missing_apy(
 
     assert response.status_code == 422
     assert_validation_error_loc(response.json(), ["body", "apy"])
+
+
+@pytest.mark.anyio
+async def test_mutual_fund_returns_xirr_failure_returns_422(
+    async_client: AsyncClient,
+) -> None:
+    # This payload can fail XIRR root bracketing and should return a clean 422.
+    response = await async_client.post(
+        "/api/v1/mutual-funds/returns",
+        json={
+            "entries": [
+                {
+                    "date": "2026-05-31",
+                    "installment_amount": 1100,
+                    "current_value": 6500,
+                },
+                {
+                    "date": "2026-06-30",
+                    "installment_amount": 1100,
+                    "current_value": 7700,
+                },
+            ]
+        },
+    )
+
+    assert response.status_code == 422
+    assert "Could not bracket XIRR root" in str(response.json().get("detail", ""))

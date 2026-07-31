@@ -7,10 +7,47 @@ Investment App MVP — track multiple mutual funds, stocks, and term deposits wi
 ```bash
 make          # show available commands
 make install  # install dependencies
-make run      # start the Streamlit app
-make dev      # start in development mode
-make test     # run logic.py self-test
+make run      # start the FastAPI backend
+make dev      # start backend with auto-reload
+make dev-all  # start backend + frontend dev servers together
+make install-frontend  # install Vue frontend dependencies
+make dev-frontend      # start Vue dev server (port 5173)
+make up       # build and run backend + frontend in Docker
+make up-backend  # build and run only backend in Docker (for pairing with dev frontend)
+make down     # stop Docker services
+make test     # run backend tests
 make clean    # remove cache files
+```
+
+If ports are already occupied, you can override them:
+
+```bash
+make dev-all BACKEND_PORT=8001 FRONTEND_PORT=5174
+```
+
+## Local URLs
+
+- Backend API: http://localhost:8000
+- Backend docs: http://localhost:8000/docs
+- Frontend dev (Vite): http://localhost:5173
+- Frontend via Docker (Nginx): http://localhost:8080
+
+## Frontend-Backend Pairing
+
+- In `make dev-frontend`, Vite proxies `/api/*` to `http://localhost:${BACKEND_PORT}` (default `8000`).
+- Default frontend requests use relative paths such as `/api/v1/...`.
+- To override API host, set `VITE_API_BASE_URL` in the frontend environment.
+
+Examples:
+
+```bash
+# Backend on default 8000
+make dev-backend
+make dev-frontend
+
+# Backend on custom 8001, frontend proxy follows automatically
+make dev-backend BACKEND_PORT=8001
+make dev-frontend BACKEND_PORT=8001 FRONTEND_PORT=5174
 ```
 
 ## Features
@@ -26,8 +63,13 @@ make clean    # remove cache files
 
 | File | Purpose |
 |------|---------|
-| `app.py` | Streamlit frontend with multi-product tabs |
-| `logic.py` | Financial calculation backend |
+| `backend/main.py` | FastAPI backend routes |
+| `backend/services.py` | Backend financial service adapters |
+| `frontend/` | Vue 3 + Vite frontend |
+| `docker-compose.yml` | Backend + frontend container orchestration |
+| `backend/Dockerfile` | Backend container image |
+| `frontend/Dockerfile` | Frontend container image |
+| `logic.py` | Financial calculation engine |
 | `requirements.txt` | Python dependencies |
 | `Makefile` | Common development commands |
 | `.streamlit/config.toml` | Streamlit theming and config |
