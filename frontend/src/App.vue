@@ -29,6 +29,17 @@ provide('formatter', formatter)
 const resultSummary = computed(() => result.value?.summary ?? null)
 const resultLedger = computed(() => result.value?.ledger ?? [])
 
+const resultSymbolLabel = computed(() => {
+  if (activeAsset.value !== 'stocks') return ''
+  const symbols = resultLedger.value
+    .map((row) => row?.symbol)
+    .filter((s) => s && typeof s === 'string')
+  const unique = [...new Set(symbols)]
+  if (unique.length === 0) return ''
+  if (unique.length === 1) return unique[0]
+  return `${unique.length} symbols`
+})
+
 function onCalculated(value) {
   result.value = value
   showRaw.value = false
@@ -111,11 +122,15 @@ function onReset() {
         <LineChart :ledger="resultLedger" :asset="activeAsset" />
 
         <div class="summary-section">
-          <h2>Summary</h2>
+          <h2>Summary<span v-if="resultSymbolLabel" class="section-symbol">{{ resultSymbolLabel }}</span></h2>
           <SummaryCards :summary="resultSummary" />
         </div>
 
-        <LedgerTable :ledger="resultLedger" :asset="activeAsset" />
+        <LedgerTable
+          :ledger="resultLedger"
+          :asset="activeAsset"
+          :title-suffix="resultSymbolLabel"
+        />
 
         <button class="ghost" type="button" @click="showRaw = !showRaw">
           {{ showRaw ? 'Hide Raw JSON' : 'Show Raw JSON' }}

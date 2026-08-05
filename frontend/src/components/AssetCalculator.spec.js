@@ -11,6 +11,12 @@ function makeResponse(body, ok) {
 describe('AssetCalculator', () => {
   beforeEach(() => {
     vi.unstubAllGlobals()
+    // AssetCalculator.onMounted fires loadSymbols; stub an empty 200 so it
+    // resolves silently instead of hitting a real network.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(makeResponse({ items: [] }, true)),
+    )
   })
 
   it('seeds mutual-funds seed rows and renders the entry grid', () => {
@@ -120,5 +126,60 @@ describe('AssetCalculator', () => {
       global: { stubs: { MarketHelper: true } },
     })
     expect(mf.find('#apy').exists()).toBe(false)
+  })
+
+  it('shows a Symbol column on stock rows but not on mutual-fund rows', () => {
+    const stocks = mount(AssetCalculator, {
+      props: { activeAsset: 'stocks' },
+      global: { stubs: { MarketHelper: true } },
+    })
+    // stock seed entries include symbol; the grid header should label it
+    const headerText = stocks.find('.entry-grid-header').text()
+    expect(headerText).toContain('Symbol')
+    // seed rows carry the symbol value
+    const firstRowSymbolInput = stocks.findAll('input')[0]
+    expect(firstRowSymbolInput.element.value).toBe('BBCA.JK')
+  })
+
+  it('strips frontend-only fields (symbol) from the POST payload', async () => {
+    let capturedPayload = null
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation((_, opts) => {
+        capturedPayload = JSON.parse(opts.body)
+        return Promise.resolve(makeResponse({ summary: {}, ledger: [] }, true))
+      }),
+    )
+
+    const wrapper = mount(AssetCalculator, {
+      props: { activeAsset: 'stocks' },
+      global: { stubs: { MarketHelper: true } },
+    })
+    await wrapper.get('button.action').trigger('click')
+    await flushPromises()
+
+    expect(capturedPayload.entries[0]).not.toHaveProperty('symbol')
+    expect(capturedPayload.entries[0]).toHaveProperty('date')
+  })
+
+  it('merges the symbol back onto the returned ledger rows', async () => {
+    const body = {
+      summary: { xirr: 0.5 },
+      ledger: [{ date: '2026-05-31' }, { date: '2026-06-30' }],
+    }
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(makeResponse(body, true)))
+
+    const wrapper = mount(AssetCalculator, {
+      props: { activeAsset: 'stocks' },
+      global: { stubs: { MarketHelper: true } },
+    })
+    await wrapper.get('button.action').trigger('click')
+    await flushPromises()
+
+    const emitted = wrapper.emitted('calculated')
+    expect(emitted).toBeTruthy()
+    const emittedLedger = emitted[0][0].ledger
+    expect(emittedLedger[0].symbol).toBe('BBCA.JK')
+    expect(emittedLedger[1].symbol).toBe('BBCA.JK')
   })
 })

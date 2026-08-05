@@ -31,6 +31,7 @@ const assetFieldConfig = {
     },
   ],
   stocks: [
+    { key: 'symbol', label: 'Symbol', type: 'text', frontendOnly: true },
     { key: 'date', label: 'Date', type: 'date' },
     {
       key: 'installment_amount',
@@ -90,6 +91,7 @@ const forms = reactive({
   stocks: {
     entries: [
       {
+        symbol: 'BBCA.JK',
         date: '2026-05-31',
         installment_amount: 700,
         new_share_purchases: 300,
@@ -97,6 +99,7 @@ const forms = reactive({
         current_value: 1000,
       },
       {
+        symbol: 'BBCA.JK',
         date: '2026-06-30',
         installment_amount: 700,
         new_share_purchases: 200,
@@ -130,6 +133,7 @@ const stockUniverse = useStockUniverse(API_BASE_URL)
 function createEmptyEntry(asset) {
   if (asset === 'stocks') {
     return {
+      symbol: '',
       date: '',
       installment_amount: 0,
       new_share_purchases: 0,
@@ -153,7 +157,9 @@ function removeEntryRow(index) {
 }
 
 function normalizeEntries(asset, entries) {
-  const fields = assetFieldConfig[asset] || []
+  const fields = (assetFieldConfig[asset] || []).filter(
+    (field) => !field.frontendOnly,
+  )
   return entries.map((entry) => {
     const normalized = {}
     fields.forEach((field) => {
@@ -177,6 +183,7 @@ async function applyQuoteToRow() {
     const entries = forms.stocks.entries
     if (entries[rowIndex]) {
       entries[rowIndex].current_value = quote.price
+      entries[rowIndex].symbol = quote.symbol
     }
     stockUniverse.quoteStatus.value =
       `Updated row ${rowIndex + 1} using ${quote.symbol} (${quote.currency}).`
@@ -210,6 +217,23 @@ async function calculate() {
 
   const result = await calculateReturns(endpoint.value, payload)
   if (result) {
+    // Attach frontend-only fields (e.g. stock symbol) back onto the returned
+    // ledger rows so they surface in the results table and section headers.
+    if (props.activeAsset === 'stocks' && Array.isArray(result.ledger)) {
+      const stockFields = (assetFieldConfig.stocks || []).filter(
+        (f) => f.frontendOnly,
+      )
+      result.ledger = result.ledger.map((row, i) => {
+        const merged = { ...row }
+        const source = form.entries[i]
+        for (const field of stockFields) {
+          if (source && source[field.key] != null) {
+            merged[field.key] = source[field.key]
+          }
+        }
+        return merged
+      })
+    }
     emit('calculated', result)
   } else {
     emit('error', error.value)

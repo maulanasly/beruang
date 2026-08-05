@@ -118,6 +118,16 @@ describe('LedgerTable', () => {
     expect(wrapper.find('.ledger-empty').exists()).toBe(true)
     expect(wrapper.text()).toMatch(/Calculate Returns/)
   })
+
+  it('renders a title suffix badge when titleSuffix is provided', () => {
+    const ledger = [{ date: '2026-01-31', symbol: 'BBCA.JK', current_value: 1000 }]
+    const wrapper = mount(LedgerTable, {
+      props: { ledger, asset: 'stocks', titleSuffix: 'BBCA.JK' },
+      ...provideFormatter(),
+    })
+    expect(wrapper.find('.section-symbol').exists()).toBe(true)
+    expect(wrapper.text()).toContain('BBCA.JK')
+  })
 })
 
 describe('LatestMomentumKpi', () => {

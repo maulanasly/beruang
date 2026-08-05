@@ -5,6 +5,7 @@ import { columnLabel, MOM_COLUMNS } from '../composables/columns'
 const props = defineProps({
   ledger: { type: Array, default: () => [] },
   asset: { type: String, default: 'mutual-funds' },
+  titleSuffix: { type: String, default: '' },
 })
 
 const formatter = inject('formatter')
@@ -77,7 +78,7 @@ const columnsWithCumulative = computed(() => {
 
 <template>
   <div class="ledger-block">
-    <h2>Ledger</h2>
+    <h2>Ledger<span v-if="titleSuffix" class="section-symbol">{{ titleSuffix }}</span></h2>
     <p v-if="!ledger.length" class="ledger-empty">
       Fill the rows above and click <strong>Calculate Returns</strong> to see
       your monthly ledger here.

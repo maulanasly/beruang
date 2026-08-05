@@ -6,6 +6,7 @@
  * Keys not listed here fall back to a title-cased version of themselves.
  */
 export const COLUMN_LABELS = {
+  symbol: 'Symbol',
   date: 'Date',
   installment_amount: 'Installment',
   current_value: 'Current Value',

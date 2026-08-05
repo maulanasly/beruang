@@ -286,6 +286,21 @@ textarea {
   font-size: 1rem;
 }
 
+.section-symbol {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid #cbd5e1;
+  background: #f8fbff;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #102a43;
+  text-transform: none;
+  letter-spacing: normal;
+  vertical-align: middle;
+}
+
 .table-wrap {
   overflow: auto;
   max-height: 420px;
