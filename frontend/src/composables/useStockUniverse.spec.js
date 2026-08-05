@@ -88,8 +88,8 @@ describe('useStockUniverse', () => {
 
   it('fetchQuote refuses to call without a selected symbol and throws', async () => {
     const uni = useStockUniverse('')
-    await expect(uni.fetchQuote()).rejects.toThrow('Choose a stock symbol')
-    expect(uni.quoteStatus.value).toMatch(/Choose a stock symbol/)
+    await expect(uni.fetchQuote()).rejects.toThrow('Choose a stock code')
+    expect(uni.quoteStatus.value).toMatch(/Choose a stock code/)
   })
 
   it('syncTargetRowIndex clamps an out-of-range index back down', () => {

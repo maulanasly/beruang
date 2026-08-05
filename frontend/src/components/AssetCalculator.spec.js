@@ -128,14 +128,14 @@ describe('AssetCalculator', () => {
     expect(mf.find('#apy').exists()).toBe(false)
   })
 
-  it('shows a Symbol column on stock rows but not on mutual-fund rows', () => {
+  it('shows a Stock Code column on stock rows but not on mutual-fund rows', () => {
     const stocks = mount(AssetCalculator, {
       props: { activeAsset: 'stocks' },
       global: { stubs: { MarketHelper: true } },
     })
     // stock seed entries include symbol; the grid header should label it
     const headerText = stocks.find('.entry-grid-header').text()
-    expect(headerText).toContain('Symbol')
+    expect(headerText).toContain('Stock Code')
     // seed rows carry the symbol value
     const firstRowSymbolInput = stocks.findAll('input')[0]
     expect(firstRowSymbolInput.element.value).toBe('BBCA.JK')

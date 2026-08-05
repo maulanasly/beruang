@@ -37,7 +37,7 @@ const resultSymbolLabel = computed(() => {
   const unique = [...new Set(symbols)]
   if (unique.length === 0) return ''
   if (unique.length === 1) return unique[0]
-  return `${unique.length} symbols`
+  return `${unique.length} stock codes`
 })
 
 function onCalculated(value) {

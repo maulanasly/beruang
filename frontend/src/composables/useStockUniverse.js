@@ -48,7 +48,7 @@ export function useStockUniverse(baseUrl = '') {
     quoteStatus.value = ''
 
     if (!selectedSymbol.value) {
-      quoteStatus.value = 'Choose a stock symbol first.'
+      quoteStatus.value = 'Choose a stock code first.'
       throw new Error(quoteStatus.value)
     }
 

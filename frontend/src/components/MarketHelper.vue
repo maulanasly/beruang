@@ -45,7 +45,7 @@ const formattedPrice = computed(() => {
 
     <div class="row row-2up market-grid">
       <div>
-        <label for="idx-symbol">Symbol</label>
+        <label for="idx-symbol">Stock Code</label>
         <select
           id="idx-symbol"
           :value="selectedSymbol"

@@ -31,7 +31,7 @@ const assetFieldConfig = {
     },
   ],
   stocks: [
-    { key: 'symbol', label: 'Symbol', type: 'text', frontendOnly: true },
+    { key: 'symbol', label: 'Stock Code', type: 'text', frontendOnly: true },
     { key: 'date', label: 'Date', type: 'date' },
     {
       key: 'installment_amount',
@@ -173,7 +173,7 @@ function normalizeEntries(asset, entries) {
 async function applyQuoteToRow() {
   stockUniverse.quoteStatus.value = ''
   if (!stockUniverse.selectedSymbol.value) {
-    stockUniverse.quoteStatus.value = 'Choose a stock symbol first.'
+    stockUniverse.quoteStatus.value = 'Choose a stock code first.'
     return
   }
   stockUniverse.syncTargetRowIndex(forms.stocks.entries.length - 1)
