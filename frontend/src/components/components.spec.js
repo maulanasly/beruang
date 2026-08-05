@@ -1,11 +1,11 @@
-import { beforeAll, describe, expect, it } from 'vitest'
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import SummaryCards from './SummaryCards.vue'
 import LedgerTable from './LedgerTable.vue'
 import LatestMomentumKpi from './LatestMomentumKpi.vue'
 import LineChart from './LineChart.vue'
 import { useFormatter } from '../composables/useFormatter'
-import { ref } from 'vue'
+import { useSettings } from '../composables/useSettings'
 
 // chart.js needs a 2D canvas context that happy-dom does not provide; stub it
 // with a Proxy that answers any canvas-2D method call as a no-op so the Line
@@ -22,7 +22,15 @@ beforeAll(() => {
   }
 })
 
-const formatter = useFormatter(ref('en-US'), ref('USD'))
+function resetSettings(overrides = {}) {
+  const settings = useSettings()
+  settings.locale = overrides.locale ?? 'en-US'
+  settings.currency = overrides.currency ?? 'USD'
+}
+
+beforeEach(() => resetSettings())
+
+const formatter = useFormatter()
 
 function provideFormatter() {
   return {

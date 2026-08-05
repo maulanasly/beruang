@@ -1,8 +1,16 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import MarketHelper from './MarketHelper.vue'
 import { useFormatter } from '../composables/useFormatter'
-import { ref } from 'vue'
+import { useSettings } from '../composables/useSettings'
+
+beforeEach(() => {
+  const settings = useSettings()
+  settings.locale = 'en-US'
+  settings.currency = 'USD'
+})
+
+const formatter = useFormatter()
 
 function mountWith(overrides = {}) {
   const wrapper = mount(MarketHelper, {
@@ -19,7 +27,7 @@ function mountWith(overrides = {}) {
       ...overrides,
     },
     global: {
-      provide: { formatter: useFormatter(ref('en-US'), ref('USD')) },
+      provide: { formatter },
     },
   })
   return wrapper

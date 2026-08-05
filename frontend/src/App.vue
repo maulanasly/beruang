@@ -6,24 +6,18 @@ import LatestMomentumKpi from './components/LatestMomentumKpi.vue'
 import LedgerTable from './components/LedgerTable.vue'
 import LineChart from './components/LineChart.vue'
 import { useFormatter } from './composables/useFormatter'
+import { useSettings } from './composables/useSettings'
+import { LOCALE_OPTIONS, CURRENCY_OPTIONS } from './composables/i18nOptions'
 
 const activeAsset = ref('mutual-funds')
 const result = ref(null)
 const showRaw = ref(false)
 
-const localeOptions = [
-  { label: 'English (US)', value: 'en-US' },
-  { label: 'Bahasa Indonesia', value: 'id-ID' },
-]
-const currencyOptions = [
-  { label: 'US Dollar (USD)', value: 'USD' },
-  { label: 'Indonesian Rupiah (IDR)', value: 'IDR' },
-]
+const settings = useSettings()
+const localeOptions = LOCALE_OPTIONS
+const currencyOptions = CURRENCY_OPTIONS
 
-const selectedLocale = ref('en-US')
-const selectedCurrency = ref('USD')
-
-const formatter = useFormatter(selectedLocale, selectedCurrency)
+const formatter = useFormatter()
 provide('formatter', formatter)
 
 const resultSummary = computed(() => result.value?.summary ?? null)
@@ -79,7 +73,7 @@ function onReset() {
       <div class="row row-2up">
         <div>
           <label for="locale">Locale</label>
-          <select id="locale" v-model="selectedLocale">
+          <select id="locale" v-model="settings.locale">
             <option
               v-for="option in localeOptions"
               :key="option.value"
@@ -91,7 +85,7 @@ function onReset() {
         </div>
         <div>
           <label for="currency">Currency</label>
-          <select id="currency" v-model="selectedCurrency">
+          <select id="currency" v-model="settings.currency">
             <option
               v-for="option in currencyOptions"
               :key="option.value"

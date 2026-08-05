@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import {
   isCurrencyKey,
   isDateKey,
@@ -6,7 +6,14 @@ import {
   normalizeKey,
   useFormatter,
 } from './useFormatter'
-import { ref } from 'vue'
+import { useSettings } from './useSettings'
+
+/** Reset the shared settings store to a known baseline before each test. */
+function resetSettings(overrides = {}) {
+  const settings = useSettings()
+  settings.locale = overrides.locale ?? 'en-US'
+  settings.currency = overrides.currency ?? 'USD'
+}
 
 describe('useFormatter key classifiers', () => {
   it('normalizes keys to lowercase strings', () => {
@@ -37,59 +44,61 @@ describe('useFormatter key classifiers', () => {
 })
 
 describe('useFormatter formatCellValue', () => {
-  const formatter = useFormatter(ref('en-US'), ref('USD'))
+  beforeEach(() => resetSettings())
 
   it('renders null/-', () => {
+    const formatter = useFormatter()
     expect(formatter.formatCellValue('current_value', null)).toBe('-')
     expect(formatter.formatCellValue('current_value', undefined)).toBe('-')
   })
 
   it('renders percent keys as localized percentages', () => {
+    const formatter = useFormatter()
     expect(formatter.formatCellValue('xirr', 0.1234)).toMatch(/12\.34%/)
   })
 
   it('renders currency keys as localized currency', () => {
+    const formatter = useFormatter()
     expect(formatter.formatCellValue('current_value', 6500)).toMatch(/6,500.00/)
   })
 
   it('renders plain numbers with the decimal formatter', () => {
+    const formatter = useFormatter()
     expect(formatter.formatCellValue('installment_amount', 1100)).toMatch(/1,100/)
   })
 
   it('passes dates through as strings', () => {
+    const formatter = useFormatter()
     expect(formatter.formatCellValue('date', '2026-05-31')).toBe('2026-05-31')
   })
 
-  it('reacts to locale/currency ref changes', () => {
-    const locale = ref('en-US')
-    const currency = ref('USD')
-    const reactive = useFormatter(locale, currency)
-    const usdOut = reactive.formatCellValue('current_value', 1000)
-    currency.value = 'IDR'
-    const idrOut = reactive.formatCellValue('current_value', 1000)
+  it('reacts to currency changes in the settings store', () => {
+    resetSettings({ currency: 'USD' })
+    const formatter = useFormatter()
+    const usdOut = formatter.formatCellValue('current_value', 1000)
+    useSettings().currency = 'IDR'
+    const idrOut = formatter.formatCellValue('current_value', 1000)
     expect(usdOut).not.toBe(idrOut)
   })
 })
 
-describe('useFormatter formatCurrencyValue', () => {
+describe('useFormatter formatCurrency', () => {
+  beforeEach(() => resetSettings())
+
   it('formats using the locale with an explicit currency override', () => {
-    const locale = ref('en-US')
-    const currency = ref('USD')
-    const formatter = useFormatter(locale, currency)
-    expect(formatter.formatCurrencyValue(9100, 'IDR')).toMatch(/9,100/)
+    const formatter = useFormatter()
+    expect(formatter.formatCurrency(9100, 'IDR')).toMatch(/9,100/)
   })
 
   it('falls back to the active currency when no override is given', () => {
-    const locale = ref('en-US')
-    const currency = ref('USD')
-    const formatter = useFormatter(locale, currency)
-    expect(formatter.formatCurrencyValue(1000)).toMatch(/1,000/)
+    const formatter = useFormatter()
+    expect(formatter.formatCurrency(1000)).toMatch(/1,000/)
   })
 
   it('returns - for null/undefined and strings through for non-numbers', () => {
-    const formatter = useFormatter(ref('en-US'), ref('USD'))
-    expect(formatter.formatCurrencyValue(null)).toBe('-')
-    expect(formatter.formatCurrencyValue(undefined)).toBe('-')
-    expect(formatter.formatCurrencyValue('n/a', 'USD')).toBe('n/a')
+    const formatter = useFormatter()
+    expect(formatter.formatCurrency(null)).toBe('-')
+    expect(formatter.formatCurrency(undefined)).toBe('-')
+    expect(formatter.formatCurrency('n/a', 'USD')).toBe('n/a')
   })
 })

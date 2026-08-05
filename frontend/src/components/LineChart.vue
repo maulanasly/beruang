@@ -10,6 +10,7 @@ import {
   PointElement,
   Tooltip,
 } from 'chart.js'
+import { useSettings } from '../composables/useSettings'
 
 Chart.register(
   CategoryScale,
@@ -24,6 +25,8 @@ const props = defineProps({
   ledger: { type: Array, default: () => [] },
   asset: { type: String, required: true },
 })
+
+const settings = useSettings()
 
 const labels = computed(() => props.ledger.map((row) => row.date))
 
@@ -104,7 +107,7 @@ const chartData = computed(() => ({
   datasets: datasets.value,
 }))
 
-const chartOptions = {
+const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -112,9 +115,18 @@ const chartOptions = {
   },
   scales: {
     x: { grid: { display: false } },
-    y: { beginAtZero: true, ticks: { precision: 0 } },
+    y: {
+      beginAtZero: true,
+      ticks: {
+        precision: 0,
+        callback: (value) =>
+          Number(value).toLocaleString(settings.locale, {
+            maximumFractionDigits: 0,
+          }),
+      },
+    },
   },
-}
+}))
 
 // chart.js keeps internal canvas state; bump the :key to force a clean rerender
 // when the asset class switches series definitions.

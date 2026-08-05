@@ -1,4 +1,5 @@
 import { computed } from 'vue'
+import { useSettings } from './useSettings'
 
 const PERCENT_KEYS = new Set(['xirr', 'roi', 'mom_return', 'apy', 'monthly_rate'])
 const CURRENCY_HINTS = [
@@ -30,15 +31,19 @@ export function isDateKey(key) {
 }
 
 /**
- * Reactive Intl formatters driven by locale/currency refs.
- * Pass refs (not raw strings) so the computeds update on change.
+ * Reactive Intl formatters bound to the global settings store.
+ * No arguments: locale and currency are read from useSettings(), so every
+ * component that calls useFormatter() and any chart axis that reads
+ * settings.locale stays in lockstep with the dashboard selector.
  */
-export function useFormatter(localeRef, currencyRef) {
+export function useFormatter() {
+  const settings = useSettings()
+
   const currencyFormatter = computed(
     () =>
-      new Intl.NumberFormat(localeRef.value, {
+      new Intl.NumberFormat(settings.locale, {
         style: 'currency',
-        currency: currencyRef.value,
+        currency: settings.currency,
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }),
@@ -46,7 +51,7 @@ export function useFormatter(localeRef, currencyRef) {
 
   const decimalFormatter = computed(
     () =>
-      new Intl.NumberFormat(localeRef.value, {
+      new Intl.NumberFormat(settings.locale, {
         minimumFractionDigits: 0,
         maximumFractionDigits: 6,
       }),
@@ -54,7 +59,7 @@ export function useFormatter(localeRef, currencyRef) {
 
   const percentFormatter = computed(
     () =>
-      new Intl.NumberFormat(localeRef.value, {
+      new Intl.NumberFormat(settings.locale, {
         style: 'percent',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
@@ -84,19 +89,20 @@ export function useFormatter(localeRef, currencyRef) {
   }
 
   /**
-   * Format a number as currency using the active locale but a specific currency
-   * (e.g. the quote currency returned by the IDX market endpoint, which is IDR
-   * regardless of the dashboard's global currency selector).
+   * Format a value as currency. Pass an explicit `currencyOverride` to format
+   * a price whose currency differs from the dashboard's selected currency
+   * (e.g. an IDX quote that always returns IDR). When omitted, uses the
+   * dashboard currency from settings.
    */
-  function formatCurrencyValue(value, currencyOverride) {
+  function formatCurrency(value, currencyOverride) {
     if (value === null || value === undefined) {
       return '-'
     }
     if (typeof value !== 'number') {
       return String(value)
     }
-    const currency = currencyOverride || currencyRef.value
-    const fmt = new Intl.NumberFormat(localeRef.value, {
+    const currency = currencyOverride || settings.currency
+    const fmt = new Intl.NumberFormat(settings.locale, {
       style: 'currency',
       currency,
       minimumFractionDigits: 2,
@@ -114,7 +120,7 @@ export function useFormatter(localeRef, currencyRef) {
     decimalFormatter,
     percentFormatter,
     formatCellValue,
-    formatCurrencyValue,
+    formatCurrency,
     isNumericColumn,
     isPercentKey,
     isCurrencyKey,

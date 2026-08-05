@@ -25,7 +25,7 @@ const formatter = inject('formatter')
 const formattedPrice = computed(() => {
   const quote = props.lastQuote
   if (!quote || typeof quote.price !== 'number') return '-'
-  return formatter.formatCurrencyValue(quote.price, quote.currency)
+  return formatter.formatCurrency(quote.price, quote.currency)
 })
 </script>
 
