@@ -12,6 +12,7 @@ export function useStockUniverse(baseUrl = '') {
   const universeError = ref('')
   const quoteLoading = ref(false)
   const quoteStatus = ref('')
+  const lastQuote = ref(null)
 
   function syncTargetRowIndex(maxIndex) {
     if (targetRowIndex.value > maxIndex) {
@@ -76,6 +77,17 @@ export function useStockUniverse(baseUrl = '') {
     }
   }
 
+  /**
+   * Fetch a quote and remember it on `lastQuote` so the UI can render a
+   * formatted "Last Fetched Price" card. Returns the quote for callers that
+   * also want to apply it to a ledger row.
+   */
+  async function fetchAndStoreQuote() {
+    const quote = await fetchQuote()
+    lastQuote.value = quote
+    return quote
+  }
+
   return {
     symbols,
     selectedSymbol,
@@ -84,8 +96,10 @@ export function useStockUniverse(baseUrl = '') {
     universeError,
     quoteLoading,
     quoteStatus,
+    lastQuote,
     syncTargetRowIndex,
     loadSymbols,
     fetchQuote,
+    fetchAndStoreQuote,
   }
 }

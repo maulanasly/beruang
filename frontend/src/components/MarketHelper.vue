@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import { computed, inject } from 'vue'
+
+const props = defineProps({
   symbols: { type: Array, default: () => [] },
   selectedSymbol: { type: String, default: '' },
   targetRowIndex: { type: Number, default: 0 },
@@ -8,6 +10,7 @@ defineProps({
   universeError: { type: String, default: '' },
   quoteLoading: { type: Boolean, default: false },
   quoteStatus: { type: String, default: '' },
+  lastQuote: { type: Object, default: null },
 })
 
 const emit = defineEmits([
@@ -16,6 +19,14 @@ const emit = defineEmits([
   'refresh',
   'apply',
 ])
+
+const formatter = inject('formatter')
+
+const formattedPrice = computed(() => {
+  const quote = props.lastQuote
+  if (!quote || typeof quote.price !== 'number') return '-'
+  return formatter.formatCurrencyValue(quote.price, quote.currency)
+})
 </script>
 
 <template>
@@ -65,14 +76,21 @@ const emit = defineEmits([
       </div>
     </div>
 
-    <button
-      class="mini"
-      type="button"
-      :disabled="quoteLoading || !selectedSymbol"
-      @click="emit('apply')"
-    >
-      {{ quoteLoading ? 'Fetching Quote...' : 'Apply Latest Price to Current Value' }}
-    </button>
+    <div class="quote-row">
+      <button
+        class="mini"
+        type="button"
+        :disabled="quoteLoading || !selectedSymbol"
+        @click="emit('apply')"
+      >
+        {{ quoteLoading ? 'Fetching Quote...' : 'Apply Latest Price to Current Value' }}
+      </button>
+      <div v-if="lastQuote" class="last-quote">
+        <span class="last-quote-label">Last Fetched</span>
+        <span class="last-quote-value">{{ formattedPrice }}</span>
+        <span class="last-quote-symbol">{{ lastQuote.symbol }}</span>
+      </div>
+    </div>
 
     <p v-if="universeError" class="market-note error-text">{{ universeError }}</p>
     <p v-if="quoteStatus" class="market-note">{{ quoteStatus }}</p>

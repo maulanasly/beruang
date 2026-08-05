@@ -65,6 +65,27 @@ describe('useStockUniverse', () => {
     expect(uni.quoteLoading.value).toBe(false)
   })
 
+  it('fetchAndStoreQuote stores the quote on lastQuote', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        makeResponse({ symbol: 'BBCA.JK', name: 'BCA', price: 9125, currency: 'IDR' }, true),
+      ),
+    )
+
+    const uni = useStockUniverse('')
+    uni.selectedSymbol.value = 'BBCA.JK'
+    expect(uni.lastQuote.value).toBeNull()
+
+    const quote = await uni.fetchAndStoreQuote()
+    expect(quote).toEqual({ price: 9125, symbol: 'BBCA.JK', currency: 'IDR' })
+    expect(uni.lastQuote.value).toEqual({
+      price: 9125,
+      symbol: 'BBCA.JK',
+      currency: 'IDR',
+    })
+  })
+
   it('fetchQuote refuses to call without a selected symbol and throws', async () => {
     const uni = useStockUniverse('')
     await expect(uni.fetchQuote()).rejects.toThrow('Choose a stock symbol')

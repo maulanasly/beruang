@@ -172,7 +172,7 @@ async function applyQuoteToRow() {
   }
   stockUniverse.syncTargetRowIndex(forms.stocks.entries.length - 1)
   try {
-    const quote = await stockUniverse.fetchQuote()
+    const quote = await stockUniverse.fetchAndStoreQuote()
     const rowIndex = stockUniverse.targetRowIndex.value
     const entries = forms.stocks.entries
     if (entries[rowIndex]) {
@@ -256,6 +256,7 @@ defineExpose({ calculate, isLoading })
     :universe-error="stockUniverse.universeError.value"
     :quote-loading="stockUniverse.quoteLoading.value"
     :quote-status="stockUniverse.quoteStatus.value"
+    :last-quote="stockUniverse.lastQuote.value"
     @update:selected-symbol="stockUniverse.selectedSymbol.value = $event"
     @update:target-row-index="stockUniverse.targetRowIndex.value = $event"
     @refresh="stockUniverse.loadSymbols"

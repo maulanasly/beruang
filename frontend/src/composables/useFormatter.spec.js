@@ -70,3 +70,26 @@ describe('useFormatter formatCellValue', () => {
     expect(usdOut).not.toBe(idrOut)
   })
 })
+
+describe('useFormatter formatCurrencyValue', () => {
+  it('formats using the locale with an explicit currency override', () => {
+    const locale = ref('en-US')
+    const currency = ref('USD')
+    const formatter = useFormatter(locale, currency)
+    expect(formatter.formatCurrencyValue(9100, 'IDR')).toMatch(/9,100/)
+  })
+
+  it('falls back to the active currency when no override is given', () => {
+    const locale = ref('en-US')
+    const currency = ref('USD')
+    const formatter = useFormatter(locale, currency)
+    expect(formatter.formatCurrencyValue(1000)).toMatch(/1,000/)
+  })
+
+  it('returns - for null/undefined and strings through for non-numbers', () => {
+    const formatter = useFormatter(ref('en-US'), ref('USD'))
+    expect(formatter.formatCurrencyValue(null)).toBe('-')
+    expect(formatter.formatCurrencyValue(undefined)).toBe('-')
+    expect(formatter.formatCurrencyValue('n/a', 'USD')).toBe('n/a')
+  })
+})

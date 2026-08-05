@@ -82,6 +82,28 @@ export function useFormatter(localeRef, currencyRef) {
     return String(value)
   }
 
+  /**
+   * Format a number as currency using the active locale but a specific currency
+   * (e.g. the quote currency returned by the IDX market endpoint, which is IDR
+   * regardless of the dashboard's global currency selector).
+   */
+  function formatCurrencyValue(value, currencyOverride) {
+    if (value === null || value === undefined) {
+      return '-'
+    }
+    if (typeof value !== 'number') {
+      return String(value)
+    }
+    const currency = currencyOverride || currencyRef.value
+    const fmt = new Intl.NumberFormat(localeRef.value, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+    return fmt.format(value)
+  }
+
   function isNumericColumn(column, rows = []) {
     return rows.some((row) => typeof row?.[column] === 'number')
   }
@@ -91,6 +113,7 @@ export function useFormatter(localeRef, currencyRef) {
     decimalFormatter,
     percentFormatter,
     formatCellValue,
+    formatCurrencyValue,
     isNumericColumn,
     isPercentKey,
     isCurrencyKey,
