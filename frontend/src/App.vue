@@ -115,7 +115,7 @@ function onReset() {
           <SummaryCards :summary="resultSummary" />
         </div>
 
-        <LedgerTable :ledger="resultLedger" />
+        <LedgerTable :ledger="resultLedger" :asset="activeAsset" />
 
         <button class="ghost" type="button" @click="showRaw = !showRaw">
           {{ showRaw ? 'Hide Raw JSON' : 'Show Raw JSON' }}

@@ -9,6 +9,7 @@ const CURRENCY_HINTS = [
   'dividend',
   'interest',
   'fv',
+  'invested',
 ]
 
 export function normalizeKey(key) {

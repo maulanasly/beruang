@@ -54,28 +54,69 @@ describe('SummaryCards', () => {
 })
 
 describe('LedgerTable', () => {
-  it('derives columns from the first row and formats percent cells', () => {
+  it('renders friendly column headers and the inline Capital Invested column', () => {
     const ledger = [
-      { date: '2026-01-31', installment_amount: 1000, mom_return: 0 },
-      { date: '2026-02-28', installment_amount: 1000, mom_return: 0.05 },
+      { date: '2026-01-31', installment_amount: 1000, current_value: 1000, mom_return: 0 },
+      { date: '2026-02-28', installment_amount: 1000, current_value: 2050, mom_return: 0.05 },
     ]
     const wrapper = mount(LedgerTable, {
-      props: { ledger },
+      props: { ledger, asset: 'mutual-funds' },
       ...provideFormatter(),
     })
-    const headers = wrapper.findAll('th')
-    expect(headers.map((h) => h.text())).toEqual(['date', 'installment_amount', 'mom_return'])
-    expect(wrapper.findAll('tbody tr')).toHaveLength(2)
+    const headers = wrapper.findAll('th').map((h) => h.text())
+    expect(headers).toContain('Date')
+    expect(headers).toContain('Installment')
+    expect(headers).toContain('Current Value')
+    expect(headers).toContain('MoM Return')
+    // Capital Invested sits next to Current Value
+    expect(headers.indexOf('Capital Invested')).toBeGreaterThan(
+      headers.indexOf('Current Value'),
+    )
+    // Cumulative invested stats: 1000 then 2000
+    expect(wrapper.text()).toContain('1,000')
+    expect(wrapper.text()).toContain('2,000')
     expect(wrapper.text()).toContain('5.00%')
   })
 
-  it('renders nothing for an empty ledger', () => {
+  it('colors positive MoM green and negative MoM red', () => {
+    const ledger = [
+      { date: '2026-01-31', mom_return: 0.05 },
+      { date: '2026-02-28', mom_return: -0.02 },
+    ]
     const wrapper = mount(LedgerTable, {
-      props: { ledger: [] },
+      props: { ledger, asset: 'mutual-funds' },
+      ...provideFormatter(),
+    })
+    const cells = wrapper.findAll('tbody tr')
+    const positiveMomCell = cells[0].findAll('td').find((td) => td.text().includes('5.00%'))
+    const negativeMomCell = cells[1].findAll('td').find((td) => td.text().includes('2.00'))
+    expect(positiveMomCell.classes()).toContain('mom-positive')
+    expect(negativeMomCell.classes()).toContain('mom-negative')
+  })
+
+  it('highlights the latest row with the latest-row class', () => {
+    const ledger = [
+      { date: '2026-01-31', mom_return: 0 },
+      { date: '2026-02-28', mom_return: 0.05 },
+    ]
+    const wrapper = mount(LedgerTable, {
+      props: { ledger, asset: 'mutual-funds' },
+      ...provideFormatter(),
+    })
+    const rows = wrapper.findAll('tbody tr')
+    expect(rows[0].classes()).not.toContain('latest-row')
+    expect(rows[rows.length - 1].classes()).toContain('latest-row')
+  })
+
+  it('shows an empty-state guidance line when the ledger is empty', () => {
+    const wrapper = mount(LedgerTable, {
+      props: { ledger: [], asset: 'mutual-funds' },
       ...provideFormatter(),
     })
     expect(wrapper.findAll('th')).toHaveLength(0)
     expect(wrapper.findAll('tbody tr')).toHaveLength(0)
+    expect(wrapper.find('.ledger-empty').exists()).toBe(true)
+    expect(wrapper.text()).toMatch(/Calculate Returns/)
   })
 })
 

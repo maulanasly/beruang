@@ -288,6 +288,7 @@ textarea {
 
 .table-wrap {
   overflow: auto;
+  max-height: 420px;
   border: 1px solid #d9e2ec;
   border-radius: 10px;
 }
@@ -307,6 +308,9 @@ td {
 }
 
 th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   background: #f1f5f9;
   font-size: 0.82rem;
   text-transform: uppercase;
@@ -320,6 +324,34 @@ tr:last-child td {
 .num {
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+tr.latest-row td {
+  background: #fff8f1;
+  font-weight: 600;
+}
+
+tr.latest-row td:first-child {
+  box-shadow: inset 3px 0 0 #f25f3a;
+}
+
+.mom-positive {
+  color: #15803d;
+}
+
+.mom-negative {
+  color: #b91c1c;
+}
+
+.ledger-empty {
+  margin: 0;
+  padding: 1rem 0;
+  color: #486581;
+  font-size: 0.92rem;
+}
+
+.ledger-empty strong {
+  color: #102a43;
 }
 
 .ghost {
