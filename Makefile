@@ -1,4 +1,4 @@
-.PHONY: help install install-backend install-dev run dev run-backend run-backend-local dev-backend dev-streamlit run-streamlit clean test test-backend graphify-init graphify-query graphify-update lint typecheck
+.PHONY: help install install-backend install-dev install-frontend run dev dev-all run-backend run-backend-local dev-backend run-frontend dev-frontend run-streamlit dev-streamlit up up-backend down down-backend build logs clean test test-backend graphify-init graphify-query graphify-update lint typecheck
 
 VENV := .venv
 PYTHON := $(VENV)/bin/python
@@ -8,6 +8,9 @@ APP := app.py
 BACKEND_APP := backend.main:app
 BACKEND_HOST ?= 0.0.0.0
 BACKEND_PORT ?= 8000
+FRONTEND_PORT ?= 5173
+FRONTEND_DIR := frontend
+NPM := npm --prefix $(FRONTEND_DIR)
 
 help: ## Show this help message
 	@echo "Available targets:"
@@ -26,9 +29,26 @@ install-backend: ## Install backend runtime dependencies only
 install-dev: install ## Install dev/test tools from pyproject optional dependencies
 	$(PYTHON) -m pip install -e ".[dev]"
 
+install-frontend: ## Install frontend dependencies
+	$(NPM) install
+
 run: run-backend ## Start the backend API (default target)
 
 dev: dev-backend ## Start the backend API in development mode with auto-reload
+
+dev-all: ## Run backend and frontend dev servers together (Ctrl+C stops both)
+	@if lsof -n -iTCP:$(BACKEND_PORT) -sTCP:LISTEN >/dev/null 2>&1; then \
+		echo "Port $(BACKEND_PORT) is already in use. Stop the existing backend (e.g. make down-backend) or run: make dev-all BACKEND_PORT=<free_port>"; \
+		exit 1; \
+	fi
+	@if lsof -n -iTCP:$(FRONTEND_PORT) -sTCP:LISTEN >/dev/null 2>&1; then \
+		echo "Port $(FRONTEND_PORT) is already in use. Stop the existing frontend dev server or run: make dev-all FRONTEND_PORT=<free_port>"; \
+		exit 1; \
+	fi
+	@trap 'kill 0' INT TERM EXIT; \
+	$(PYTHON) -m uvicorn $(BACKEND_APP) --host $(BACKEND_HOST) --port $(BACKEND_PORT) --reload & \
+	VITE_PROXY_TARGET=http://localhost:$(BACKEND_PORT) BACKEND_PORT=$(BACKEND_PORT) $(NPM) run dev -- --port $(FRONTEND_PORT) & \
+	wait
 
 run-backend: ## Start FastAPI backend on $(BACKEND_HOST):$(BACKEND_PORT)
 	$(PYTHON) -m uvicorn $(BACKEND_APP) --host $(BACKEND_HOST) --port $(BACKEND_PORT)
@@ -39,11 +59,35 @@ run-backend-local: ## Start FastAPI backend on 127.0.0.1:$(BACKEND_PORT)
 dev-backend: ## Start FastAPI backend with auto-reload
 	$(PYTHON) -m uvicorn $(BACKEND_APP) --host $(BACKEND_HOST) --port $(BACKEND_PORT) --reload
 
+run-frontend: ## Start frontend preview server
+	$(NPM) run preview
+
+dev-frontend: ## Start Vue frontend dev server
+	VITE_PROXY_TARGET=http://localhost:$(BACKEND_PORT) BACKEND_PORT=$(BACKEND_PORT) $(NPM) run dev -- --port $(FRONTEND_PORT)
+
 run-streamlit: ## Start Streamlit app (port 8501)
 	$(STREAMLIT) run $(APP) --server.port 8501
 
 dev-streamlit: ## Start Streamlit app in development mode with hot rerun
 	$(STREAMLIT) run $(APP) --server.port 8501 --server.headless true --global.developmentMode true
+
+up: ## Build and run backend+frontend with Docker Compose
+	docker compose up --build -d
+
+up-backend: ## Build and run only backend service with Docker Compose
+	docker compose up --build -d backend
+
+down: ## Stop Docker Compose stack
+	docker compose down
+
+down-backend: ## Stop only backend service container
+	docker compose stop backend
+
+build: ## Build Docker images for backend and frontend
+	docker compose build
+
+logs: ## Tail Docker Compose logs
+	docker compose logs -f --tail=100
 
 clean: ## Remove Python cache and Streamlit cache
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true

@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+import backend.services as services
 from backend.main import app
 
 
@@ -317,3 +318,93 @@ async def test_term_deposit_returns_validation_error_missing_apy(
 
     assert response.status_code == 422
     assert_validation_error_loc(response.json(), ["body", "apy"])
+
+
+@pytest.mark.anyio
+async def test_kompas100_stock_list_endpoint(async_client: AsyncClient) -> None:
+    response = await async_client.get("/api/v1/market-data/idx/kompas100")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["index_name"] == "Kompas 100 (Starter)"
+    assert len(body["items"]) > 0
+    assert body["items"][0]["symbol"].endswith(".JK")
+
+
+@pytest.mark.anyio
+async def test_stock_quote_endpoint(async_client: AsyncClient, monkeypatch) -> None:
+    class FakeTicker:
+        def __init__(self, symbol: str) -> None:
+            self.fast_info = {"lastPrice": 1234.5, "currency": "IDR"}
+            self.info = {"shortName": "Demo IDX"}
+
+        def history(self, period: str):
+            raise AssertionError("history fallback should not be called")
+
+    monkeypatch.setattr(services.yf, "Ticker", FakeTicker)
+
+    response = await async_client.get(
+        "/api/v1/market-data/quote",
+        params={"symbol": "BBCA.JK"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body == {
+        "symbol": "BBCA.JK",
+        "name": "Demo IDX",
+        "price": 1234.5,
+        "currency": "IDR",
+    }
+
+
+@pytest.mark.anyio
+async def test_stock_quote_endpoint_upstream_failure(
+    async_client: AsyncClient,
+    monkeypatch,
+) -> None:
+    class FakeTicker:
+        def __init__(self, symbol: str) -> None:
+            self.fast_info = {}
+            self.info = {}
+
+        def history(self, period: str):
+            return services.pd.DataFrame()
+
+    monkeypatch.setattr(services.yf, "Ticker", FakeTicker)
+
+    response = await async_client.get(
+        "/api/v1/market-data/quote",
+        params={"symbol": "BBCA.JK"},
+    )
+
+    assert response.status_code == 502
+    assert "Unable to fetch latest market price" in response.json()["detail"]
+
+
+@pytest.mark.anyio
+async def test_mutual_fund_returns_large_short_period_gain_still_computes_xirr(
+    async_client: AsyncClient,
+) -> None:
+    # Historically this pattern could fail bracketing; it should now compute.
+    response = await async_client.post(
+        "/api/v1/mutual-funds/returns",
+        json={
+            "entries": [
+                {
+                    "date": "2026-05-31",
+                    "installment_amount": 1100,
+                    "current_value": 6500,
+                },
+                {
+                    "date": "2026-06-30",
+                    "installment_amount": 1100,
+                    "current_value": 7700,
+                },
+            ]
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["summary"]["xirr"] > 0
