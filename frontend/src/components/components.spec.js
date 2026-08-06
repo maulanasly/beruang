@@ -1,18 +1,20 @@
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest'
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import SummaryCards from './SummaryCards.vue'
 import LedgerTable from './LedgerTable.vue'
 import LatestMomentumKpi from './LatestMomentumKpi.vue'
+
+// Mock vue-chartjs before importing LineChart so chart.js never touches the
+// canvas; the LineChart tests only assert on computed data (labels, datasets).
+vi.mock('vue-chartjs', () => ({
+  Line: { template: '<div class="line-stub" />' },
+}))
+
 import LineChart from './LineChart.vue'
 import { useFormatter } from '../composables/useFormatter'
 import { useSettings } from '../composables/useSettings'
 
-// chart.js needs a 2D canvas context that happy-dom does not provide; stub it
-// with a Proxy that answers any canvas-2D method call as a no-op so the Line
-// component mounts without noisy "can't acquire context" errors.
 beforeAll(() => {
-  const noopContext = new Proxy({}, { get: () => () => {} })
-  HTMLCanvasElement.prototype.getContext = () => noopContext
   if (!window.IntersectionObserver) {
     window.IntersectionObserver = class {
       observe() {}

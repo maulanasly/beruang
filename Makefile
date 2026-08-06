@@ -1,10 +1,8 @@
-.PHONY: help install install-backend install-dev install-frontend run dev dev-all run-backend run-backend-local dev-backend run-frontend dev-frontend run-streamlit dev-streamlit up up-backend down down-backend build logs clean test test-backend graphify-init graphify-query graphify-update lint typecheck
+.PHONY: help install install-backend install-dev install-frontend run dev dev-all run-backend run-backend-local dev-backend run-frontend dev-frontend up up-backend down down-backend build logs clean test test-backend graphify-init graphify-query graphify-update lint typecheck
 
 VENV := .venv
 PYTHON := $(VENV)/bin/python
-STREAMLIT := $(VENV)/bin/streamlit
 REQUIREMENTS := requirements.txt
-APP := app.py
 BACKEND_APP := backend.main:app
 BACKEND_HOST ?= 0.0.0.0
 BACKEND_PORT ?= 8000
@@ -65,12 +63,6 @@ run-frontend: ## Start frontend preview server
 dev-frontend: ## Start Vue frontend dev server
 	VITE_PROXY_TARGET=http://localhost:$(BACKEND_PORT) BACKEND_PORT=$(BACKEND_PORT) $(NPM) run dev -- --port $(FRONTEND_PORT)
 
-run-streamlit: ## Start Streamlit app (port 8501)
-	$(STREAMLIT) run $(APP) --server.port 8501
-
-dev-streamlit: ## Start Streamlit app in development mode with hot rerun
-	$(STREAMLIT) run $(APP) --server.port 8501 --server.headless true --global.developmentMode true
-
 up: ## Build and run backend+frontend with Docker Compose
 	docker compose up --build -d
 
@@ -89,10 +81,9 @@ build: ## Build Docker images for backend and frontend
 logs: ## Tail Docker Compose logs
 	docker compose logs -f --tail=100
 
-clean: ## Remove Python cache and Streamlit cache
+clean: ## Remove Python cache and build artifacts
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name '*.pyc' -delete 2>/dev/null || true
-	rm -rf .streamlit/cache 2>/dev/null || true
 	rm -rf graphify-out 2>/dev/null || true
 	echo "Cache cleaned."
 
@@ -100,6 +91,9 @@ test: test-backend ## Run backend tests
 
 test-backend: ## Run backend API tests
 	$(PYTHON) -m pytest tests/test_backend_endpoints.py
+
+test-frontend: ## Run Vue frontend tests (vitest)
+	$(NPM) run test
 
 graphify-init: ## Initialize the Graphify knowledge graph
 	graphify init
@@ -114,6 +108,6 @@ lint: ## Run Ruff and pre-commit across the repository
 	$(PYTHON) -m pre_commit run --all-files
 
 typecheck: ## Run compile-time checks for app and backend modules
-	$(PYTHON) -m py_compile app.py logic.py backend/*.py tests/*.py && echo "Type check passed (compile-time only)."
+	$(PYTHON) -m py_compile logic.py backend/*.py tests/*.py && echo "Type check passed (compile-time only)."
 
 .DEFAULT_GOAL := help
