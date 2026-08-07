@@ -126,7 +126,7 @@ def get_latest_stock_quote(symbol: str) -> StockQuoteResponse:
 
 INDEX_OPTIONS: dict[str, str] = {
     "^JKSE": "IDX Composite (IHSG)",
-    "^LQ45": "LQ45",
+    "^JKLQ45": "LQ45",
 }
 
 INDEX_PERIODS: tuple[str, ...] = ("1mo", "3mo", "6mo", "1y", "2y", "5y")

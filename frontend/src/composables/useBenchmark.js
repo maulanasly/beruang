@@ -2,7 +2,7 @@ import { ref } from 'vue'
 
 export const INDEX_OPTIONS = [
   { value: '^JKSE', labelKey: 'benchmark.idxComposite' },
-  { value: '^LQ45', labelKey: 'benchmark.lq45' },
+  { value: '^JKLQ45', labelKey: 'benchmark.lq45' },
 ]
 
 export const INDEX_PERIODS = [

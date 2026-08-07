@@ -126,7 +126,7 @@ def test_index_history_returns_502_when_history_is_empty() -> None:
     with patch("backend.services.yf.Ticker", return_value=ticker):
         response = client.get(
             "/api/v1/market-data/index/history",
-            params={"symbol": "^LQ45", "period": "1y"},
+            params={"symbol": "^JKLQ45", "period": "1y"},
         )
 
     assert response.status_code == 502
