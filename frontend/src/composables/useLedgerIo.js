@@ -52,6 +52,19 @@ export function exportLedgerJson(asset, entries) {
   )
 }
 
+export function exportLedgerCsvTemplate(asset) {
+  const columns = columnsFor(asset)
+  const header = columns.join(',')
+  const sample = columns
+    .map((column) => {
+      if (column === 'date') return '2026-07-31'
+      if (column === 'symbol') return 'BBCA.JK'
+      return '1000'
+    })
+    .join(',')
+  return `${header}\n${sample}\n`
+}
+
 function isValidDate(value) {
   return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
 }

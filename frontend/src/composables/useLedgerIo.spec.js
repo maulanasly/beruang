@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   ASSET_COLUMNS,
   exportLedgerCsv,
+  exportLedgerCsvTemplate,
   exportLedgerJson,
   parseLedgerCsv,
   parseLedgerJson,
@@ -130,6 +131,26 @@ describe('exportLedgerJson / parseLedgerJson', () => {
     expect(errors).toEqual([
       expect.objectContaining({ type: 'invalidDate', line: 1 }),
       expect.objectContaining({ type: 'invalidNumber', line: 2 }),
+    ])
+  })
+})
+
+describe('exportLedgerCsvTemplate', () => {
+  it('writes the header plus a sample row', () => {
+    const csv = exportLedgerCsvTemplate('stocks')
+    const lines = csv.split('\n')
+    expect(lines[0]).toBe(
+      'symbol,date,installment_amount,new_share_purchases,dividends,current_value',
+    )
+    expect(lines[1]).toBe('BBCA.JK,2026-07-31,1000,1000,1000,1000')
+  })
+
+  it('produces a template that parses back to one valid sample entry', () => {
+    const csv = exportLedgerCsvTemplate('mutual-funds')
+    const { entries, errors } = parseLedgerCsv('mutual-funds', csv)
+    expect(errors).toEqual([])
+    expect(entries).toEqual([
+      { date: '2026-07-31', installment_amount: 1000, current_value: 1000 },
     ])
   })
 })

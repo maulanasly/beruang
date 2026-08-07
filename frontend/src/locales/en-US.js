@@ -101,6 +101,7 @@ export default {
   },
   io: {
     importTitle: 'Ledger Backup & Restore',
+    template: 'Download Template',
     exportCsv: 'Export CSV',
     exportJson: 'Export JSON',
     pasteCsv: 'Paste CSV or JSON here, or pick a file above',

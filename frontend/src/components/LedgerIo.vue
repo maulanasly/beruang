@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   exportLedgerCsv,
+  exportLedgerCsvTemplate,
   exportLedgerJson,
   parseLedgerCsv,
   parseLedgerJson,
@@ -45,6 +46,14 @@ function exportJson() {
     exportLedgerJson(props.asset, props.entries),
     'application/json',
     'json',
+  )
+}
+
+function downloadTemplate() {
+  triggerDownload(
+    exportLedgerCsvTemplate(props.asset),
+    'text/csv',
+    'csv',
   )
 }
 
@@ -93,6 +102,7 @@ function clearImport() {
     <div class="rows-head">
       <label>{{ t('io.importTitle') }}</label>
       <div class="io-actions">
+        <button class="mini" type="button" @click="downloadTemplate">{{ t('io.template') }}</button>
         <button class="mini" type="button" @click="exportCsv">{{ t('io.exportCsv') }}</button>
         <button class="mini" type="button" @click="exportJson">{{ t('io.exportJson') }}</button>
       </div>

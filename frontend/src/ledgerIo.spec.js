@@ -25,6 +25,7 @@ function mountIo(props = {}) {
 describe('LedgerIo', () => {
   it('renders export and import controls', () => {
     const wrapper = mountIo()
+    expect(wrapper.text()).toContain('Download Template')
     expect(wrapper.text()).toContain('Export CSV')
     expect(wrapper.text()).toContain('Export JSON')
     expect(wrapper.find('input[type="file"]').exists()).toBe(true)
@@ -57,6 +58,39 @@ describe('LedgerIo', () => {
     csvButton.trigger('click')
 
     expect(createObjectURL).toHaveBeenCalled()
+    expect(click).toHaveBeenCalled()
+    expect(anchor.download).toMatch(/\.csv$/)
+    createElementSpy.mockRestore()
+    createObjectURL.mockRestore()
+    revokeObjectURL.mockRestore()
+  })
+
+  it('triggers a template CSV download', () => {
+    const createObjectURL = vi
+      .spyOn(URL, 'createObjectURL')
+      .mockReturnValue('blob:mock')
+    const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+
+    const click = vi.fn()
+    let anchor = null
+    const realCreateElement = document.createElement.bind(document)
+    const createElementSpy = vi
+      .spyOn(document, 'createElement')
+      .mockImplementation((tag) => {
+        const el = realCreateElement(tag)
+        if (tag === 'a') {
+          anchor = el
+          el.click = click
+        }
+        return el
+      })
+
+    const wrapper = mountIo()
+    const templateButton = wrapper
+      .findAll('button')
+      .find((b) => b.text() === 'Download Template')
+    templateButton.trigger('click')
+
     expect(click).toHaveBeenCalled()
     expect(anchor.download).toMatch(/\.csv$/)
     createElementSpy.mockRestore()

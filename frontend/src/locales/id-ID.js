@@ -101,6 +101,7 @@ export default {
   },
   io: {
     importTitle: 'Cadangan & Pulihkan Buku Besar',
+    template: 'Unduh Templat',
     exportCsv: 'Ekspor CSV',
     exportJson: 'Ekspor JSON',
     pasteCsv: 'Tempel CSV atau JSON di sini, atau pilih file di atas',
