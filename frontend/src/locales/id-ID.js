@@ -99,6 +99,8 @@ export default {
     syncingPrices: 'Menyinkronkan Harga...',
     syncNoSymbols: 'Tambahkan kode saham ke minimal satu baris sebelum menyinkronkan.',
     syncSummary: 'Harga diperbarui untuk {updated} saham, {failed} gagal.',
+    syncYields: 'Imbal hasil dividen: {yields}',
+    dividendYield: 'Imbal hasil dividen',
     lastFetched: 'Terakhir Diambil',
     targetLedgerRow: 'Baris Buku Besar Target',
     pickTicker: 'Pilih ticker',

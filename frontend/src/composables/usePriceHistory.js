@@ -19,20 +19,26 @@ export function usePriceHistory(baseUrl = '') {
   const name = ref('')
   const currency = ref('')
   const symbol = ref('')
+  const dividendYield = ref(null)
   const period = ref('1y')
   const loading = ref(false)
   const error = ref('')
   const loaded = ref(false)
   const { market } = useMarket()
 
+  function reset() {
+    points.value = []
+    name.value = ''
+    currency.value = ''
+    dividendYield.value = null
+    error.value = ''
+    loaded.value = false
+  }
+
   async function load() {
     const raw = String(symbol.value || '').trim().toUpperCase()
     if (raw.length < 3) {
-      points.value = []
-      name.value = ''
-      currency.value = ''
-      error.value = ''
-      loaded.value = false
+      reset()
       return
     }
 
@@ -56,12 +62,17 @@ export function usePriceHistory(baseUrl = '') {
       points.value = Array.isArray(body?.points) ? body.points : []
       name.value = body?.name || query
       currency.value = body?.currency || ''
+      dividendYield.value =
+        body?.dividend_yield === null || body?.dividend_yield === undefined
+          ? null
+          : Number(body.dividend_yield)
       loaded.value = true
     } catch (loadError) {
       error.value = loadError.message
       points.value = []
       name.value = ''
       currency.value = ''
+      dividendYield.value = null
       loaded.value = false
     } finally {
       loading.value = false
@@ -72,6 +83,7 @@ export function usePriceHistory(baseUrl = '') {
     points,
     name,
     currency,
+    dividendYield,
     symbol,
     period,
     loading,

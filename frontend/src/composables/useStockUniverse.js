@@ -17,7 +17,7 @@ export function useStockUniverse(baseUrl = '') {
   const lastQuote = ref(null)
   const syncing = ref(false)
   const searching = ref(false)
-  const { market } = useMarket()
+  const { market, displaySymbol } = useMarket()
 
   function syncTargetRowIndex(maxIndex) {
     if (targetRowIndex.value > maxIndex) {
@@ -99,6 +99,10 @@ export function useStockUniverse(baseUrl = '') {
         price: Number(body.price),
         symbol: body.symbol,
         currency: body.currency,
+        dividend_yield:
+          body.dividend_yield === null || body.dividend_yield === undefined
+            ? null
+            : Number(body.dividend_yield),
       }
     } catch (quoteError) {
       quoteStatus.value = quoteError.message
@@ -172,6 +176,11 @@ export function useStockUniverse(baseUrl = '') {
             symbol,
             price: Number(result.value.price),
             currency: result.value.currency,
+            dividend_yield:
+              result.value.dividend_yield === null ||
+              result.value.dividend_yield === undefined
+                ? null
+                : Number(result.value.dividend_yield),
             count: rows.filter((row) => row?.symbol?.trim() === symbol).length,
           })
         } else {
@@ -179,10 +188,22 @@ export function useStockUniverse(baseUrl = '') {
         }
       })
 
+      const yields = updated
+        .filter((row) => typeof row.dividend_yield === 'number')
+        .map(
+          (row) =>
+            `${displaySymbol(row.symbol)} ${(row.dividend_yield * 100).toFixed(2)}%`,
+        )
+
       quoteStatus.value = i18n.global.t('market.syncSummary', {
         updated: updated.length,
         failed: failed.length,
       })
+      if (yields.length) {
+        quoteStatus.value += ' · ' + i18n.global.t('market.syncYields', {
+          yields: yields.join(', '),
+        })
+      }
       return { updated, failed }
     } finally {
       syncing.value = false

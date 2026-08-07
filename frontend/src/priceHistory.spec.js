@@ -59,6 +59,24 @@ describe('PriceHistoryChart', () => {
     expect(wrapper.text()).toContain('Price History')
     const buttons = wrapper.findAll('.mini').map((b) => b.text())
     expect(buttons).toEqual(['1M', '3M', '6M', '1Y', '5Y'])
+    expect(wrapper.find('.yield-tag').exists()).toBe(false)
+  })
+
+  it('renders a dividend-yield tag when the response carries one', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(pointsResponse({ dividend_yield: 0.0561 })),
+    )
+
+    const wrapper = mountWith(PriceHistoryChart, {
+      props: { symbol: 'BBCA.JK', apiBaseUrl: '' },
+    })
+    await flushPromises()
+
+    const tag = wrapper.find('.yield-tag')
+    expect(tag.exists()).toBe(true)
+    expect(tag.text()).toContain('Div yield')
+    expect(tag.text()).toMatch(/5\.61%/)
   })
 
   it('shows a no-data note when the response has no points', async () => {

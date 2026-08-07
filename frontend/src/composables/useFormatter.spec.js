@@ -23,7 +23,7 @@ describe('useFormatter key classifiers', () => {
   })
 
   it('flags the percent keys defined by the contract', () => {
-    for (const key of ['xirr', 'roi', 'mom_return', 'apy', 'monthly_rate']) {
+    for (const key of ['xirr', 'roi', 'mom_return', 'apy', 'monthly_rate', 'dividend_yield']) {
       expect(isPercentKey(key)).toBe(true)
     }
     expect(isPercentKey('current_value')).toBe(false)

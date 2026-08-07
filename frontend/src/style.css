@@ -442,6 +442,12 @@ textarea {
   font-size: 0.78rem;
 }
 
+.last-quote-yield {
+  color: #486581;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
 .error-text {
   color: #b91c1c;
 }
@@ -655,6 +661,16 @@ tr.latest-row td:first-child {
 .price-history h2 {
   margin: 0;
   font-size: 1rem;
+}
+
+.price-history .yield-tag {
+  color: #486581;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
 }
 
 .price-history .price-history-canvas {

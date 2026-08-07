@@ -130,6 +130,7 @@ class StockQuoteResponse(BaseModel):
     name: str
     price: float
     currency: str
+    dividend_yield: float | None = None
 
 
 class IndexHistoryPoint(BaseModel):
@@ -154,6 +155,7 @@ class PriceHistoryResponse(BaseModel):
     name: str
     period: str
     currency: str
+    dividend_yield: float | None = None
     points: list[PriceHistoryPoint]
 
 

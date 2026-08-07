@@ -108,6 +108,13 @@ const chartOptions = computed(() => ({
         {{ t('priceHistory.title') }}
         <InfoTip :text="t('glossary.priceHistory')" />
       </h2>
+      <span
+        v-if="priceHistory.dividendYield.value !== null"
+        class="yield-tag"
+      >
+        {{ t('market.dividendYield') }}
+        {{ formatter.formatCellValue('dividend_yield', priceHistory.dividendYield.value) }}
+      </span>
       <div v-if="validSymbol" class="io-actions">
         <button
           v-for="option in PRICE_PERIODS"

@@ -3,6 +3,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
+import pytest
 from fastapi.testclient import TestClient
 
 from backend.main import app
@@ -207,3 +208,56 @@ def test_price_history_returns_502_when_history_is_empty() -> None:
         )
 
     assert response.status_code == 502
+
+
+def test_quote_returns_price_currency_and_normalized_dividend_yield() -> None:
+    ticker = MagicMock()
+    ticker.fast_info = {"lastPrice": 9100.0, "currency": "IDR"}
+    ticker.info = {
+        "shortName": "Bank Central Asia",
+        "currency": "IDR",
+        "dividendYield": 5.61,
+    }
+
+    with patch("backend.services.yf.Ticker", return_value=ticker):
+        response = client.get("/api/v1/market-data/quote", params={"symbol": "BBCA.JK"})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["symbol"] == "BBCA.JK"
+    assert body["name"] == "Bank Central Asia"
+    assert body["price"] == 9100.0
+    assert body["currency"] == "IDR"
+    assert body["dividend_yield"] == pytest.approx(0.0561)
+
+
+def test_quote_omits_dividend_yield_when_missing() -> None:
+    ticker = MagicMock()
+    ticker.fast_info = {"lastPrice": 178.0, "currency": "USD"}
+    ticker.info = {"shortName": "Non-Dividend Co", "currency": "USD"}
+
+    with patch("backend.services.yf.Ticker", return_value=ticker):
+        response = client.get("/api/v1/market-data/quote", params={"symbol": "ZZZ"})
+
+    assert response.status_code == 200
+    assert response.json()["dividend_yield"] is None
+
+
+def test_price_history_includes_normalized_dividend_yield() -> None:
+    history = make_index_history([("2026-05-01", 9050.0)])
+    ticker = MagicMock()
+    ticker.history.return_value = history
+    ticker.info = {
+        "shortName": "Telkom Indonesia",
+        "currency": "IDR",
+        "dividendYield": 8.42,
+    }
+
+    with patch("backend.services.yf.Ticker", return_value=ticker):
+        response = client.get(
+            "/api/v1/market-data/price/history",
+            params={"symbol": "TLKM.JK", "period": "1y"},
+        )
+
+    assert response.status_code == 200
+    assert response.json()["dividend_yield"] == pytest.approx(0.0842)

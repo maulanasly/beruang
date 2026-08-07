@@ -55,6 +55,22 @@ describe('MarketHelper', () => {
     expect(wrapper.find('.last-quote-value').text()).toMatch(/9,100/)
     expect(wrapper.find('.last-quote-symbol').text()).toBe('BBCA')
     expect(wrapper.find('.last-quote-value').text()).toMatch(/9,100\.00/)
+    expect(wrapper.find('.last-quote-yield').exists()).toBe(false)
+  })
+
+  it('renders the dividend yield on the last-quote card when present', () => {
+    const wrapper = mountWithDefaults({
+      lastQuote: {
+        price: 9100,
+        symbol: 'BBCA.JK',
+        currency: 'IDR',
+        dividend_yield: 0.0561,
+      },
+    })
+    const yieldEl = wrapper.find('.last-quote-yield')
+    expect(yieldEl.exists()).toBe(true)
+    expect(yieldEl.text()).toContain('Div yield')
+    expect(yieldEl.text()).toMatch(/5\.61%/)
   })
 
   it('strips the market suffix from suggestion labels', async () => {

@@ -99,6 +99,8 @@ export default {
     syncingPrices: 'Syncing Prices...',
     syncNoSymbols: 'Add a stock code to at least one row before syncing.',
     syncSummary: 'Updated prices for {updated} stock(s), {failed} failed.',
+    syncYields: 'Div yields: {yields}',
+    dividendYield: 'Div yield',
     lastFetched: 'Last Fetched',
     targetLedgerRow: 'Target Ledger Row',
     pickTicker: 'Select a ticker',

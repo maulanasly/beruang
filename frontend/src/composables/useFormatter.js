@@ -1,7 +1,14 @@
 import { computed } from 'vue'
 import { useSettings } from './useSettings'
 
-const PERCENT_KEYS = new Set(['xirr', 'roi', 'mom_return', 'apy', 'monthly_rate'])
+const PERCENT_KEYS = new Set([
+  'xirr',
+  'roi',
+  'mom_return',
+  'apy',
+  'monthly_rate',
+  'dividend_yield',
+])
 const CURRENCY_HINTS = [
   'value',
   'installment',

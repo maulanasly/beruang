@@ -88,6 +88,19 @@ def search_idx_stocks(query: str, limit: int = 10) -> list[IdxStockItem]:
     return items
 
 
+def _normalize_dividend_yield(raw: object) -> float | None:
+    """yfinance reports dividendYield as a percentage; keep it a fraction."""
+    if raw is None:
+        return None
+    try:
+        value = float(raw)
+    except (TypeError, ValueError):
+        return None
+    if value > 1:
+        value /= 100.0
+    return value if value >= 0 else None
+
+
 def get_latest_stock_quote(symbol: str) -> StockQuoteResponse:
     normalized_symbol = symbol.strip().upper()
     if not normalized_symbol:
@@ -107,6 +120,7 @@ def get_latest_stock_quote(symbol: str) -> StockQuoteResponse:
     info = getattr(ticker, "info", {}) or {}
     name = info.get("shortName") or info.get("longName") or name
     currency = info.get("currency") or currency
+    dividend_yield = _normalize_dividend_yield(info.get("dividendYield"))
 
     if price is None:
         history = ticker.history(period="1d")
@@ -125,6 +139,7 @@ def get_latest_stock_quote(symbol: str) -> StockQuoteResponse:
         name=name,
         price=float(price),
         currency=currency,
+        dividend_yield=dividend_yield,
     )
 
 
@@ -191,6 +206,7 @@ def get_price_history(symbol: str, period: str) -> PriceHistoryResponse:
     info = getattr(ticker, "info", {}) or {}
     name = info.get("shortName") or info.get("longName") or normalized_symbol
     currency = info.get("currency") or "IDR"
+    dividend_yield = _normalize_dividend_yield(info.get("dividendYield"))
     points = [
         PriceHistoryPoint(date=point_date, close=close_value)
         for point_date, close_value in _points_from_history(
@@ -203,6 +219,7 @@ def get_price_history(symbol: str, period: str) -> PriceHistoryResponse:
         name=name,
         period=period,
         currency=currency,
+        dividend_yield=dividend_yield,
         points=points,
     )
 

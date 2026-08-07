@@ -63,8 +63,37 @@ describe('useStockUniverse', () => {
     uni.selectedSymbol.value = 'BBCA.JK'
     const quote = await uni.fetchQuote()
 
-    expect(quote).toEqual({ price: 9100, symbol: 'BBCA.JK', currency: 'IDR' })
+    expect(quote).toEqual({
+      price: 9100,
+      symbol: 'BBCA.JK',
+      currency: 'IDR',
+      dividend_yield: null,
+    })
     expect(uni.quoteLoading.value).toBe(false)
+  })
+
+  it('fetchQuote carries the normalized dividend yield through', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        makeResponse(
+          {
+            symbol: 'BBCA.JK',
+            name: 'BCA',
+            price: 9100,
+            currency: 'IDR',
+            dividend_yield: 0.0561,
+          },
+          true,
+        ),
+      ),
+    )
+
+    const uni = useStockUniverse('')
+    uni.selectedSymbol.value = 'BBCA.JK'
+    const quote = await uni.fetchQuote()
+
+    expect(quote.dividend_yield).toBe(0.0561)
   })
 
   it('fetchAndStoreQuote stores the quote on lastQuote', async () => {
@@ -80,11 +109,17 @@ describe('useStockUniverse', () => {
     expect(uni.lastQuote.value).toBeNull()
 
     const quote = await uni.fetchAndStoreQuote()
-    expect(quote).toEqual({ price: 9125, symbol: 'BBCA.JK', currency: 'IDR' })
+    expect(quote).toEqual({
+      price: 9125,
+      symbol: 'BBCA.JK',
+      currency: 'IDR',
+      dividend_yield: null,
+    })
     expect(uni.lastQuote.value).toEqual({
       price: 9125,
       symbol: 'BBCA.JK',
       currency: 'IDR',
+      dividend_yield: null,
     })
   })
 
@@ -137,12 +172,33 @@ describe('useStockUniverse', () => {
     expect(fetchMock.mock.calls[0][0]).toContain('symbol=BBCA.JK')
     expect(fetchMock.mock.calls[1][0]).toContain('symbol=BBRI.JK')
     expect(updated).toEqual([
-      { symbol: 'BBCA', price: 9100, currency: 'IDR', count: 2 },
-      { symbol: 'BBRI', price: 4700, currency: 'IDR', count: 1 },
+      { symbol: 'BBCA', price: 9100, currency: 'IDR', dividend_yield: null, count: 2 },
+      { symbol: 'BBRI', price: 4700, currency: 'IDR', dividend_yield: null, count: 1 },
     ])
     expect(failed).toEqual([])
     expect(uni.syncing.value).toBe(false)
     expect(uni.quoteStatus.value).toMatch(/Updated prices/)
+  })
+
+  it('syncAllQuotes appends dividend yields to the status message', async () => {
+    const fetchMock = vi.fn()
+    fetchMock.mockResolvedValue(
+      makeResponse(
+        {
+          symbol: 'BBCA.JK',
+          price: 9100,
+          currency: 'IDR',
+          dividend_yield: 0.0561,
+        },
+        true,
+      ),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const uni = useStockUniverse('')
+    await uni.syncAllQuotes([{ symbol: 'BBCA.JK', current_value: 1 }])
+
+    expect(uni.quoteStatus.value).toMatch(/Div yields: BBCA 5\.61%/)
   })
 
   it('syncAllQuotes reports failed symbols separately and keeps results keyed by original symbol', async () => {
@@ -157,7 +213,9 @@ describe('useStockUniverse', () => {
 
     const { updated, failed } = await uni.syncAllQuotes(entries)
 
-    expect(updated).toEqual([{ symbol: 'BBCA', price: 9100, currency: 'IDR', count: 1 }])
+    expect(updated).toEqual([
+      { symbol: 'BBCA', price: 9100, currency: 'IDR', dividend_yield: null, count: 1 },
+    ])
     expect(failed).toEqual([{ symbol: 'GOTO', reason: 'rate limited' }])
     expect(uni.syncing.value).toBe(false)
   })

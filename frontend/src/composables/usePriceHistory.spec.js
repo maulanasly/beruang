@@ -32,6 +32,7 @@ describe('usePriceHistory', () => {
           name: 'Bank Central Asia',
           period: '1y',
           currency: 'IDR',
+          dividend_yield: 0.0561,
           points: [{ date: '2026-05-01', close: 9050 }],
         },
         true,
@@ -50,6 +51,7 @@ describe('usePriceHistory', () => {
     expect(history.points.value).toEqual([{ date: '2026-05-01', close: 9050 }])
     expect(history.name.value).toBe('Bank Central Asia')
     expect(history.currency.value).toBe('IDR')
+    expect(history.dividendYield.value).toBe(0.0561)
     expect(history.loaded.value).toBe(true)
   })
 
@@ -100,9 +102,11 @@ describe('usePriceHistory', () => {
     const history = usePriceHistory('')
     history.symbol.value = 'BBCA.JK'
     history.points.value = [{ date: '2026-05-01', close: 9050 }]
+    history.dividendYield.value = 0.0561
     await history.load()
 
     expect(history.points.value).toEqual([])
+    expect(history.dividendYield.value).toBeNull()
     expect(history.error.value).toBe('rate limited')
     expect(history.loaded.value).toBe(false)
   })

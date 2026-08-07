@@ -166,6 +166,13 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
         <span class="last-quote-label">{{ t('market.lastFetched') }}</span>
         <span class="last-quote-value">{{ formattedPrice }}</span>
         <span class="last-quote-symbol">{{ displaySymbol(lastQuote.symbol) }}</span>
+        <span
+          v-if="typeof lastQuote.dividend_yield === 'number'"
+          class="last-quote-yield"
+        >
+          {{ t('market.dividendYield') }}
+          {{ formatter.formatCellValue('dividend_yield', lastQuote.dividend_yield) }}
+        </span>
       </div>
     </div>
 
