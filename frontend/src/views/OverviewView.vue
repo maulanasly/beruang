@@ -4,16 +4,17 @@ import { useI18n } from 'vue-i18n'
 import { usePortfolio } from '../composables/usePortfolio'
 import PortfolioDonut from '../components/PortfolioDonut.vue'
 import PortfolioChart from '../components/PortfolioChart.vue'
+import InfoTip from '../components/InfoTip.vue'
 
 const { t } = useI18n()
 const formatter = inject('formatter')
 const portfolio = usePortfolio()
 
 const kpiCards = [
-  { key: 'totalInvested', value: portfolio.totalInvested, keyName: 'invested' },
+  { key: 'totalInvested', value: portfolio.totalInvested, keyName: 'invested', hint: 'glossary.capitalInvested' },
   { key: 'totalValue', value: portfolio.totalValue, keyName: 'value' },
-  { key: 'totalPnl', value: portfolio.totalPnl, keyName: 'pnl' },
-  { key: 'weightedXirr', value: portfolio.weightedXirr, keyName: 'xirr' },
+  { key: 'totalPnl', value: portfolio.totalPnl, keyName: 'pnl', hint: 'glossary.pnl' },
+  { key: 'weightedXirr', value: portfolio.weightedXirr, keyName: 'xirr', hint: 'glossary.weightedXirr' },
 ]
 
 function formatValue(keyName, value) {
@@ -36,13 +37,17 @@ function formatRoi(roi) {
   <section v-if="portfolio.hasData.value" class="result-block">
     <div class="kpi-block">
       <p class="kpi-caption">{{ t('overview.portfolio') }}</p>
+      <p class="market-note">{{ t('overview.subtitle') }}</p>
       <div class="kpi-grid">
         <article
           v-for="card in kpiCards"
           :key="card.key"
           class="kpi-card"
         >
-          <p class="kpi-label">{{ t(`overview.${card.key}`) }}</p>
+          <p class="kpi-label">
+            {{ t(`overview.${card.key}`) }}
+            <InfoTip v-if="card.hint" :text="t(card.hint)" />
+          </p>
           <p class="kpi-value">{{ formatValue(card.keyName, card.value.value) }}</p>
         </article>
       </div>
@@ -51,7 +56,10 @@ function formatRoi(roi) {
     <PortfolioDonut :series="portfolio.proportionSeries.value" />
 
     <div class="summary-section">
-      <h2>{{ t('overview.perAsset') }}</h2>
+      <h2>
+        {{ t('overview.perAsset') }}
+        <InfoTip :text="t('glossary.roi')" />
+      </h2>
       <div class="summary-grid">
         <article
           v-for="item in portfolio.assets.value"

@@ -47,14 +47,13 @@ describe('LedgerTable', () => {
     ]
     const wrapper = mountWith(LedgerTable, { props: { ledger, asset: 'mutual-funds' } })
     const headers = wrapper.findAll('th').map((h) => h.text())
-    expect(headers).toContain('Date')
-    expect(headers).toContain('Installment')
-    expect(headers).toContain('Current Value')
-    expect(headers).toContain('MoM Return')
+    expect(headers.some((h) => h.includes('Date'))).toBe(true)
+    expect(headers.some((h) => h.includes('Installment'))).toBe(true)
+    expect(headers.some((h) => h.includes('Current Value'))).toBe(true)
+    expect(headers.some((h) => h.includes('MoM Return'))).toBe(true)
     // Capital Invested sits next to Current Value
-    expect(headers.indexOf('Capital Invested')).toBeGreaterThan(
-      headers.indexOf('Current Value'),
-    )
+    const indexOf = (needle) => headers.findIndex((h) => h.includes(needle))
+    expect(indexOf('Capital Invested')).toBeGreaterThan(indexOf('Current Value'))
     // Cumulative invested stats: 1000 then 2000
     expect(wrapper.text()).toContain('1,000')
     expect(wrapper.text()).toContain('2,000')
@@ -112,6 +111,19 @@ describe('LedgerTable', () => {
     expect(wrapper.text()).toContain('BBCA')
     expect(wrapper.text()).not.toContain('BBCA.JK')
   })
+
+  it('adds glossary tips to jargon column headers', () => {
+    const ledger = [{ date: '2026-01-31', symbol: 'BBCA.JK', current_value: 1000 }]
+    const wrapper = mountWith(LedgerTable, {
+      props: { ledger, asset: 'stocks' },
+    })
+    const stockCodeTip = wrapper
+      .findAll('th')
+      .find((th) => th.text().includes('Stock Code'))
+      .find('.info-tip')
+    expect(stockCodeTip.exists()).toBe(true)
+    expect(stockCodeTip.attributes('title')).toMatch(/\.JK suffix/)
+  })
 })
 
 describe('LatestMomentumKpi', () => {
@@ -127,6 +139,19 @@ describe('LatestMomentumKpi', () => {
     expect(wrapper.findAll('.kpi-card')).toHaveLength(3)
     expect(wrapper.text()).toContain('Latest MoM')
     expect(wrapper.text()).toContain('3.00%')
+  })
+
+  it('adds glossary tips to KPI cards so terms are self-explanatory', () => {
+    const ledger = [{ date: '2026-02-28', mom_return: 0.03 }]
+    const summary = { xirr: 0.5, roi: 0.2 }
+    const wrapper = mountWith(LatestMomentumKpi, {
+      props: { ledger, summary, asset: 'stocks' },
+    })
+    const tips = wrapper.findAll('.info-tip')
+    expect(tips).toHaveLength(3)
+    expect(tips[0].attributes('title')).toMatch(/Month-over-Month/)
+    expect(tips[1].attributes('title')).toMatch(/Return on Investment/)
+    expect(tips[2].attributes('title')).toMatch(/Extended Internal Rate/)
   })
 
   it('shows 4 cards for stocks: date, MoM, ROI, XIRR', () => {

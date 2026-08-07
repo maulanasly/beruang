@@ -2,6 +2,7 @@
 import { computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import MarketHelper from './MarketHelper.vue'
+import InfoTip from './InfoTip.vue'
 import { useApiClient } from '../composables/useApiClient'
 import { useStockUniverse } from '../composables/useStockUniverse'
 import { useLedgers } from '../composables/useLedgers'
@@ -47,6 +48,7 @@ function buildFieldConfig() {
         labelKey: 'form.stockCode',
         type: 'text',
         frontendOnly: true,
+        hintKey: 'glossary.stockCode',
       },
       { key: 'date', labelKey: 'form.date', type: 'date' },
       {
@@ -62,6 +64,7 @@ function buildFieldConfig() {
         type: 'number',
         min: 0,
         step: '0.01',
+        hintKey: 'glossary.newPurchases',
       },
       {
         key: 'dividends',
@@ -69,6 +72,7 @@ function buildFieldConfig() {
         type: 'number',
         min: 0,
         step: '0.01',
+        hintKey: 'glossary.dividends',
       },
       {
         key: 'current_value',
@@ -268,7 +272,10 @@ defineExpose({ calculate, isLoading })
 
 <template>
   <div v-if="activeAsset === 'term-deposits'" class="row">
-    <label for="apy">{{ t('form.apy') }}</label>
+    <label for="apy">
+      {{ t('form.apy') }}
+      <InfoTip :text="t('glossary.apy')" />
+    </label>
     <input
       id="apy"
       v-model.number="apy"
@@ -309,7 +316,7 @@ defineExpose({ calculate, isLoading })
         <span
           v-for="field in activeEntryFields"
           :key="`head-${field.key}`"
-        >{{ t(field.labelKey) }}</span>
+        >{{ t(field.labelKey) }}<InfoTip v-if="field.hintKey" :text="t(field.hintKey)" /></span>
         <span>{{ t('common.action') }}</span>
       </div>
 

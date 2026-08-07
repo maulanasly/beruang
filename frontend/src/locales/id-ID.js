@@ -73,6 +73,8 @@ export default {
     perAsset: 'Per Kelas Aset',
     invested: 'Investasi',
     valueByAsset: 'Nilai per Kelas Aset',
+    subtitle:
+      'Portofolio Anda sekilas: berapa yang telah Anda masukkan, berapa nilainya kini, dan bagaimana dana terbagi lintas kelas aset.',
     noData: 'Tambahkan entri ke halaman aset Anda dan hitung hasil untuk mengisi ringkasan ini.',
   },
   ledger: {
@@ -100,9 +102,33 @@ export default {
     pickTicker: 'Pilih ticker',
     row: 'Baris',
     updatedRow: 'Memperbarui baris {row} menggunakan {symbol} ({currency}).',
+    helperNote:
+      'Kode saham memakai format ticker IDX, mis. BBCA.JK (BBCA di Bursa Efek Indonesia). Harga bersumber dari perusahaan terdaftar Kompas 100.',
   },
   stock: {
     codesCount: '{count} kode saham',
+  },
+  glossary: {
+    stockCode:
+      'Kode perdagangan saham, mis. BBCA. Akhiran .JK menandakan saham tersebut diperdagangkan di Bursa Efek Indonesia (IDX).',
+    kompas100:
+      'Daftar awal 100 perusahaan Indonesia yang likuid, dilacak oleh indeks surat kabar Kompas.',
+    moM: 'Month-over-Month: perubahan nilai dalam % dibandingkan nilai awal bulan sebelumnya.',
+    xirr:
+      'Extended Internal Rate of Return: tingkat pengembalian tahunan yang memperhitungkan setoran dan penarikan pada waktu yang berbeda.',
+    roi: 'Return on Investment: total laba (atau rugi) dibagi total modal yang diinvestasikan.',
+    apy: 'Annual Percentage Yield: bunga yang akan Anda peroleh selama satu tahun penuh sebelum penarikan.',
+    prorated:
+      'Bunga yang diperoleh hanya untuk sebagian tahun, diskalakan sesuai durasi bulan tersebut.',
+    dividends:
+      'Pembayaran tunai yang dibagikan perusahaan kepada pemegang sahamnya setiap periode.',
+    newPurchases:
+      'Pembelian saham tambahan pada periode ini, di luar cicilan reguler Anda.',
+    capitalInvested:
+      'Akumulasi seluruh dana yang telah Anda masukkan, termasuk pembelian tambahan.',
+    weightedXirr:
+      'Tingkat pengembalian tahunan keseluruhan lintas kelas aset, dibobot sesuai besar investasi di masing-masing.',
+    pnl: 'Untung/Rugi: nilai saat ini dikurangi total investasi. Positif berarti Anda untung.',
   },
   io: {
     importTitle: 'Cadangan & Pulihkan Buku Besar',

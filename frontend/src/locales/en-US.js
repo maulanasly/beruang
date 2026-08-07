@@ -73,6 +73,8 @@ export default {
     perAsset: 'Per Asset Class',
     invested: 'Invested',
     valueByAsset: 'Value by Asset Class',
+    subtitle:
+      'Your portfolio at a glance: how much you have put in, what it is worth now, and how your money is split across asset classes.',
     noData: 'Add entries to your asset pages and calculate returns to populate this overview.',
   },
   ledger: {
@@ -100,9 +102,33 @@ export default {
     pickTicker: 'Select a ticker',
     row: 'Row',
     updatedRow: 'Updated row {row} using {symbol} ({currency}).',
+    helperNote:
+      'Stock codes use the IDX ticker format, e.g. BBCA.JK (BBCA on the Indonesia Stock Exchange). Prices come from Kompas 100 listed companies.',
   },
   stock: {
     codesCount: '{count} stock codes',
+  },
+  glossary: {
+    stockCode:
+      'A stock\u2019s trading code, e.g. BBCA. The .JK suffix marks it as trading on the Indonesia Stock Exchange (IDX).',
+    kompas100:
+      'A starter list of 100 liquid Indonesian companies tracked by the Kompas newspaper index.',
+    moM: 'Month-over-Month: the % change in value versus the previous month\u2019s opening value.',
+    xirr:
+      'Extended Internal Rate of Return: the annualized return that accounts for deposits and withdrawals made at different times.',
+    roi: 'Return on Investment: total profit (or loss) divided by total capital invested.',
+    apy: 'Annual Percentage Yield: the interest you would earn over a full year before withdrawals.',
+    prorated:
+      'Interest earned for only part of the year, scaled down to the month\u2019s duration.',
+    dividends:
+      'Cash payouts a company distributes to its shareholders each period.',
+    newPurchases:
+      'Extra shares bought this period, on top of your regular installment.',
+    capitalInvested:
+      'Running total of everything you have put in, including extra purchases.',
+    weightedXirr:
+      'Overall annualized return across all asset classes, weighted by how much is invested in each.',
+    pnl: 'Profit/Loss: current value minus total invested. Positive means you are up.',
   },
   io: {
     importTitle: 'Ledger Backup & Restore',

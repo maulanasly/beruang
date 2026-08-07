@@ -49,6 +49,8 @@ const formattedPrice = computed(() => {
       </button>
     </div>
 
+    <p class="market-note">{{ t('market.helperNote') }}</p>
+
     <div class="row row-2up market-grid">
       <div>
         <label for="idx-symbol">{{ t('form.stockCode') }}</label>

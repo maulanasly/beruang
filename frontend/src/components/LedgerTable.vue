@@ -3,6 +3,7 @@ import { computed, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { MOM_COLUMNS } from '../composables/columns'
 import { useMarket } from '../composables/useMarket'
+import InfoTip from './InfoTip.vue'
 
 const props = defineProps({
   ledger: { type: Array, default: () => [] },
@@ -28,8 +29,22 @@ const COLUMN_I18N_KEYS = {
   capital_invested: 'column.capitalInvested',
 }
 
+const COLUMN_HINT_KEYS = {
+  symbol: 'glossary.stockCode',
+  new_share_purchases: 'glossary.newPurchases',
+  dividends: 'glossary.dividends',
+  mom_return: 'glossary.moM',
+  prorated_interest: 'glossary.prorated',
+  capital_invested: 'glossary.capitalInvested',
+}
+
 function columnLabel(key) {
   return t(COLUMN_I18N_KEYS[key] || key)
+}
+
+function columnHint(key) {
+  const hintKey = COLUMN_HINT_KEYS[key]
+  return hintKey ? t(hintKey) : ''
 }
 
 const columns = computed(() => {
@@ -112,6 +127,7 @@ const columnsWithCumulative = computed(() => {
               :class="{ num: isNumericColumn(column) || column === 'capital_invested' }"
             >
               {{ columnLabel(column) }}
+              <InfoTip v-if="columnHint(column)" :text="columnHint(column)" />
             </th>
           </tr>
         </thead>
