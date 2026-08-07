@@ -21,6 +21,7 @@ export default defineConfig({
     environment: 'happy-dom',
     globals: true,
     include: ['src/**/*.{test,spec}.{js,ts}'],
+    setupFiles: ['./vitest.setup.js'],
     coverage: { reporter: ['text', 'html'] },
   },
 })

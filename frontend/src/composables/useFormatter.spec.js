@@ -11,8 +11,8 @@ import { useSettings } from './useSettings'
 /** Reset the shared settings store to a known baseline before each test. */
 function resetSettings(overrides = {}) {
   const settings = useSettings()
-  settings.locale = overrides.locale ?? 'en-US'
-  settings.currency = overrides.currency ?? 'USD'
+  settings.locale = overrides.locale || 'en-US'
+  settings.currency = overrides.currency || 'USD'
 }
 
 describe('useFormatter key classifiers', () => {

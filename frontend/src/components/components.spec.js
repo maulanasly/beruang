@@ -1,18 +1,15 @@
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 import SummaryCards from './SummaryCards.vue'
 import LedgerTable from './LedgerTable.vue'
 import LatestMomentumKpi from './LatestMomentumKpi.vue'
+import LineChart from './LineChart.vue'
+import { mountWith } from '../test/helpers.js'
 
 // Mock vue-chartjs before importing LineChart so chart.js never touches the
 // canvas; the LineChart tests only assert on computed data (labels, datasets).
 vi.mock('vue-chartjs', () => ({
   Line: { template: '<div class="line-stub" />' },
 }))
-
-import LineChart from './LineChart.vue'
-import { useFormatter } from '../composables/useFormatter'
-import { useSettings } from '../composables/useSettings'
 
 beforeAll(() => {
   if (!window.IntersectionObserver) {
@@ -24,40 +21,19 @@ beforeAll(() => {
   }
 })
 
-function resetSettings(overrides = {}) {
-  const settings = useSettings()
-  settings.locale = overrides.locale ?? 'en-US'
-  settings.currency = overrides.currency ?? 'USD'
-}
-
-beforeEach(() => resetSettings())
-
-const formatter = useFormatter()
-
-function provideFormatter() {
-  return {
-    global: { provide: { formatter } },
-  }
-}
-
 describe('SummaryCards', () => {
   it('renders one card per summary key with title-cased labels', () => {
-    const wrapper = mount(
-      SummaryCards,
-      {
-        props: { summary: { total_installments: 2200, ending_value: 7700, xirr: 0.4 } },
-        ...provideFormatter(),
-      },
-    )
+    const wrapper = mountWith(SummaryCards, {
+      props: { summary: { total_installments: 2200, ending_value: 7700, xirr: 0.4 } },
+    })
     const cards = wrapper.findAll('.summary-card')
     expect(cards).toHaveLength(3)
-    expect(wrapper.text()).toContain('Total Installments')
+    expect(wrapper.text()).toContain('Installment')
   })
 
   it('equivalently accepts empty summary', () => {
-    const wrapper = mount(SummaryCards, {
+    const wrapper = mountWith(SummaryCards, {
       props: { summary: {} },
-      ...provideFormatter(),
     })
     expect(wrapper.findAll('.summary-card')).toHaveLength(0)
   })
@@ -69,10 +45,7 @@ describe('LedgerTable', () => {
       { date: '2026-01-31', installment_amount: 1000, current_value: 1000, mom_return: 0 },
       { date: '2026-02-28', installment_amount: 1000, current_value: 2050, mom_return: 0.05 },
     ]
-    const wrapper = mount(LedgerTable, {
-      props: { ledger, asset: 'mutual-funds' },
-      ...provideFormatter(),
-    })
+    const wrapper = mountWith(LedgerTable, { props: { ledger, asset: 'mutual-funds' } })
     const headers = wrapper.findAll('th').map((h) => h.text())
     expect(headers).toContain('Date')
     expect(headers).toContain('Installment')
@@ -93,10 +66,7 @@ describe('LedgerTable', () => {
       { date: '2026-01-31', mom_return: 0.05 },
       { date: '2026-02-28', mom_return: -0.02 },
     ]
-    const wrapper = mount(LedgerTable, {
-      props: { ledger, asset: 'mutual-funds' },
-      ...provideFormatter(),
-    })
+    const wrapper = mountWith(LedgerTable, { props: { ledger, asset: 'mutual-funds' } })
     const cells = wrapper.findAll('tbody tr')
     const positiveMomCell = cells[0].findAll('td').find((td) => td.text().includes('5.00%'))
     const negativeMomCell = cells[1].findAll('td').find((td) => td.text().includes('2.00'))
@@ -109,19 +79,15 @@ describe('LedgerTable', () => {
       { date: '2026-01-31', mom_return: 0 },
       { date: '2026-02-28', mom_return: 0.05 },
     ]
-    const wrapper = mount(LedgerTable, {
-      props: { ledger, asset: 'mutual-funds' },
-      ...provideFormatter(),
-    })
+    const wrapper = mountWith(LedgerTable, { props: { ledger, asset: 'mutual-funds' } })
     const rows = wrapper.findAll('tbody tr')
     expect(rows[0].classes()).not.toContain('latest-row')
     expect(rows[rows.length - 1].classes()).toContain('latest-row')
   })
 
   it('shows an empty-state guidance line when the ledger is empty', () => {
-    const wrapper = mount(LedgerTable, {
+    const wrapper = mountWith(LedgerTable, {
       props: { ledger: [], asset: 'mutual-funds' },
-      ...provideFormatter(),
     })
     expect(wrapper.findAll('th')).toHaveLength(0)
     expect(wrapper.findAll('tbody tr')).toHaveLength(0)
@@ -131,9 +97,8 @@ describe('LedgerTable', () => {
 
   it('renders a title suffix badge when titleSuffix is provided', () => {
     const ledger = [{ date: '2026-01-31', symbol: 'BBCA.JK', current_value: 1000 }]
-    const wrapper = mount(LedgerTable, {
+    const wrapper = mountWith(LedgerTable, {
       props: { ledger, asset: 'stocks', titleSuffix: 'BBCA.JK' },
-      ...provideFormatter(),
     })
     expect(wrapper.find('.section-symbol').exists()).toBe(true)
     expect(wrapper.text()).toContain('BBCA.JK')
@@ -147,9 +112,8 @@ describe('LatestMomentumKpi', () => {
       { date: '2026-02-28', mom_return: 0.03 },
     ]
     const summary = { xirr: 0.5, ending_value: 7700 }
-    const wrapper = mount(LatestMomentumKpi, {
+    const wrapper = mountWith(LatestMomentumKpi, {
       props: { ledger, summary, asset: 'mutual-funds' },
-      ...provideFormatter(),
     })
     expect(wrapper.findAll('.kpi-card')).toHaveLength(3)
     expect(wrapper.text()).toContain('Latest MoM')
@@ -159,9 +123,8 @@ describe('LatestMomentumKpi', () => {
   it('shows 4 cards for stocks: date, MoM, ROI, XIRR', () => {
     const ledger = [{ date: '2026-02-28', mom_return: 0.07 }]
     const summary = { roi: 0.2, xirr: 0.6 }
-    const wrapper = mount(LatestMomentumKpi, {
+    const wrapper = mountWith(LatestMomentumKpi, {
       props: { ledger, summary, asset: 'stocks' },
-      ...provideFormatter(),
     })
     expect(wrapper.findAll('.kpi-card')).toHaveLength(4)
     expect(wrapper.text()).toContain('Latest ROI')
@@ -170,9 +133,8 @@ describe('LatestMomentumKpi', () => {
   it('shows 3 cards for term-deposits: date, prorated interest, APY', () => {
     const ledger = [{ date: '2026-02-28', prorated_interest: 4.5 }]
     const summary = { apy: 0.06 }
-    const wrapper = mount(LatestMomentumKpi, {
+    const wrapper = mountWith(LatestMomentumKpi, {
       props: { ledger, summary, asset: 'term-deposits' },
-      ...provideFormatter(),
     })
     expect(wrapper.findAll('.kpi-card')).toHaveLength(3)
     expect(wrapper.text()).toContain('Latest Prorated Interest')
@@ -180,9 +142,8 @@ describe('LatestMomentumKpi', () => {
   })
 
   it('remains hidden when there is no ledger row', () => {
-    const wrapper = mount(LatestMomentumKpi, {
+    const wrapper = mountWith(LatestMomentumKpi, {
       props: { ledger: [], summary: {}, asset: 'mutual-funds' },
-      ...provideFormatter(),
     })
     expect(wrapper.find('.kpi-block').exists()).toBe(false)
   })
@@ -194,9 +155,7 @@ describe('LineChart series assembly', () => {
       { date: '2026-01-31', installment_amount: 1000, current_value: 1000 },
       { date: '2026-02-28', installment_amount: 1000, current_value: 2050 },
     ]
-    const wrapper = mount(LineChart, {
-      props: { ledger, asset: 'mutual-funds' },
-    })
+    const wrapper = mountWith(LineChart, { props: { ledger, asset: 'mutual-funds' } })
     const labels = wrapper.vm.labels
     const datasets = wrapper.vm.datasets
     expect(labels).toEqual(['2026-01-31', '2026-02-28'])
@@ -211,7 +170,7 @@ describe('LineChart series assembly', () => {
       { date: '2026-01-31', installment_amount: 700, new_share_purchases: 300, current_value: 1000 },
       { date: '2026-02-28', installment_amount: 700, new_share_purchases: 200, current_value: 1950 },
     ]
-    const wrapper = mount(LineChart, { props: { ledger, asset: 'stocks' } })
+    const wrapper = mountWith(LineChart, { props: { ledger, asset: 'stocks' } })
     expect(wrapper.vm.datasets[0].label).toBe('Total Contribution')
     expect(wrapper.vm.datasets[0].data).toEqual([1000, 1900])
   })
@@ -221,13 +180,13 @@ describe('LineChart series assembly', () => {
       { date: '2026-01-31', current_value: 1000, expected_month_end_value: 1005 },
       { date: '2026-02-28', current_value: 2005, expected_month_end_value: 2015 },
     ]
-    const wrapper = mount(LineChart, { props: { ledger, asset: 'term-deposits' } })
+    const wrapper = mountWith(LineChart, { props: { ledger, asset: 'term-deposits' } })
     expect(wrapper.vm.datasets[0].label).toBe('Expected Value')
     expect(wrapper.vm.datasets[1].label).toBe('Current Value')
   })
 
   it('renders no chart section when the ledger is empty', () => {
-    const wrapper = mount(LineChart, { props: { ledger: [], asset: 'mutual-funds' } })
+    const wrapper = mountWith(LineChart, { props: { ledger: [], asset: 'mutual-funds' } })
     expect(wrapper.find('.chart-block').exists()).toBe(false)
   })
 })

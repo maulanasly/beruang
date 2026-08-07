@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import i18n from '../i18n/index.js'
 
 /**
  * Loads the Kompas 100 starter symbols and fetches a live quote for the
@@ -48,7 +49,7 @@ export function useStockUniverse(baseUrl = '') {
     quoteStatus.value = ''
 
     if (!selectedSymbol.value) {
-      quoteStatus.value = 'Choose a stock code first.'
+      quoteStatus.value = i18n.global.t('market.chooseStockCode')
       throw new Error(quoteStatus.value)
     }
 

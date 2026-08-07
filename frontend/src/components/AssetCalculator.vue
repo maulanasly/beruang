@@ -1,8 +1,10 @@
 <script setup>
-import { computed, onMounted, reactive, watch } from 'vue'
+import { computed, onMounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import MarketHelper from './MarketHelper.vue'
 import { useApiClient } from '../composables/useApiClient'
 import { useStockUniverse } from '../composables/useStockUniverse'
+import { useLedgers } from '../composables/useLedgers'
 
 const props = defineProps({
   activeAsset: { type: String, required: true },
@@ -10,112 +12,99 @@ const props = defineProps({
 
 const emit = defineEmits(['calculated', 'error', 'reset'])
 
+const { t } = useI18n()
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
-const assetFieldConfig = {
-  'mutual-funds': [
-    { key: 'date', label: 'Date', type: 'date' },
-    {
-      key: 'installment_amount',
-      label: 'Installment Amount',
-      type: 'number',
-      min: 0,
-      step: '0.01',
-    },
-    {
-      key: 'current_value',
-      label: 'Current Value',
-      type: 'number',
-      min: 0,
-      step: '0.01',
-    },
-  ],
-  stocks: [
-    { key: 'symbol', label: 'Stock Code', type: 'text', frontendOnly: true },
-    { key: 'date', label: 'Date', type: 'date' },
-    {
-      key: 'installment_amount',
-      label: 'Installment Amount',
-      type: 'number',
-      min: 0,
-      step: '0.01',
-    },
-    {
-      key: 'new_share_purchases',
-      label: 'New Share Purchases',
-      type: 'number',
-      min: 0,
-      step: '0.01',
-    },
-    {
-      key: 'dividends',
-      label: 'Dividends',
-      type: 'number',
-      min: 0,
-      step: '0.01',
-    },
-    {
-      key: 'current_value',
-      label: 'Current Value',
-      type: 'number',
-      min: 0,
-      step: '0.01',
-    },
-  ],
-  'term-deposits': [
-    { key: 'date', label: 'Date', type: 'date' },
-    {
-      key: 'installment_amount',
-      label: 'Installment Amount',
-      type: 'number',
-      min: 0,
-      step: '0.01',
-    },
-    {
-      key: 'current_value',
-      label: 'Current Value',
-      type: 'number',
-      min: 0,
-      step: '0.01',
-    },
-  ],
+const ASSET_KEYS = {
+  'mutual-funds': 'mutualFunds',
+  stocks: 'stocks',
+  'term-deposits': 'termDeposits',
 }
 
-const forms = reactive({
-  'mutual-funds': {
-    entries: [
-      { date: '2026-05-31', installment_amount: 1100, current_value: 6500 },
-      { date: '2026-06-30', installment_amount: 1100, current_value: 7700 },
-    ],
-  },
-  stocks: {
-    entries: [
+function buildFieldConfig() {
+  return {
+    'mutual-funds': [
+      { key: 'date', labelKey: 'form.date', type: 'date' },
       {
-        symbol: 'BBCA.JK',
-        date: '2026-05-31',
-        installment_amount: 700,
-        new_share_purchases: 300,
-        dividends: 0,
-        current_value: 1000,
+        key: 'installment_amount',
+        labelKey: 'form.installmentAmount',
+        type: 'number',
+        min: 0,
+        step: '0.01',
       },
       {
-        symbol: 'BBCA.JK',
-        date: '2026-06-30',
-        installment_amount: 700,
-        new_share_purchases: 200,
-        dividends: 10,
-        current_value: 1950,
+        key: 'current_value',
+        labelKey: 'form.currentValue',
+        type: 'number',
+        min: 0,
+        step: '0.01',
       },
     ],
-  },
-  'term-deposits': {
-    apy: 0.06,
-    entries: [
-      { date: '2026-05-31', installment_amount: 1000, current_value: 1000 },
-      { date: '2026-06-30', installment_amount: 1000, current_value: 2005 },
+    stocks: [
+      {
+        key: 'symbol',
+        labelKey: 'form.stockCode',
+        type: 'text',
+        frontendOnly: true,
+      },
+      { key: 'date', labelKey: 'form.date', type: 'date' },
+      {
+        key: 'installment_amount',
+        labelKey: 'form.installmentAmount',
+        type: 'number',
+        min: 0,
+        step: '0.01',
+      },
+      {
+        key: 'new_share_purchases',
+        labelKey: 'form.newSharePurchases',
+        type: 'number',
+        min: 0,
+        step: '0.01',
+      },
+      {
+        key: 'dividends',
+        labelKey: 'form.dividends',
+        type: 'number',
+        min: 0,
+        step: '0.01',
+      },
+      {
+        key: 'current_value',
+        labelKey: 'form.currentValue',
+        type: 'number',
+        min: 0,
+        step: '0.01',
+      },
     ],
-  },
-})
+    'term-deposits': [
+      { key: 'date', labelKey: 'form.date', type: 'date' },
+      {
+        key: 'installment_amount',
+        labelKey: 'form.installmentAmount',
+        type: 'number',
+        min: 0,
+        step: '0.01',
+      },
+      {
+        key: 'current_value',
+        labelKey: 'form.currentValue',
+        type: 'number',
+        min: 0,
+        step: '0.01',
+      },
+    ],
+  }
+}
+
+const assetFieldConfig = buildFieldConfig()
+
+const ledgers = useLedgers()
+
+function getEntries() {
+  return ledgers.getEntries(props.activeAsset)
+}
 
 const activeEntryFields = computed(() => assetFieldConfig[props.activeAsset] || [])
 
@@ -129,6 +118,11 @@ const endpoint = computed(
 
 const { isLoading, error, errorLines, calculateReturns } = useApiClient()
 const stockUniverse = useStockUniverse(API_BASE_URL)
+
+const apy = computed({
+  get: () => ledgers.getApy(),
+  set: (v) => ledgers.setApy(v),
+})
 
 function createEmptyEntry(asset) {
   if (asset === 'stocks') {
@@ -145,14 +139,15 @@ function createEmptyEntry(asset) {
 }
 
 function addEntryRow() {
-  forms[props.activeAsset].entries.push(createEmptyEntry(props.activeAsset))
+  getEntries().push(createEmptyEntry(props.activeAsset))
 }
 
 function removeEntryRow(index) {
-  if (forms[props.activeAsset].entries.length <= 1) return
-  forms[props.activeAsset].entries.splice(index, 1)
+  const entries = getEntries()
+  if (entries.length <= 1) return
+  entries.splice(index, 1)
   if (props.activeAsset === 'stocks') {
-    stockUniverse.syncTargetRowIndex(forms.stocks.entries.length - 1)
+    stockUniverse.syncTargetRowIndex(getEntries().length - 1)
   }
 }
 
@@ -173,20 +168,23 @@ function normalizeEntries(asset, entries) {
 async function applyQuoteToRow() {
   stockUniverse.quoteStatus.value = ''
   if (!stockUniverse.selectedSymbol.value) {
-    stockUniverse.quoteStatus.value = 'Choose a stock code first.'
+    stockUniverse.quoteStatus.value = t('market.chooseStockCode')
     return
   }
-  stockUniverse.syncTargetRowIndex(forms.stocks.entries.length - 1)
+  stockUniverse.syncTargetRowIndex(getEntries().length - 1)
   try {
     const quote = await stockUniverse.fetchAndStoreQuote()
     const rowIndex = stockUniverse.targetRowIndex.value
-    const entries = forms.stocks.entries
+    const entries = getEntries()
     if (entries[rowIndex]) {
       entries[rowIndex].current_value = quote.price
       entries[rowIndex].symbol = quote.symbol
     }
-    stockUniverse.quoteStatus.value =
-      `Updated row ${rowIndex + 1} using ${quote.symbol} (${quote.currency}).`
+    stockUniverse.quoteStatus.value = t('market.updatedRow', {
+      row: rowIndex + 1,
+      symbol: quote.symbol,
+      currency: quote.currency,
+    })
   } catch {
     // status already set inside fetchQuote
   }
@@ -197,35 +195,33 @@ async function calculate() {
   errorLines.value = []
   emit('reset')
 
-  const form = forms[props.activeAsset]
-  if (!Array.isArray(form.entries) || form.entries.length === 0) {
-    error.value = 'At least one ledger row is required.'
+  const entries = getEntries()
+  if (!Array.isArray(entries) || entries.length === 0) {
+    error.value = t('error.atLeastOneRow')
     emit('error', error.value)
     return
   }
 
-  if (form.entries.some((entry) => !entry.date)) {
-    error.value = 'Every row must include a date.'
+  if (entries.some((entry) => !entry.date)) {
+    error.value = t('error.everyRowDate')
     emit('error', error.value)
     return
   }
 
-  const payload = { entries: normalizeEntries(props.activeAsset, form.entries) }
+  const payload = { entries: normalizeEntries(props.activeAsset, entries) }
   if (props.activeAsset === 'term-deposits') {
-    payload.apy = Number(form.apy)
+    payload.apy = Number(ledgers.getApy())
   }
 
   const result = await calculateReturns(endpoint.value, payload)
   if (result) {
-    // Attach frontend-only fields (e.g. stock symbol) back onto the returned
-    // ledger rows so they surface in the results table and section headers.
     if (props.activeAsset === 'stocks' && Array.isArray(result.ledger)) {
       const stockFields = (assetFieldConfig.stocks || []).filter(
         (f) => f.frontendOnly,
       )
       result.ledger = result.ledger.map((row, i) => {
         const merged = { ...row }
-        const source = form.entries[i]
+        const source = entries[i]
         for (const field of stockFields) {
           if (source && source[field.key] != null) {
             merged[field.key] = source[field.key]
@@ -240,7 +236,6 @@ async function calculate() {
   }
 }
 
-// Stock universe must populate on mount; lazy-load only when entering stocks.
 onMounted(() => {
   stockUniverse.loadSymbols()
 })
@@ -249,7 +244,7 @@ watch(
   () => props.activeAsset,
   (next) => {
     if (next === 'stocks') {
-      stockUniverse.syncTargetRowIndex(forms.stocks.entries.length - 1)
+      stockUniverse.syncTargetRowIndex(getEntries().length - 1)
     }
   },
 )
@@ -259,10 +254,10 @@ defineExpose({ calculate, isLoading })
 
 <template>
   <div v-if="activeAsset === 'term-deposits'" class="row">
-    <label for="apy">APY</label>
+    <label for="apy">{{ t('form.apy') }}</label>
     <input
       id="apy"
-      v-model.number="forms['term-deposits'].apy"
+      v-model.number="apy"
       type="number"
       step="0.0001"
       min="-1"
@@ -275,7 +270,7 @@ defineExpose({ calculate, isLoading })
     :symbols="stockUniverse.symbols.value"
     :selected-symbol="stockUniverse.selectedSymbol.value"
     :target-row-index="stockUniverse.targetRowIndex.value"
-    :entries="forms.stocks.entries"
+    :entries="getEntries()"
     :loading="stockUniverse.loading.value"
     :universe-error="stockUniverse.universeError.value"
     :quote-loading="stockUniverse.quoteLoading.value"
@@ -289,8 +284,8 @@ defineExpose({ calculate, isLoading })
 
   <div class="row">
     <div class="rows-head">
-      <label>Ledger Rows</label>
-      <button class="mini" type="button" @click="addEntryRow">+ Add Row</button>
+      <label>{{ t('common.ledgerRows') }}</label>
+      <button class="mini" type="button" @click="addEntryRow">{{ t('common.addRow') }}</button>
     </div>
 
     <div class="entry-editor">
@@ -298,12 +293,12 @@ defineExpose({ calculate, isLoading })
         <span
           v-for="field in activeEntryFields"
           :key="`head-${field.key}`"
-        >{{ field.label }}</span>
-        <span>Action</span>
+        >{{ t(field.labelKey) }}</span>
+        <span>{{ t('common.action') }}</span>
       </div>
 
       <div
-        v-for="(entry, index) in forms[activeAsset].entries"
+        v-for="(entry, index) in getEntries()"
         :key="`entry-${activeAsset}-${index}`"
         class="entry-grid"
         :style="entryGridStyle"
@@ -319,20 +314,20 @@ defineExpose({ calculate, isLoading })
         <button
           class="mini danger"
           type="button"
-          :disabled="forms[activeAsset].entries.length <= 1"
+          :disabled="getEntries().length <= 1"
           @click="removeEntryRow(index)"
         >
-          Remove
+          {{ t('common.remove') }}
         </button>
       </div>
     </div>
   </div>
 
   <button class="action" :disabled="isLoading" @click="calculate">
-    {{ isLoading ? 'Calculating...' : 'Calculate Returns' }}
+    {{ isLoading ? t('common.calculating') : t('common.calculateReturns') }}
   </button>
 
-  <p class="endpoint">POST {{ endpoint }}</p>
+  <p class="endpoint">{{ t('common.post') }} {{ endpoint }}</p>
 
   <div v-if="error" class="output error">
     <p class="error-title">{{ error }}</p>

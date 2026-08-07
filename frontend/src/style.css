@@ -46,6 +46,41 @@ body {
   color: #486581;
 }
 
+.nav-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  border-bottom: 2px solid #e8edf2;
+  padding-bottom: 0.5rem;
+}
+
+.nav-link {
+  text-decoration: none;
+  font-weight: 600;
+  color: #486581;
+  padding: 0.5rem 0.85rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.nav-link:hover {
+  background: #f1f5f9;
+  color: #102a43;
+}
+
+.nav-active {
+  background: linear-gradient(135deg, #ef6c2f, #f7b267);
+  color: #102a43;
+}
+
+.nav-active:hover {
+  background: linear-gradient(135deg, #ef6c2f, #f7b267);
+}
+
+.settings-row {
+  margin: 0.85rem 0;
+}
+
 .row {
   display: flex;
   flex-direction: column;
