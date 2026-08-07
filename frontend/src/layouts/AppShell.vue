@@ -8,6 +8,7 @@ const { t } = useI18n()
 const settings = useSettings()
 
 const navItems = [
+  { to: '/overview', key: 'nav.overview' },
   { to: '/mutual-funds', key: 'nav.mutualFunds' },
   { to: '/stocks', key: 'nav.stocks' },
   { to: '/term-deposits', key: 'nav.termDeposits' },

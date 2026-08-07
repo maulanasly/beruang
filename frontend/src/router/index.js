@@ -2,7 +2,12 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useSettings } from '../composables/useSettings'
 
 const routes = [
-  { path: '/', redirect: '/mutual-funds' },
+  { path: '/', redirect: '/overview' },
+  {
+    path: '/overview',
+    name: 'overview',
+    component: () => import('../views/OverviewView.vue'),
+  },
   {
     path: '/mutual-funds',
     name: 'mutual-funds',
@@ -29,6 +34,7 @@ const settings = useSettings()
 
 router.afterEach((to) => {
   const titles = {
+    overview: 'Overview',
     'mutual-funds': 'Mutual Funds',
     stocks: 'Stocks',
     'term-deposits': 'Term Deposits',

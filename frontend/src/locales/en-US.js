@@ -1,5 +1,6 @@
 export default {
   nav: {
+    overview: 'Overview',
     mutualFunds: 'Mutual Funds',
     stocks: 'Stocks',
     termDeposits: 'Term Deposits',
@@ -60,6 +61,18 @@ export default {
   },
   chart: {
     title: 'Capital Invested vs Current Market Value',
+  },
+  overview: {
+    portfolio: 'Portfolio',
+    totalInvested: 'Total Invested',
+    totalValue: 'Current Value',
+    totalPnl: 'Profit / Loss',
+    weightedXirr: 'Weighted XIRR',
+    proportion: 'Asset Allocation',
+    perAsset: 'Per Asset Class',
+    invested: 'Invested',
+    valueByAsset: 'Value by Asset Class',
+    noData: 'Add entries to your asset pages and calculate returns to populate this overview.',
   },
   ledger: {
     empty: 'Fill the rows above and click Calculate Returns to see your monthly ledger here.',

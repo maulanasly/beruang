@@ -6,11 +6,16 @@ import i18n from './i18n/index.js'
 
 const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0))
 
-function makeRouter(initialPath = '/mutual-funds') {
+function makeRouter(initialPath = '/overview') {
   const router = createRouter({
     history: createMemoryHistory(),
     routes: [
-      { path: '/', redirect: '/mutual-funds' },
+      { path: '/', redirect: '/overview' },
+      {
+        path: '/overview',
+        name: 'overview',
+        component: { template: '<div class="view">Overview View</div>' },
+      },
       {
         path: '/mutual-funds',
         name: 'mutual-funds',
@@ -40,13 +45,14 @@ function mountShell(router) {
 }
 
 describe('AppShell navigation', () => {
-  it('renders a nav link per asset class', async () => {
+  it('renders a nav link per asset class plus overview first', async () => {
     const router = makeRouter()
     await router.isReady()
     const wrapper = mountShell(router)
     const links = wrapper.findAll('.nav-link')
-    expect(links).toHaveLength(3)
+    expect(links).toHaveLength(4)
     expect(links.map((l) => l.text())).toEqual([
+      'Overview',
       'Mutual Funds',
       'Stocks',
       'Term Deposits',
@@ -69,17 +75,24 @@ describe('AppShell navigation', () => {
     expect(wrapper.find('.view').text()).toBe('Term Deposits View')
   })
 
+  it('renders the overview view on the overview route', async () => {
+    const router = makeRouter('/overview')
+    await router.isReady()
+    const wrapper = mountShell(router)
+    expect(wrapper.find('.view').text()).toBe('Overview View')
+  })
+
   it('navigates when a nav link is clicked', async () => {
     const router = makeRouter('/mutual-funds')
     await router.isReady()
     const wrapper = mountShell(router)
     expect(wrapper.find('.view').text()).toBe('Mutual Funds View')
 
-    await wrapper.find('.nav-link[href="/stocks"]').trigger('click')
+    await wrapper.find('.nav-link[href="/overview"]').trigger('click')
     await router.isReady()
     await flushPromises()
-    expect(router.currentRoute.value.name).toBe('stocks')
-    expect(wrapper.find('.view').text()).toBe('Stocks View')
+    expect(router.currentRoute.value.name).toBe('overview')
+    expect(wrapper.find('.view').text()).toBe('Overview View')
   })
 })
 

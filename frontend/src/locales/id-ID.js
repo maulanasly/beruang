@@ -1,5 +1,6 @@
 export default {
   nav: {
+    overview: 'Ringkasan',
     mutualFunds: 'Reksa Dana',
     stocks: 'Saham',
     termDeposits: 'Deposito Berjangka',
@@ -60,6 +61,18 @@ export default {
   },
   chart: {
     title: 'Modal Diinvestasikan vs Nilai Pasar Saat Ini',
+  },
+  overview: {
+    portfolio: 'Portofolio',
+    totalInvested: 'Total Investasi',
+    totalValue: 'Nilai Saat Ini',
+    totalPnl: 'Laba / Rugi',
+    weightedXirr: 'XIRR Tertimbang',
+    proportion: 'Alokasi Aset',
+    perAsset: 'Per Kelas Aset',
+    invested: 'Investasi',
+    valueByAsset: 'Nilai per Kelas Aset',
+    noData: 'Tambahkan entri ke halaman aset Anda dan hitung hasil untuk mengisi ringkasan ini.',
   },
   ledger: {
     empty: 'Isi baris di atas dan klik Hitung Hasil untuk melihat buku besar bulanan Anda di sini.',
