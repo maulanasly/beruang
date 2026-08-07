@@ -190,6 +190,20 @@ async function applyQuoteToRow() {
   }
 }
 
+async function syncAllPrices() {
+  const entries = getEntries()
+  const { updated, failed } = await stockUniverse.syncAllQuotes(entries)
+  if (!updated.length && !failed.length) return
+  for (const item of updated) {
+    for (const entry of entries) {
+      if (entry?.symbol?.trim() === item.symbol) {
+        entry.current_value = item.price
+      }
+    }
+  }
+  emit('reset')
+}
+
 async function calculate() {
   error.value = ''
   errorLines.value = []
@@ -276,10 +290,12 @@ defineExpose({ calculate, isLoading })
     :quote-loading="stockUniverse.quoteLoading.value"
     :quote-status="stockUniverse.quoteStatus.value"
     :last-quote="stockUniverse.lastQuote.value"
+    :syncing="stockUniverse.syncing.value"
     @update:selected-symbol="stockUniverse.selectedSymbol.value = $event"
     @update:target-row-index="stockUniverse.targetRowIndex.value = $event"
     @refresh="stockUniverse.loadSymbols"
     @apply="applyQuoteToRow"
+    @sync-all="syncAllPrices"
   />
 
   <div class="row">

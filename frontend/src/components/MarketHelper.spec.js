@@ -63,6 +63,23 @@ describe('MarketHelper', () => {
     expect(wrapper.emitted('apply')).toBeTruthy()
   })
 
+  it('emits sync-all when the Sync All Prices button is clicked', async () => {
+    const wrapper = mountWithDefaults()
+    const syncButton = wrapper
+      .findAll('button')
+      .find((b) => b.text().includes('Sync All Prices'))
+    await syncButton.trigger('click')
+    expect(wrapper.emitted('sync-all')).toBeTruthy()
+  })
+
+  it('disables Sync All Prices while a sync is in flight', () => {
+    const wrapper = mountWithDefaults({ syncing: true })
+    const syncButton = wrapper
+      .findAll('button')
+      .find((b) => b.text().includes('Syncing Prices'))
+    expect(syncButton.attributes('disabled')).toBeDefined()
+  })
+
   it('shows the universe error note when supplied', () => {
     const wrapper = mountWithDefaults({ universeError: 'rate limited' })
     expect(wrapper.text()).toContain('rate limited')

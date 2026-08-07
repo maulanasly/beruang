@@ -13,6 +13,7 @@ const props = defineProps({
   quoteLoading: { type: Boolean, default: false },
   quoteStatus: { type: String, default: '' },
   lastQuote: { type: Object, default: null },
+  syncing: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
@@ -20,6 +21,7 @@ const emit = defineEmits([
   'update:target-row-index',
   'refresh',
   'apply',
+  'sync-all',
 ])
 
 const { t } = useI18n()
@@ -88,6 +90,14 @@ const formattedPrice = computed(() => {
         @click="emit('apply')"
       >
         {{ quoteLoading ? t('market.fetchingQuote') : t('market.applyLatestPrice') }}
+      </button>
+      <button
+        class="mini"
+        type="button"
+        :disabled="syncing || !symbols.length"
+        @click="emit('sync-all')"
+      >
+        {{ syncing ? t('market.syncingPrices') : t('market.syncAllPrices') }}
       </button>
       <div v-if="lastQuote" class="last-quote">
         <span class="last-quote-label">{{ t('market.lastFetched') }}</span>

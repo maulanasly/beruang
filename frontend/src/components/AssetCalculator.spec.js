@@ -149,4 +149,61 @@ describe('AssetCalculator', () => {
     expect(emittedLedger[0].symbol).toBe('BBCA.JK')
     expect(emittedLedger[1].symbol).toBe('BBCA.JK')
   })
+
+  it('syncs live prices across all matching stock rows and emits reset', async () => {
+    const fetchMock = vi.fn().mockImplementation((url) => {
+      if (url.includes('kompas100')) {
+        return Promise.resolve(
+          makeResponse({ items: [{ symbol: 'BBCA.JK', name: 'Bank Central Asia' }] }, true),
+        )
+      }
+      return Promise.resolve(
+        makeResponse({ symbol: 'BBCA.JK', price: 9250, currency: 'IDR' }, true),
+      )
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = mountCalc('stocks')
+    await flushPromises()
+
+    const syncButton = wrapper
+      .findAll('button')
+      .find((b) => b.text().includes('Sync All Prices'))
+    await syncButton.trigger('click')
+    await flushPromises()
+
+    const inputs = wrapper.findAll('.entry-grid input')
+    const values = inputs
+      .filter((input) => input.attributes('type') === 'number')
+      .map((input) => input.element.value)
+    expect(values).toContain('9250')
+    expect(values.filter((v) => v === '9250')).toHaveLength(2)
+    expect(wrapper.emitted('reset')).toBeTruthy()
+  })
+
+  it('reports a sync without symbols and leaves values untouched', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        makeResponse({ items: [{ symbol: 'BBCA.JK', name: 'Bank Central Asia' }] }, true),
+      ),
+    )
+
+    const wrapper = mountCalc('stocks')
+    await flushPromises()
+
+    const rows = wrapper.findAll('.entry-grid').length - 1
+    for (let i = 0; i < rows; i += 1) {
+      await wrapper.findAll('.entry-grid input')[i * 6].setValue('')
+    }
+
+    const syncButton = wrapper
+      .findAll('button')
+      .find((b) => b.text().includes('Sync All Prices'))
+    await syncButton.trigger('click')
+    await flushPromises()
+
+    expect(wrapper.text()).toMatch(/Add a stock code/)
+    expect(wrapper.emitted('reset')).toBeFalsy()
+  })
 })

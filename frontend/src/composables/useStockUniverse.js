@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import i18n from '../i18n/index.js'
+import { useMarket } from './useMarket'
 
 /**
  * Loads the Kompas 100 starter symbols and fetches a live quote for the
@@ -14,6 +15,8 @@ export function useStockUniverse(baseUrl = '') {
   const quoteLoading = ref(false)
   const quoteStatus = ref('')
   const lastQuote = ref(null)
+  const syncing = ref(false)
+  const { market } = useMarket()
 
   function syncTargetRowIndex(maxIndex) {
     if (targetRowIndex.value > maxIndex) {
@@ -89,6 +92,76 @@ export function useStockUniverse(baseUrl = '') {
     return quote
   }
 
+  /**
+   * Fetch live quotes for every unique symbol found across the given ledger
+   * entries. Symbols that already carry the configured market suffix are
+   * queried as-is; others get the suffix appended so the data source can
+   * resolve them (e.g. `BBCA` becomes `BBCA.JK` on the IDX market).
+   *
+   * Returns per-symbol results keyed by the original entry symbol:
+   * `{ updated: [{ symbol, price, currency, count }], failed: [{ symbol, reason }] }`.
+   */
+  async function syncAllQuotes(entries) {
+    const rows = Array.isArray(entries) ? entries : []
+    const unique = [
+      ...new Set(
+        rows
+          .map((row) => row?.symbol)
+          .filter((symbol) => typeof symbol === 'string' && symbol.trim() !== '')
+          .map((symbol) => symbol.trim()),
+      ),
+    ]
+
+    if (unique.length === 0) {
+      quoteStatus.value = i18n.global.t('market.syncNoSymbols')
+      return { updated: [], failed: [] }
+    }
+
+    syncing.value = true
+    quoteStatus.value = ''
+    const suffix = market.value.suffix || ''
+
+    try {
+      const results = await Promise.allSettled(
+        unique.map((symbol) => {
+          const query = symbol.endsWith(suffix) ? symbol : `${symbol}${suffix}`
+          return fetch(`${baseUrl}/api/v1/market-data/quote?symbol=${encodeURIComponent(query)}`)
+            .then(async (response) => {
+              const body = await response.json()
+              if (!response.ok) {
+                throw new Error(body?.detail || 'Quote request failed.')
+              }
+              return { symbol, ...body }
+            })
+        }),
+      )
+
+      const updated = []
+      const failed = []
+      results.forEach((result, index) => {
+        const symbol = unique[index]
+        if (result.status === 'fulfilled') {
+          updated.push({
+            symbol,
+            price: Number(result.value.price),
+            currency: result.value.currency,
+            count: rows.filter((row) => row?.symbol?.trim() === symbol).length,
+          })
+        } else {
+          failed.push({ symbol, reason: result.reason?.message || 'Unknown error' })
+        }
+      })
+
+      quoteStatus.value = i18n.global.t('market.syncSummary', {
+        updated: updated.length,
+        failed: failed.length,
+      })
+      return { updated, failed }
+    } finally {
+      syncing.value = false
+    }
+  }
+
   return {
     symbols,
     selectedSymbol,
@@ -98,9 +171,11 @@ export function useStockUniverse(baseUrl = '') {
     quoteLoading,
     quoteStatus,
     lastQuote,
+    syncing,
     syncTargetRowIndex,
     loadSymbols,
     fetchQuote,
     fetchAndStoreQuote,
+    syncAllQuotes,
   }
 }
