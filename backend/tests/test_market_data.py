@@ -130,3 +130,80 @@ def test_index_history_returns_502_when_history_is_empty() -> None:
         )
 
     assert response.status_code == 502
+
+
+def test_price_history_returns_sorted_closes_with_name_and_currency() -> None:
+    history = make_index_history(
+        [
+            ("2026-05-01", 9050.0),
+            ("2026-05-02", 9125.5),
+            ("2026-05-03", 9098.25),
+        ]
+    )
+    ticker = MagicMock()
+    ticker.history.return_value = history
+    ticker.info = {"shortName": "Bank Central Asia", "currency": "IDR"}
+
+    with patch("backend.services.yf.Ticker", return_value=ticker) as ticker_factory:
+        response = client.get(
+            "/api/v1/market-data/price/history",
+            params={"symbol": "BBCA.JK", "period": "1mo"},
+        )
+
+    ticker_factory.assert_called_once_with("BBCA.JK")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["symbol"] == "BBCA.JK"
+    assert body["name"] == "Bank Central Asia"
+    assert body["period"] == "1mo"
+    assert body["currency"] == "IDR"
+    assert body["points"] == [
+        {"date": "2026-05-01", "close": 9050.0},
+        {"date": "2026-05-02", "close": 9125.5},
+        {"date": "2026-05-03", "close": 9098.25},
+    ]
+
+
+def test_price_history_falls_back_to_symbol_and_default_currency() -> None:
+    history = make_index_history([("2026-05-01", 100.0)])
+    ticker = MagicMock()
+    ticker.history.return_value = history
+    ticker.info = {}
+
+    with patch("backend.services.yf.Ticker", return_value=ticker):
+        response = client.get(
+            "/api/v1/market-data/price/history",
+            params={"symbol": "AAPL", "period": "1y"},
+        )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["name"] == "AAPL"
+    assert body["currency"] == "IDR"
+
+
+def test_price_history_rejects_blank_symbol() -> None:
+    response = client.get("/api/v1/market-data/price/history", params={"symbol": ""})
+    assert response.status_code == 422
+
+
+def test_price_history_rejects_unsupported_period() -> None:
+    response = client.get(
+        "/api/v1/market-data/price/history",
+        params={"symbol": "BBCA.JK", "period": "10y"},
+    )
+    assert response.status_code == 422
+
+
+def test_price_history_returns_502_when_history_is_empty() -> None:
+    ticker = MagicMock()
+    ticker.history.return_value = pd.DataFrame()
+    ticker.info = {"shortName": "Bank Central Asia"}
+
+    with patch("backend.services.yf.Ticker", return_value=ticker):
+        response = client.get(
+            "/api/v1/market-data/price/history",
+            params={"symbol": "BBCA.JK", "period": "1y"},
+        )
+
+    assert response.status_code == 502

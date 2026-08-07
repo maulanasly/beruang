@@ -299,6 +299,7 @@ defineExpose({ calculate, isLoading })
     :last-quote="stockUniverse.lastQuote.value"
     :syncing="stockUniverse.syncing.value"
     :searching="stockUniverse.searching.value"
+    :api-base-url="API_BASE_URL"
     @update:selected-symbol="stockUniverse.selectedSymbol.value = $event"
     @update:target-row-index="stockUniverse.targetRowIndex.value = $event"
     @refresh="stockUniverse.loadSymbols"

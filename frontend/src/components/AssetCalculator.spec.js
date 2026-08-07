@@ -3,6 +3,10 @@ import { mount } from '@vue/test-utils'
 import AssetCalculator from './AssetCalculator.vue'
 import { resetSettings, resetLedgers, provideOverlays } from '../test/helpers.js'
 
+vi.mock('vue-chartjs', () => ({
+  Line: { template: '<div class="line-stub" />' },
+}))
+
 const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0))
 
 function makeResponse(body, ok) {

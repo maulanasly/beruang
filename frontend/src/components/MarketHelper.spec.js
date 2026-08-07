@@ -1,8 +1,28 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import MarketHelper from './MarketHelper.vue'
 import { mountWith, resetSettings } from '../test/helpers.js'
 
-beforeEach(() => resetSettings())
+vi.mock('vue-chartjs', () => ({
+  Line: { template: '<div class="line-stub" />' },
+}))
+
+function makeResponse(body, ok) {
+  return { ok, json: async () => body, status: ok ? 200 : 502 }
+}
+
+beforeEach(() => {
+  resetSettings()
+  vi.unstubAllGlobals()
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue(
+      makeResponse(
+        { symbol: 'BBCA.JK', name: 'Bank Central Asia', currency: 'IDR', points: [] },
+        true,
+      ),
+    ),
+  )
+})
 
 function mountWithDefaults(overrides = {}) {
   return mountWith(MarketHelper, {
@@ -109,5 +129,16 @@ describe('MarketHelper', () => {
     const wrapper = mountWithDefaults({ universeError: 'rate limited' })
     expect(wrapper.text()).toContain('rate limited')
     expect(wrapper.find('.market-note.error-text').exists()).toBe(true)
+  })
+
+  it('renders the price history chart for the selected symbol', async () => {
+    const wrapper = mountWithDefaults()
+    expect(wrapper.find('.price-history').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Price History')
+  })
+
+  it('prompts for a symbol when none is selected', () => {
+    const wrapper = mountWithDefaults({ selectedSymbol: '' })
+    expect(wrapper.text()).toContain('Enter a stock code')
   })
 })

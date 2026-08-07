@@ -2,6 +2,7 @@
 import { computed, inject, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useMarket } from '../composables/useMarket'
+import PriceHistoryChart from './PriceHistoryChart.vue'
 
 const props = defineProps({
   symbols: { type: Array, default: () => [] },
@@ -15,6 +16,7 @@ const props = defineProps({
   lastQuote: { type: Object, default: null },
   syncing: { type: Boolean, default: false },
   searching: { type: Boolean, default: false },
+  apiBaseUrl: { type: String, default: '' },
 })
 
 const emit = defineEmits([
@@ -169,5 +171,10 @@ onBeforeUnmount(() => clearTimeout(searchTimer))
 
     <p v-if="universeError" class="market-note error-text">{{ universeError }}</p>
     <p v-if="quoteStatus" class="market-note">{{ quoteStatus }}</p>
+
+    <PriceHistoryChart
+      :symbol="selectedSymbol"
+      :api-base-url="apiBaseUrl"
+    />
   </div>
 </template>

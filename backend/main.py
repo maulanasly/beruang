@@ -11,6 +11,7 @@ from backend.schemas import (
     IndexHistoryResponse,
     MutualFundReturnsRequest,
     MutualFundReturnsResponse,
+    PriceHistoryResponse,
     StockQuoteResponse,
     StockReturnsRequest,
     StockReturnsResponse,
@@ -24,6 +25,7 @@ from backend.services import (
     get_index_history,
     get_kompas100_starter_stocks,
     get_latest_stock_quote,
+    get_price_history,
     search_idx_stocks,
 )
 
@@ -129,6 +131,19 @@ def index_history(
 ) -> IndexHistoryResponse:
     try:
         return get_index_history(symbol, period)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.get("/api/v1/market-data/price/history", response_model=PriceHistoryResponse)
+def price_history(
+    symbol: str = Query(min_length=3, max_length=16),
+    period: str = Query(default="1y", max_length=8),
+) -> PriceHistoryResponse:
+    try:
+        return get_price_history(symbol, period)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except RuntimeError as exc:

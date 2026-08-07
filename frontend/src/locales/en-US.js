@@ -135,6 +135,8 @@ export default {
       'Both lines start at 100 on your first entry date. A portfolio line above the index means your holdings grew faster than the market over that window.',
     goals:
       'Set a target value for your whole portfolio and each asset class. The progress bar compares current value against the target; the pace estimate assumes you keep contributing your current monthly average.',
+    priceHistory:
+      'Daily closing prices for the selected stock over the chosen window.',
   },
   goals: {
     title: 'Goals & Targets',
@@ -173,6 +175,13 @@ export default {
     fetchFailed: 'Unable to load index data.',
     noOverlap: 'The index history does not overlap your entry dates. Try a longer period.',
     tooFewPoints: 'Add entries across at least two dates to compare with the index.',
+  },
+  priceHistory: {
+    title: 'Price History',
+    emptySymbol: 'Enter a stock code to see its price history.',
+    loading: 'Loading price history…',
+    fetchFailed: 'Unable to load price history.',
+    noData: 'No historical price data available for this symbol.',
   },
   io: {
     importTitle: 'Ledger Backup & Restore',

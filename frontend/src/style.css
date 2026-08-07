@@ -646,6 +646,21 @@ tr.latest-row td:first-child {
   vertical-align: middle;
 }
 
+.price-history {
+  margin-top: 1rem;
+  border-top: 1px solid #e8edf2;
+  padding-top: 1rem;
+}
+
+.price-history h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.price-history .price-history-canvas {
+  height: 220px;
+}
+
 .ledger-empty {
   margin: 0;
   padding: 1rem 0;

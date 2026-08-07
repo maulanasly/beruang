@@ -135,6 +135,8 @@ export default {
       'Kedua garis dimulai dari 100 pada tanggal entri pertama Anda. Garis portofolio di atas indeks berarti aset Anda tumbuh lebih cepat daripada pasar dalam rentang tersebut.',
     goals:
       'Tetapkan nilai target untuk seluruh portofolio dan setiap kelas aset. Bilah kemajuan membandingkan nilai saat ini dengan target; perkiraan langkah mengasumsikan Anda terus menyetor rata-rata bulanan saat ini.',
+    priceHistory:
+      'Harga penutupan harian saham terpilih pada rentang waktu yang dipilih.',
   },
   goals: {
     title: 'Tujuan & Target',
@@ -173,6 +175,13 @@ export default {
     fetchFailed: 'Tidak dapat memuat data indeks.',
     noOverlap: 'Riwayat indeks tidak tumpang tindih dengan tanggal entri Anda. Coba periode yang lebih panjang.',
     tooFewPoints: 'Tambahkan entri pada minimal dua tanggal untuk membandingkan dengan indeks.',
+  },
+  priceHistory: {
+    title: 'Riwayat Harga',
+    emptySymbol: 'Masukkan kode saham untuk melihat riwayat harganya.',
+    loading: 'Memuat riwayat harga…',
+    fetchFailed: 'Tidak dapat memuat riwayat harga.',
+    noData: 'Tidak ada data riwayat harga untuk simbol ini.',
   },
   io: {
     importTitle: 'Cadangan & Pulihkan Buku Besar',

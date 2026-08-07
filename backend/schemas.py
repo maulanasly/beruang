@@ -144,6 +144,19 @@ class IndexHistoryResponse(BaseModel):
     points: list[IndexHistoryPoint]
 
 
+class PriceHistoryPoint(BaseModel):
+    date: date
+    close: float
+
+
+class PriceHistoryResponse(BaseModel):
+    symbol: str
+    name: str
+    period: str
+    currency: str
+    points: list[PriceHistoryPoint]
+
+
 class TermDepositLedgerEntry(BaseModel):
     date: date
     installment_amount: float = Field(ge=0)

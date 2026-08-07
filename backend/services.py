@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import date
+
 import pandas as pd
 import yfinance as yf
 
@@ -11,6 +13,8 @@ from backend.schemas import (
     MutualFundLedgerEntry,
     MutualFundLedgerRowResponse,
     MutualFundSummaryResponse,
+    PriceHistoryPoint,
+    PriceHistoryResponse,
     StockLedgerEntry,
     StockLedgerRowResponse,
     StockQuoteResponse,
@@ -144,30 +148,61 @@ def get_index_history(symbol: str, period: str) -> IndexHistoryResponse:
         )
 
     history = yf.Ticker(normalized_symbol).history(period=period)
-
-    if history is None or history.empty:
-        raise RuntimeError(
-            f"No historical data available for index '{normalized_symbol}'."
-        )
-
-    close_values = history["Close"].dropna()
     points = [
-        IndexHistoryPoint(
-            date=timestamp.date(),
-            close=float(close_value),
-        )
-        for timestamp, close_value in close_values.items()
+        IndexHistoryPoint(date=point_date, close=close_value)
+        for point_date, close_value in _points_from_history(history)
     ]
-    if not points:
-        raise RuntimeError(
-            f"No historical data available for index '{normalized_symbol}'."
-        )
 
-    points.sort(key=lambda point: point.date)
     return IndexHistoryResponse(
         symbol=normalized_symbol,
         name=INDEX_OPTIONS[normalized_symbol],
         period=period,
+        points=points,
+    )
+
+
+def _points_from_history(history: pd.DataFrame) -> list[tuple[date, float]]:
+    """Extract sorted daily closing prices from a yfinance history frame."""
+    if history is None or history.empty:
+        raise RuntimeError("No historical data available.")
+
+    close_values = history["Close"].dropna()
+    points = [
+        (timestamp.date(), float(close_value))
+        for timestamp, close_value in close_values.items()
+    ]
+    if not points:
+        raise RuntimeError("No historical data available.")
+
+    points.sort(key=lambda point: point[0])
+    return points
+
+
+def get_price_history(symbol: str, period: str) -> PriceHistoryResponse:
+    normalized_symbol = symbol.strip().upper()
+    if not normalized_symbol:
+        raise ValueError("Symbol is required.")
+    if period not in INDEX_PERIODS:
+        raise ValueError(
+            f"Unsupported period '{period}'. Choose from {', '.join(INDEX_PERIODS)}."
+        )
+
+    ticker = yf.Ticker(normalized_symbol)
+    info = getattr(ticker, "info", {}) or {}
+    name = info.get("shortName") or info.get("longName") or normalized_symbol
+    currency = info.get("currency") or "IDR"
+    points = [
+        PriceHistoryPoint(date=point_date, close=close_value)
+        for point_date, close_value in _points_from_history(
+            ticker.history(period=period)
+        )
+    ]
+
+    return PriceHistoryResponse(
+        symbol=normalized_symbol,
+        name=name,
+        period=period,
+        currency=currency,
         points=points,
     )
 
