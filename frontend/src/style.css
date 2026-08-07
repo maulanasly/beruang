@@ -139,6 +139,48 @@ textarea {
   margin-bottom: 0.45rem;
 }
 
+.ledger-io {
+  border: 1px solid #d9e2ec;
+  border-radius: 10px;
+  padding: 0.65rem;
+  background: #f8fbff;
+  margin-top: 1rem;
+}
+
+.io-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.io-textarea {
+  min-height: 96px;
+  resize: vertical;
+  margin-top: 0.45rem;
+}
+
+.io-preview {
+  margin-top: 0.6rem;
+}
+
+.io-errors {
+  margin: 0.35rem 0;
+  padding-left: 1.1rem;
+  color: #9b2c2c;
+  font-size: 0.85rem;
+}
+
+.io-status {
+  margin: 0.5rem 0 0;
+  color: #0f6b3a;
+  font-weight: 600;
+}
+
+.error-text {
+  color: #9b2c2c;
+  font-weight: 600;
+}
+
 .entry-editor {
   border: 1px solid #d9e2ec;
   border-radius: 10px;

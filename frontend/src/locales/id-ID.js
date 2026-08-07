@@ -99,4 +99,19 @@ export default {
   stock: {
     codesCount: '{count} kode saham',
   },
+  io: {
+    importTitle: 'Cadangan & Pulihkan Buku Besar',
+    exportCsv: 'Ekspor CSV',
+    exportJson: 'Ekspor JSON',
+    pasteCsv: 'Tempel CSV atau JSON di sini, atau pilih file di atas',
+    confirmImport: 'Konfirmasi Impor',
+    cancel: 'Batal',
+    validRows: '{valid} baris valid — {errors} kesalahan',
+    importedCount: '{count} baris diimpor.',
+    empty: 'File kosong.',
+    invalidJson: 'JSON tidak valid.',
+    missingHeader: 'Baris {line}: header hilang atau tidak sesuai.',
+    invalidDate: 'Baris {line}: {field} harus berupa tanggal YYYY-MM-DD.',
+    invalidNumber: 'Baris {line}: {field} harus berupa angka.',
+  },
 }

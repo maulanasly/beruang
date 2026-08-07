@@ -99,4 +99,19 @@ export default {
   stock: {
     codesCount: '{count} stock codes',
   },
+  io: {
+    importTitle: 'Ledger Backup & Restore',
+    exportCsv: 'Export CSV',
+    exportJson: 'Export JSON',
+    pasteCsv: 'Paste CSV or JSON here, or pick a file above',
+    confirmImport: 'Confirm Import',
+    cancel: 'Cancel',
+    validRows: '{valid} valid rows — {errors} errors',
+    importedCount: 'Imported {count} rows.',
+    empty: 'The file is empty.',
+    invalidJson: 'Invalid JSON.',
+    missingHeader: 'Line {line}: missing or unexpected header.',
+    invalidDate: 'Line {line}: {field} must be a YYYY-MM-DD date.',
+    invalidNumber: 'Line {line}: {field} must be a number.',
+  },
 }

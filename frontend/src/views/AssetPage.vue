@@ -6,6 +6,7 @@ import SummaryCards from '../components/SummaryCards.vue'
 import LatestMomentumKpi from '../components/LatestMomentumKpi.vue'
 import LedgerTable from '../components/LedgerTable.vue'
 import LineChart from '../components/LineChart.vue'
+import LedgerIo from '../components/LedgerIo.vue'
 import { useLedgers } from '../composables/useLedgers'
 
 const props = defineProps({
@@ -15,6 +16,11 @@ const props = defineProps({
 const { t } = useI18n()
 const ledgers = useLedgers()
 const calculatorRef = ref(null)
+
+function onImport(entries) {
+  ledgers.setEntries(props.asset, entries)
+  ledgers.clearResult(props.asset)
+}
 
 const result = computed(() => ledgers.getResult(props.asset))
 const resultSummary = computed(() => result.value?.summary ?? null)
@@ -38,6 +44,12 @@ const resultSymbolLabel = computed(() => {
     :active-asset="asset"
     @calculated="(v) => ledgers.setResult(asset, v)"
     @reset="() => ledgers.clearResult(asset)"
+  />
+
+  <LedgerIo
+    :asset="asset"
+    :entries="ledgers.getEntries(asset)"
+    @import="onImport"
   />
 
   <section v-if="result" class="result-block">
