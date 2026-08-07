@@ -2,7 +2,11 @@
 import { RouterLink, RouterView } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useSettings } from '../composables/useSettings'
-import { LOCALE_OPTIONS, CURRENCY_OPTIONS } from '../composables/i18nOptions'
+import {
+  LOCALE_OPTIONS,
+  CURRENCY_OPTIONS,
+} from '../composables/i18nOptions'
+import { MARKET_OPTIONS } from '../composables/useMarket'
 
 const { t } = useI18n()
 const settings = useSettings()
@@ -46,6 +50,20 @@ const navItems = [
           >
             <option
               v-for="option in LOCALE_OPTIONS"
+              :key="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </option>
+          </select>
+          <select
+            id="market"
+            v-model="settings.market"
+            :aria-label="t('settings.market')"
+            :title="t('settings.market')"
+          >
+            <option
+              v-for="option in MARKET_OPTIONS"
               :key="option.value"
               :value="option.value"
             >

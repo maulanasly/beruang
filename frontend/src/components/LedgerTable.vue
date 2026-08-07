@@ -2,6 +2,7 @@
 import { computed, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { MOM_COLUMNS } from '../composables/columns'
+import { useMarket } from '../composables/useMarket'
 
 const props = defineProps({
   ledger: { type: Array, default: () => [] },
@@ -11,6 +12,7 @@ const props = defineProps({
 
 const { t } = useI18n()
 const formatter = inject('formatter')
+const { displaySymbol } = useMarket()
 
 const COLUMN_I18N_KEYS = {
   date: 'column.date',
@@ -72,6 +74,11 @@ function cellClass(row, column) {
   }
 }
 
+function cellText(column, value) {
+  if (column === 'symbol') return displaySymbol(value)
+  return formatter.formatCellValue(column, value)
+}
+
 const rowsWithCumulative = computed(() => {
   let running = 0
   return props.ledger.map((row) => {
@@ -119,7 +126,7 @@ const columnsWithCumulative = computed(() => {
               :key="`cell-${rowIndex}-${column}`"
               :class="cellClass(row, column)"
             >
-              {{ formatter.formatCellValue(column, row[column]) }}
+              {{ cellText(column, row[column]) }}
             </td>
           </tr>
         </tbody>

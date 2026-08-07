@@ -8,6 +8,7 @@ export function resetSettings(overrides = {}) {
   const settings = useSettings()
   settings.locale = overrides.locale || 'en-US'
   settings.currency = overrides.currency || 'USD'
+  settings.market = overrides.market || 'IDX'
 }
 
 export function resetLedgers() {

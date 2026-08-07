@@ -97,16 +97,20 @@ describe('AppShell navigation', () => {
 })
 
 describe('AppShell settings', () => {
-  it('lists locale and currency options and binds to settings', async () => {
+  it('lists locale, market and currency options and binds to settings', async () => {
     resetSettings()
     const router = makeRouter()
     await router.isReady()
     const wrapper = mountShell(router)
     expect(wrapper.find('#locale').element.value).toBe('en-US')
     expect(wrapper.find('#currency').element.value).toBe('USD')
+    expect(wrapper.find('#market').element.value).toBe('IDX')
     expect(
       wrapper.findAll('#locale option').map((o) => o.element.value),
     ).toEqual(['en-US', 'id-ID'])
+    expect(
+      wrapper.findAll('#market option').map((o) => o.element.value),
+    ).toEqual(['IDX', 'US'])
   })
 
   it('updates settings when the locale select changes', async () => {

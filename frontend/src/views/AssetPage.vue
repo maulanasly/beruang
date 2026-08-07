@@ -8,6 +8,7 @@ import LedgerTable from '../components/LedgerTable.vue'
 import LineChart from '../components/LineChart.vue'
 import LedgerIo from '../components/LedgerIo.vue'
 import { useLedgers } from '../composables/useLedgers'
+import { useMarket } from '../composables/useMarket'
 
 const props = defineProps({
   asset: { type: String, required: true },
@@ -16,6 +17,7 @@ const props = defineProps({
 const { t } = useI18n()
 const ledgers = useLedgers()
 const calculatorRef = ref(null)
+const { displaySymbol } = useMarket()
 
 function onImport(entries) {
   ledgers.setEntries(props.asset, entries)
@@ -33,7 +35,7 @@ const resultSymbolLabel = computed(() => {
     .filter((s) => s && typeof s === 'string')
   const unique = [...new Set(symbols)]
   if (unique.length === 0) return ''
-  if (unique.length === 1) return unique[0]
+  if (unique.length === 1) return displaySymbol(unique[0])
   return t('stock.codesCount', { count: unique.length })
 })
 </script>

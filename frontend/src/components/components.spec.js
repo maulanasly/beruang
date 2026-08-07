@@ -103,6 +103,15 @@ describe('LedgerTable', () => {
     expect(wrapper.find('.section-symbol').exists()).toBe(true)
     expect(wrapper.text()).toContain('BBCA.JK')
   })
+
+  it('strips the market suffix from stock code cells', () => {
+    const ledger = [{ date: '2026-01-31', symbol: 'BBCA.JK', current_value: 1000 }]
+    const wrapper = mountWith(LedgerTable, {
+      props: { ledger, asset: 'stocks' },
+    })
+    expect(wrapper.text()).toContain('BBCA')
+    expect(wrapper.text()).not.toContain('BBCA.JK')
+  })
 })
 
 describe('LatestMomentumKpi', () => {

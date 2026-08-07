@@ -7,6 +7,7 @@ const DEFAULT_LOCALE =
     ? 'id-ID'
     : 'en-US'
 const DEFAULT_CURRENCY = 'IDR' // beruang tracks IDX instruments
+const DEFAULT_MARKET = 'IDX'
 
 function loadStored() {
   if (typeof localStorage === 'undefined') return null
@@ -23,6 +24,7 @@ const stored = loadStored()
 const settings = reactive({
   locale: stored?.locale || DEFAULT_LOCALE,
   currency: stored?.currency || DEFAULT_CURRENCY,
+  market: stored?.market || DEFAULT_MARKET,
 })
 
 watchEffect(() => {

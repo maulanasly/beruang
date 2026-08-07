@@ -14,6 +14,7 @@ export default {
   settings: {
     locale: 'Bahasa',
     currency: 'Mata Uang',
+    market: 'Pasar Asal Saham',
   },
   common: {
     calculateReturns: 'Hitung Hasil',

@@ -33,8 +33,25 @@ describe('MarketHelper', () => {
     })
     expect(wrapper.find('.last-quote').exists()).toBe(true)
     expect(wrapper.find('.last-quote-value').text()).toMatch(/9,100/)
-    expect(wrapper.find('.last-quote-symbol').text()).toBe('BBCA.JK')
+    expect(wrapper.find('.last-quote-symbol').text()).toBe('BBCA')
     expect(wrapper.find('.last-quote-value').text()).toMatch(/9,100\.00/)
+  })
+
+  it('strips the market suffix from the option labels', () => {
+    const wrapper = mountWithDefaults()
+    const options = wrapper.findAll('#idx-symbol option')
+    expect(options[1].text()).toBe('BBCA - Bank Central Asia')
+    expect(options[1].element.value).toBe('BBCA.JK')
+  })
+
+  it('keeps the full symbol when no suffix is configured', () => {
+    resetSettings({ market: 'US' })
+    const wrapper = mountWithDefaults({
+      symbols: [{ symbol: 'AAPL', name: 'Apple' }],
+      selectedSymbol: 'AAPL',
+    })
+    const options = wrapper.findAll('#idx-symbol option')
+    expect(options[1].text()).toBe('AAPL - Apple')
   })
 
   it('emits apply when the fetch button is clicked', async () => {

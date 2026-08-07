@@ -1,6 +1,7 @@
 <script setup>
 import { computed, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useMarket } from '../composables/useMarket'
 
 const props = defineProps({
   symbols: { type: Array, default: () => [] },
@@ -23,6 +24,7 @@ const emit = defineEmits([
 
 const { t } = useI18n()
 const formatter = inject('formatter')
+const { displaySymbol } = useMarket()
 
 const formattedPrice = computed(() => {
   const quote = props.lastQuote
@@ -56,7 +58,7 @@ const formattedPrice = computed(() => {
         >
           <option value="" disabled>{{ t('market.pickTicker') }}</option>
           <option v-for="item in symbols" :key="item.symbol" :value="item.symbol">
-            {{ item.symbol }} - {{ item.name }}
+            {{ displaySymbol(item.symbol) }} - {{ item.name }}
           </option>
         </select>
       </div>
@@ -90,7 +92,7 @@ const formattedPrice = computed(() => {
       <div v-if="lastQuote" class="last-quote">
         <span class="last-quote-label">{{ t('market.lastFetched') }}</span>
         <span class="last-quote-value">{{ formattedPrice }}</span>
-        <span class="last-quote-symbol">{{ lastQuote.symbol }}</span>
+        <span class="last-quote-symbol">{{ displaySymbol(lastQuote.symbol) }}</span>
       </div>
     </div>
 

@@ -14,6 +14,7 @@ export default {
   settings: {
     locale: 'Locale',
     currency: 'Currency',
+    market: 'Stock Market Origin',
   },
   common: {
     calculateReturns: 'Calculate Returns',
