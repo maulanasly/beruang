@@ -5,6 +5,7 @@ import { usePortfolio } from '../composables/usePortfolio'
 import PortfolioDonut from '../components/PortfolioDonut.vue'
 import PortfolioChart from '../components/PortfolioChart.vue'
 import InfoTip from '../components/InfoTip.vue'
+import PortfolioIo from '../components/PortfolioIo.vue'
 
 const { t } = useI18n()
 const formatter = inject('formatter')
@@ -85,4 +86,6 @@ function formatRoi(roi) {
   <section v-else class="result-block">
     <p class="ledger-empty">{{ t('overview.noData') }}</p>
   </section>
+
+  <PortfolioIo />
 </template>

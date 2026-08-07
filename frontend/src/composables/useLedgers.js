@@ -116,6 +116,21 @@ export function useLedgers() {
     }
   }
 
+  function restoreAll(payload) {
+    ledgers['mutual-funds'] = (payload?.['mutual-funds'] ?? []).map((e) => ({ ...e }))
+    ledgers.stocks = (payload?.stocks ?? []).map((e) => ({ ...e }))
+    const td = payload?.['term-deposits'] ?? {}
+    ledgers['term-deposits'] = {
+      apy: typeof td.apy === 'number' ? td.apy : 0.06,
+      entries: (td.entries ?? []).map((e) => ({ ...e })),
+    }
+    ledgers.results = {
+      'mutual-funds': null,
+      stocks: null,
+      'term-deposits': null,
+    }
+  }
+
   return {
     ledgers,
     getEntries,
@@ -126,5 +141,6 @@ export function useLedgers() {
     setResult,
     clearResult,
     resetAll,
+    restoreAll,
   }
 }

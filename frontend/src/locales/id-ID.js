@@ -147,5 +147,16 @@ export default {
     missingHeader: 'Baris {line}: header hilang atau tidak sesuai.',
     invalidDate: 'Baris {line}: {field} harus berupa tanggal YYYY-MM-DD.',
     invalidNumber: 'Baris {line}: {field} harus berupa angka.',
+    invalidApp: 'Bukan file cadangan Beruang.',
+    invalidStructure: 'Format cadangan tidak dikenali.',
+  },
+  backup: {
+    title: 'Cadangan Seluruh Portofolio',
+    exportAll: 'Cadangkan Semua Data',
+    pasteHint: 'Tempel JSON cadangan di sini, atau pilih file di atas',
+    validSummary: 'Cadangan berisi {assets} kelas aset dan {rows} baris.',
+    invalidCount: '{errors} masalah dalam cadangan ini',
+    confirmRestore: 'Konfirmasi Pemulihan',
+    restored: 'Portofolio dipulihkan. Hitung hasil kembali untuk menyegarkan ringkasan.',
   },
 }

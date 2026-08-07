@@ -72,4 +72,40 @@ describe('useLedgers', () => {
     }
     expect(ledgers.getEntries('term-deposits')[0].date).toBe('2026-05-31')
   })
+
+  it('restoreAll replaces every asset class, apy, and clears results', () => {
+    const ledgers = useLedgers()
+    ledgers.setResult('stocks', { summary: { xirr: 0.5 }, ledger: [] })
+
+    ledgers.restoreAll({
+      'mutual-funds': [{ date: '2026-07-31', installment_amount: 500, current_value: 600 }],
+      stocks: [],
+      'term-deposits': {
+        apy: 0.12,
+        entries: [{ date: '2026-07-31', installment_amount: 200, current_value: 220 }],
+      },
+    })
+
+    expect(ledgers.getEntries('mutual-funds')).toEqual([
+      { date: '2026-07-31', installment_amount: 500, current_value: 600 },
+    ])
+    expect(ledgers.getEntries('stocks')).toEqual([])
+    expect(ledgers.getEntries('term-deposits')).toEqual([
+      { date: '2026-07-31', installment_amount: 200, current_value: 220 },
+    ])
+    expect(ledgers.getApy()).toBe(0.12)
+    expect(ledgers.getResult('stocks')).toBeNull()
+  })
+
+  it('restoreAll clones entries so later edits do not mutate the payload', () => {
+    const ledgers = useLedgers()
+    const payload = {
+      'mutual-funds': [{ date: '2026-07-31', installment_amount: 500, current_value: 600 }],
+      stocks: [],
+      'term-deposits': { apy: 0.06, entries: [] },
+    }
+    ledgers.restoreAll(payload)
+    ledgers.getEntries('mutual-funds')[0].date = 'changed'
+    expect(payload['mutual-funds'][0].date).toBe('2026-07-31')
+  })
 })

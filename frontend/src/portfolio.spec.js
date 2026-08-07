@@ -107,6 +107,12 @@ describe('OverviewView', () => {
     expect(wrapper.text()).toContain('Current Value')
   })
 
+  it('renders the full-portfolio backup section', async () => {
+    const wrapper = mountWith(OverviewView)
+    expect(wrapper.text()).toContain('Full Portfolio Backup')
+    expect(wrapper.text()).toContain('Backup All Data')
+  })
+
   it('renders the empty-state message when no data exists', async () => {
     const ledgers = useLedgers()
     ledgers.setEntries('mutual-funds', [])

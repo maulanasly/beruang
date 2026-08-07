@@ -147,5 +147,16 @@ export default {
     missingHeader: 'Line {line}: missing or unexpected header.',
     invalidDate: 'Line {line}: {field} must be a YYYY-MM-DD date.',
     invalidNumber: 'Line {line}: {field} must be a number.',
+    invalidApp: 'Not a Beruang backup file.',
+    invalidStructure: 'Unrecognized backup format.',
+  },
+  backup: {
+    title: 'Full Portfolio Backup',
+    exportAll: 'Backup All Data',
+    pasteHint: 'Paste backup JSON here, or pick a file above',
+    validSummary: 'Backup holds {assets} asset class(es) and {rows} rows.',
+    invalidCount: '{errors} problem(s) in this backup',
+    confirmRestore: 'Confirm Restore',
+    restored: 'Portfolio restored. Recalculate returns to refresh the dashboard.',
   },
 }
