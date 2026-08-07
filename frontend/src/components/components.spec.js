@@ -127,7 +127,7 @@ describe('LedgerTable', () => {
 })
 
 describe('LatestMomentumKpi', () => {
-  it('shows 3 cards for mutual funds: latest date, MoM, XIRR', () => {
+  it('shows 4 cards for mutual funds: date, MoM, XIRR, TWR', () => {
     const ledger = [
       { date: '2026-01-31', mom_return: null },
       { date: '2026-02-28', mom_return: 0.03 },
@@ -136,9 +136,10 @@ describe('LatestMomentumKpi', () => {
     const wrapper = mountWith(LatestMomentumKpi, {
       props: { ledger, summary, asset: 'mutual-funds' },
     })
-    expect(wrapper.findAll('.kpi-card')).toHaveLength(3)
+    expect(wrapper.findAll('.kpi-card')).toHaveLength(4)
     expect(wrapper.text()).toContain('Latest MoM')
     expect(wrapper.text()).toContain('3.00%')
+    expect(wrapper.text()).toContain('TWR')
   })
 
   it('adds glossary tips to KPI cards so terms are self-explanatory', () => {
@@ -148,31 +149,34 @@ describe('LatestMomentumKpi', () => {
       props: { ledger, summary, asset: 'stocks' },
     })
     const tips = wrapper.findAll('.info-tip')
-    expect(tips).toHaveLength(3)
+    expect(tips).toHaveLength(4)
     expect(tips[0].attributes('title')).toMatch(/Month-over-Month/)
     expect(tips[1].attributes('title')).toMatch(/Return on Investment/)
     expect(tips[2].attributes('title')).toMatch(/Extended Internal Rate/)
+    expect(tips[3].attributes('title')).toMatch(/Time-Weighted Return/)
   })
 
-  it('shows 4 cards for stocks: date, MoM, ROI, XIRR', () => {
+  it('shows 5 cards for stocks: date, MoM, ROI, XIRR, TWR', () => {
     const ledger = [{ date: '2026-02-28', mom_return: 0.07 }]
     const summary = { roi: 0.2, xirr: 0.6 }
     const wrapper = mountWith(LatestMomentumKpi, {
       props: { ledger, summary, asset: 'stocks' },
     })
-    expect(wrapper.findAll('.kpi-card')).toHaveLength(4)
+    expect(wrapper.findAll('.kpi-card')).toHaveLength(5)
     expect(wrapper.text()).toContain('Latest ROI')
+    expect(wrapper.text()).toContain('TWR')
   })
 
-  it('shows 3 cards for term-deposits: date, prorated interest, APY', () => {
+  it('shows 4 cards for term-deposits: date, prorated interest, APY, TWR', () => {
     const ledger = [{ date: '2026-02-28', prorated_interest: 4.5 }]
     const summary = { apy: 0.06 }
     const wrapper = mountWith(LatestMomentumKpi, {
       props: { ledger, summary, asset: 'term-deposits' },
     })
-    expect(wrapper.findAll('.kpi-card')).toHaveLength(3)
+    expect(wrapper.findAll('.kpi-card')).toHaveLength(4)
     expect(wrapper.text()).toContain('Latest Prorated Interest')
     expect(wrapper.text()).toContain('6.00%')
+    expect(wrapper.text()).toContain('TWR')
   })
 
   it('remains hidden when there is no ledger row', () => {

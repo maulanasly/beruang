@@ -2,6 +2,7 @@
 import { computed, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { usePortfolio } from '../composables/usePortfolio'
+import { useTwr } from '../composables/useTwr'
 import PortfolioDonut from '../components/PortfolioDonut.vue'
 import PortfolioChart from '../components/PortfolioChart.vue'
 import BenchmarkChart from '../components/BenchmarkChart.vue'
@@ -13,6 +14,7 @@ import MonthlyReturnsTable from '../components/MonthlyReturnsTable.vue'
 const { t } = useI18n()
 const formatter = inject('formatter')
 const portfolio = usePortfolio()
+const twr = useTwr()
 
 const benchmarkValues = computed(() =>
   portfolio.lineLabels.value.map((_, index) =>
@@ -28,6 +30,7 @@ const kpiCards = [
   { key: 'totalValue', value: portfolio.totalValue, keyName: 'value' },
   { key: 'totalPnl', value: portfolio.totalPnl, keyName: 'pnl', hint: 'glossary.pnl' },
   { key: 'weightedXirr', value: portfolio.weightedXirr, keyName: 'xirr', hint: 'glossary.weightedXirr' },
+  { key: 'twr', value: twr.portfolioTwr, keyName: 'xirr', hint: 'glossary.twr' },
 ]
 
 function formatValue(keyName, value) {

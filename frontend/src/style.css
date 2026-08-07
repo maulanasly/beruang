@@ -789,6 +789,10 @@ tr.latest-row td:first-child {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.kpi-grid-5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 .kpi-card {
   border: 1px solid #e8edf2;
   background: #ffffff;
@@ -847,7 +851,8 @@ tr.latest-row td:first-child {
   }
 
   .kpi-grid,
-  .kpi-grid-4 {
+  .kpi-grid-4,
+  .kpi-grid-5 {
     grid-template-columns: 1fr;
   }
 }

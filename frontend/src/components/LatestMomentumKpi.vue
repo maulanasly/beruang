@@ -2,6 +2,7 @@
 import { computed, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 import InfoTip from './InfoTip.vue'
+import { annualize, chainLink } from '../composables/useTwr'
 
 const props = defineProps({
   ledger: { type: Array, default: () => [] },
@@ -13,6 +14,26 @@ const { t } = useI18n()
 const formatter = inject('formatter')
 
 const latest = computed(() => props.ledger?.[props.ledger.length - 1] ?? null)
+
+const twr = computed(() => {
+  const rows = props.ledger || []
+  const returns = rows.map((row) => {
+    if (props.asset === 'term-deposits') {
+      const start = Number(row.month_start_value) || 0
+      const interest = Number(row.prorated_interest) || 0
+      return start > 0 ? interest / start : null
+    }
+    return typeof row.mom_return === 'number' ? row.mom_return : null
+  })
+  const total = chainLink(returns)
+  return annualize(total, rows[0]?.date, rows[rows.length - 1]?.date)
+})
+
+const twrCard = computed(() => ({
+  label: t('kpi.latestTwr'),
+  value: formatter.formatCellValue('xirr', twr.value),
+  hint: t('glossary.twr'),
+}))
 
 const cards = computed(() => {
   const row = latest.value
@@ -34,6 +55,7 @@ const cards = computed(() => {
         value: formatter.formatCellValue('apy', summary.apy),
         hint: t('glossary.apy'),
       },
+      twrCard.value,
     ]
   }
 
@@ -55,6 +77,7 @@ const cards = computed(() => {
         value: formatter.formatCellValue('xirr', summary.xirr),
         hint: t('glossary.xirr'),
       },
+      twrCard.value,
     ]
   }
 
@@ -70,6 +93,7 @@ const cards = computed(() => {
       value: formatter.formatCellValue('xirr', summary.xirr),
       hint: t('glossary.xirr'),
     },
+    twrCard.value,
   ]
 })
 </script>
@@ -77,7 +101,13 @@ const cards = computed(() => {
 <template>
   <section v-if="latest" class="kpi-block">
     <p class="kpi-caption">{{ t('kpi.thisMonthUpdate') }}</p>
-    <div class="kpi-grid" :class="{ 'kpi-grid-4': cards.length === 4 }">
+    <div
+      class="kpi-grid"
+      :class="{
+        'kpi-grid-4': cards.length === 4,
+        'kpi-grid-5': cards.length === 5,
+      }"
+    >
       <article v-for="(card, index) in cards" :key="card.label" class="kpi-card">
         <p class="kpi-label">
           {{ card.label }}

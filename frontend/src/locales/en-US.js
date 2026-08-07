@@ -59,6 +59,7 @@ export default {
     latestRoi: 'Latest ROI',
     latestProratedInterest: 'Latest Prorated Interest',
     currentApy: 'Current APY',
+    latestTwr: 'TWR',
   },
   chart: {
     title: 'Capital Invested vs Current Market Value',
@@ -69,6 +70,7 @@ export default {
     totalValue: 'Current Value',
     totalPnl: 'Profit / Loss',
     weightedXirr: 'Weighted XIRR',
+    twr: 'TWR',
     proportion: 'Asset Allocation',
     perAsset: 'Per Asset Class',
     invested: 'Invested',
@@ -137,6 +139,8 @@ export default {
       'Set a target value for your whole portfolio and each asset class. The progress bar compares current value against the target; the pace estimate assumes you keep contributing your current monthly average.',
     priceHistory:
       'Daily closing prices for the selected stock over the chosen window.',
+    twr:
+      'Time-Weighted Return: the compound annualized return that removes the effect of deposits and withdrawals, so it can be compared fairly against a market index. XIRR is money-weighted instead.',
   },
   goals: {
     title: 'Goals & Targets',

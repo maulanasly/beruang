@@ -59,6 +59,7 @@ export default {
     latestRoi: 'ROI Terkini',
     latestProratedInterest: 'Bunga Prorata Terkini',
     currentApy: 'APY Saat Ini',
+    latestTwr: 'TWR',
   },
   chart: {
     title: 'Modal Diinvestasikan vs Nilai Pasar Saat Ini',
@@ -69,6 +70,7 @@ export default {
     totalValue: 'Nilai Saat Ini',
     totalPnl: 'Laba / Rugi',
     weightedXirr: 'XIRR Tertimbang',
+    twr: 'TWR',
     proportion: 'Alokasi Aset',
     perAsset: 'Per Kelas Aset',
     invested: 'Investasi',
@@ -137,6 +139,8 @@ export default {
       'Tetapkan nilai target untuk seluruh portofolio dan setiap kelas aset. Bilah kemajuan membandingkan nilai saat ini dengan target; perkiraan langkah mengasumsikan Anda terus menyetor rata-rata bulanan saat ini.',
     priceHistory:
       'Harga penutupan harian saham terpilih pada rentang waktu yang dipilih.',
+    twr:
+      'Time-Weighted Return: tingkat pengembalian tahunan majemuk yang menghilangkan pengaruh setoran dan penarikan, sehingga dapat dibandingkan secara adil dengan indeks pasar. XIRR bersifat money-weighted (terpengaruh arus kas).',
   },
   goals: {
     title: 'Tujuan & Target',

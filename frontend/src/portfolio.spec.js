@@ -121,12 +121,22 @@ describe('OverviewView', () => {
   it('renders portfolio KPIs, per-asset cards, and charts', async () => {
     const wrapper = mountWith(OverviewView)
     await flushPromises()
-    expect(wrapper.findAll('.kpi-card')).toHaveLength(4)
+    expect(wrapper.findAll('.kpi-card')).toHaveLength(5)
     expect(wrapper.findAll('.summary-card')).toHaveLength(3)
     expect(wrapper.find('.donut-stub').exists()).toBe(true)
     expect(wrapper.find('.line-stub').exists()).toBe(true)
     expect(wrapper.text()).toContain('Total Invested')
     expect(wrapper.text()).toContain('Current Value')
+  })
+
+  it('renders the TWR KPI card with its glossary tip', async () => {
+    const wrapper = mountWith(OverviewView)
+    await flushPromises()
+    const twrCard = wrapper
+      .findAll('.kpi-card')
+      .find((card) => card.text().includes('TWR'))
+    expect(twrCard.exists()).toBe(true)
+    expect(twrCard.find('.info-tip').exists()).toBe(true)
   })
 
   it('renders the full-portfolio backup section', async () => {
