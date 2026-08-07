@@ -228,6 +228,12 @@ textarea {
   color: #b91c1c;
 }
 
+.mini.btn-active {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #ffffff;
+}
+
 .market-helper {
   border: 1px solid #d9e2ec;
   background: #f8fbff;

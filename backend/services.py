@@ -6,6 +6,8 @@ import yfinance as yf
 from backend.schemas import (
     IdxStockItem,
     IdxStockListResponse,
+    IndexHistoryPoint,
+    IndexHistoryResponse,
     MutualFundLedgerEntry,
     MutualFundLedgerRowResponse,
     MutualFundSummaryResponse,
@@ -119,6 +121,54 @@ def get_latest_stock_quote(symbol: str) -> StockQuoteResponse:
         name=name,
         price=float(price),
         currency=currency,
+    )
+
+
+INDEX_OPTIONS: dict[str, str] = {
+    "^JKSE": "IDX Composite (IHSG)",
+    "^LQ45": "LQ45",
+}
+
+INDEX_PERIODS: tuple[str, ...] = ("1mo", "3mo", "6mo", "1y", "2y", "5y")
+
+
+def get_index_history(symbol: str, period: str) -> IndexHistoryResponse:
+    normalized_symbol = symbol.strip().upper()
+    if normalized_symbol not in INDEX_OPTIONS:
+        raise ValueError(
+            f"Unsupported index '{symbol}'. Choose from {', '.join(INDEX_OPTIONS)}."
+        )
+    if period not in INDEX_PERIODS:
+        raise ValueError(
+            f"Unsupported period '{period}'. Choose from {', '.join(INDEX_PERIODS)}."
+        )
+
+    history = yf.Ticker(normalized_symbol).history(period=period)
+
+    if history is None or history.empty:
+        raise RuntimeError(
+            f"No historical data available for index '{normalized_symbol}'."
+        )
+
+    close_values = history["Close"].dropna()
+    points = [
+        IndexHistoryPoint(
+            date=timestamp.date(),
+            close=float(close_value),
+        )
+        for timestamp, close_value in close_values.items()
+    ]
+    if not points:
+        raise RuntimeError(
+            f"No historical data available for index '{normalized_symbol}'."
+        )
+
+    points.sort(key=lambda point: point.date)
+    return IndexHistoryResponse(
+        symbol=normalized_symbol,
+        name=INDEX_OPTIONS[normalized_symbol],
+        period=period,
+        points=points,
     )
 
 

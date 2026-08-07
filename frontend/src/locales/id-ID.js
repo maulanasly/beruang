@@ -131,6 +131,25 @@ export default {
     weightedXirr:
       'Tingkat pengembalian tahunan keseluruhan lintas kelas aset, dibobot sesuai besar investasi di masing-masing.',
     pnl: 'Untung/Rugi: nilai saat ini dikurangi total investasi. Positif berarti Anda untung.',
+    benchmark:
+      'Kedua garis dimulai dari 100 pada tanggal entri pertama Anda. Garis portofolio di atas indeks berarti aset Anda tumbuh lebih cepat daripada pasar dalam rentang tersebut.',
+  },
+  benchmark: {
+    title: 'Portofolio vs Indeks',
+    idxComposite: 'IDX Composite (IHSG)',
+    lq45: 'LQ45',
+    indexSelect: 'Indeks pembanding',
+    period1mo: '1B',
+    period3mo: '3B',
+    period6mo: '6B',
+    period1y: '1T',
+    period5y: '5T',
+    portfolioSeries: 'Portofolio',
+    indexSeries: 'Indeks',
+    loading: 'Memuat pembanding…',
+    fetchFailed: 'Tidak dapat memuat data indeks.',
+    noOverlap: 'Riwayat indeks tidak tumpang tindih dengan tanggal entri Anda. Coba periode yang lebih panjang.',
+    tooFewPoints: 'Tambahkan entri pada minimal dua tanggal untuk membandingkan dengan indeks.',
   },
   io: {
     importTitle: 'Cadangan & Pulihkan Buku Besar',

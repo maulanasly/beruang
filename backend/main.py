@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.schemas import (
     IdxStockListResponse,
     IdxStockSearchResponse,
+    IndexHistoryResponse,
     MutualFundReturnsRequest,
     MutualFundReturnsResponse,
     StockQuoteResponse,
@@ -20,6 +21,7 @@ from backend.services import (
     calculate_mutual_fund_returns,
     calculate_stock_returns,
     calculate_term_deposit_returns,
+    get_index_history,
     get_kompas100_starter_stocks,
     get_latest_stock_quote,
     search_idx_stocks,
@@ -114,6 +116,19 @@ def latest_stock_quote(
 ) -> StockQuoteResponse:
     try:
         return get_latest_stock_quote(symbol)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.get("/api/v1/market-data/index/history", response_model=IndexHistoryResponse)
+def index_history(
+    symbol: str = Query(default="^JKSE", max_length=16),
+    period: str = Query(default="1y", max_length=8),
+) -> IndexHistoryResponse:
+    try:
+        return get_index_history(symbol, period)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except RuntimeError as exc:

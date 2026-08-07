@@ -1,15 +1,25 @@
 <script setup>
-import { inject } from 'vue'
+import { computed, inject } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { usePortfolio } from '../composables/usePortfolio'
 import PortfolioDonut from '../components/PortfolioDonut.vue'
 import PortfolioChart from '../components/PortfolioChart.vue'
+import BenchmarkChart from '../components/BenchmarkChart.vue'
 import InfoTip from '../components/InfoTip.vue'
 import PortfolioIo from '../components/PortfolioIo.vue'
 
 const { t } = useI18n()
 const formatter = inject('formatter')
 const portfolio = usePortfolio()
+
+const benchmarkValues = computed(() =>
+  portfolio.lineLabels.value.map((_, index) =>
+    portfolio.lineDatasets.value.reduce(
+      (sum, dataset) => sum + (Number(dataset.data[index]) || 0),
+      0,
+    ),
+  ),
+)
 
 const kpiCards = [
   { key: 'totalInvested', value: portfolio.totalInvested, keyName: 'invested', hint: 'glossary.capitalInvested' },
@@ -80,6 +90,11 @@ function formatRoi(roi) {
     <PortfolioChart
       :labels="portfolio.lineLabels.value"
       :datasets="portfolio.lineDatasets.value"
+    />
+
+    <BenchmarkChart
+      :labels="portfolio.lineLabels.value"
+      :values="benchmarkValues"
     />
   </section>
 

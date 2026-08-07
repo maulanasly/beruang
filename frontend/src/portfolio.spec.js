@@ -97,6 +97,29 @@ describe('usePortfolio', () => {
 })
 
 describe('OverviewView', () => {
+  beforeEach(() => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          symbol: '^JKSE',
+          name: 'IDX Composite (IHSG)',
+          period: '1y',
+          points: [
+            { date: '2026-04-30', close: 7000 },
+            { date: '2026-05-01', close: 7100 },
+            { date: '2026-05-31', close: 7200 },
+          ],
+        }),
+      }),
+    )
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it('renders portfolio KPIs, per-asset cards, and charts', async () => {
     const wrapper = mountWith(OverviewView)
     expect(wrapper.findAll('.kpi-card')).toHaveLength(4)
@@ -111,6 +134,20 @@ describe('OverviewView', () => {
     const wrapper = mountWith(OverviewView)
     expect(wrapper.text()).toContain('Full Portfolio Backup')
     expect(wrapper.text()).toContain('Backup All Data')
+  })
+
+  it('renders the benchmark comparison chart when data exists', async () => {
+    const wrapper = mountWith(OverviewView)
+    expect(wrapper.text()).toContain('Portfolio vs Index')
+  })
+
+  it('omits the benchmark chart in the empty state', async () => {
+    const ledgers = useLedgers()
+    ledgers.setEntries('mutual-funds', [])
+    ledgers.setEntries('stocks', [])
+    ledgers.setEntries('term-deposits', [])
+    const wrapper = mountWith(OverviewView)
+    expect(wrapper.text()).not.toContain('Portfolio vs Index')
   })
 
   it('renders the empty-state message when no data exists', async () => {

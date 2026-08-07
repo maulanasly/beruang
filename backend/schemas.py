@@ -132,6 +132,18 @@ class StockQuoteResponse(BaseModel):
     currency: str
 
 
+class IndexHistoryPoint(BaseModel):
+    date: date
+    close: float
+
+
+class IndexHistoryResponse(BaseModel):
+    symbol: str
+    name: str
+    period: str
+    points: list[IndexHistoryPoint]
+
+
 class TermDepositLedgerEntry(BaseModel):
     date: date
     installment_amount: float = Field(ge=0)

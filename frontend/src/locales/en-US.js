@@ -131,6 +131,25 @@ export default {
     weightedXirr:
       'Overall annualized return across all asset classes, weighted by how much is invested in each.',
     pnl: 'Profit/Loss: current value minus total invested. Positive means you are up.',
+    benchmark:
+      'Both lines start at 100 on your first entry date. A portfolio line above the index means your holdings grew faster than the market over that window.',
+  },
+  benchmark: {
+    title: 'Portfolio vs Index',
+    idxComposite: 'IDX Composite (IHSG)',
+    lq45: 'LQ45',
+    indexSelect: 'Benchmark index',
+    period1mo: '1M',
+    period3mo: '3M',
+    period6mo: '6M',
+    period1y: '1Y',
+    period5y: '5Y',
+    portfolioSeries: 'Portfolio',
+    indexSeries: 'Index',
+    loading: 'Loading benchmark…',
+    fetchFailed: 'Unable to load index data.',
+    noOverlap: 'The index history does not overlap your entry dates. Try a longer period.',
+    tooFewPoints: 'Add entries across at least two dates to compare with the index.',
   },
   io: {
     importTitle: 'Ledger Backup & Restore',
