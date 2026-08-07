@@ -1,19 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { mount } from '@vue/test-utils'
 import MarketHelper from './MarketHelper.vue'
-import { useFormatter } from '../composables/useFormatter'
-import { useSettings } from '../composables/useSettings'
+import { mountWith, resetSettings } from '../test/helpers.js'
 
-beforeEach(() => {
-  const settings = useSettings()
-  settings.locale = 'en-US'
-  settings.currency = 'USD'
-})
+beforeEach(() => resetSettings())
 
-const formatter = useFormatter()
-
-function mountWith(overrides = {}) {
-  const wrapper = mount(MarketHelper, {
+function mountWithDefaults(overrides = {}) {
+  return mountWith(MarketHelper, {
     props: {
       symbols: [{ symbol: 'BBCA.JK', name: 'Bank Central Asia' }],
       selectedSymbol: 'BBCA.JK',
@@ -26,32 +18,27 @@ function mountWith(overrides = {}) {
       lastQuote: null,
       ...overrides,
     },
-    global: {
-      provide: { formatter },
-    },
   })
-  return wrapper
 }
 
 describe('MarketHelper', () => {
   it('hides the Last Fetched card before any quote is fetched', () => {
-    const wrapper = mountWith()
+    const wrapper = mountWithDefaults()
     expect(wrapper.find('.last-quote').exists()).toBe(false)
   })
 
   it('renders the fetched price formatted with the quote currency', () => {
-    const wrapper = mountWith({
+    const wrapper = mountWithDefaults({
       lastQuote: { price: 9100, symbol: 'BBCA.JK', currency: 'IDR' },
     })
     expect(wrapper.find('.last-quote').exists()).toBe(true)
     expect(wrapper.find('.last-quote-value').text()).toMatch(/9,100/)
     expect(wrapper.find('.last-quote-symbol').text()).toBe('BBCA.JK')
-    // en-US + IDR renders as "IDR\u00aA0..." or "IDR 9,100.00"; assert thousands sep.
     expect(wrapper.find('.last-quote-value').text()).toMatch(/9,100\.00/)
   })
 
   it('emits apply when the fetch button is clicked', async () => {
-    const wrapper = mountWith()
+    const wrapper = mountWithDefaults()
     const applyButton = wrapper
       .findAll('button')
       .find((b) => b.text().includes('Apply Latest Price'))
@@ -60,7 +47,7 @@ describe('MarketHelper', () => {
   })
 
   it('shows the universe error note when supplied', () => {
-    const wrapper = mountWith({ universeError: 'rate limited' })
+    const wrapper = mountWithDefaults({ universeError: 'rate limited' })
     expect(wrapper.text()).toContain('rate limited')
     expect(wrapper.find('.market-note.error-text').exists()).toBe(true)
   })

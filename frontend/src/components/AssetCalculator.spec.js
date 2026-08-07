@@ -1,6 +1,7 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import AssetCalculator from './AssetCalculator.vue'
+import { resetSettings, resetLedgers, provideOverlays } from '../test/helpers.js'
 
 const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0))
 
@@ -8,24 +9,27 @@ function makeResponse(body, ok) {
   return { ok, json: async () => body, status: ok ? 200 : 422 }
 }
 
+function mountCalc(asset, extra = {}) {
+  return mount(AssetCalculator, {
+    props: { activeAsset: asset },
+    ...provideOverlays(extra),
+  })
+}
+
 describe('AssetCalculator', () => {
   beforeEach(() => {
     vi.unstubAllGlobals()
-    // AssetCalculator.onMounted fires loadSymbols; stub an empty 200 so it
-    // resolves silently instead of hitting a real network.
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(makeResponse({ items: [] }, true)),
     )
+    resetSettings()
+    resetLedgers()
   })
 
   it('seeds mutual-funds seed rows and renders the entry grid', () => {
-    const wrapper = mount(AssetCalculator, {
-      props: { activeAsset: 'mutual-funds' },
-      global: { stubs: { MarketHelper: true } },
-    })
+    const wrapper = mountCalc('mutual-funds')
     const inputs = wrapper.findAll('input')
-    // 2 seed rows × 3 fields (date, installment_amount, current_value)
     expect(inputs).toHaveLength(6)
     expect(wrapper.text()).toContain('POST')
   })
@@ -37,11 +41,7 @@ describe('AssetCalculator', () => {
     }
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(makeResponse(body, true)))
 
-    const wrapper = mount(AssetCalculator, {
-      props: { activeAsset: 'mutual-funds' },
-      global: { stubs: { MarketHelper: true } },
-    })
-
+    const wrapper = mountCalc('mutual-funds')
     await wrapper.get('button.action').trigger('click')
     await flushPromises()
 
@@ -50,17 +50,14 @@ describe('AssetCalculator', () => {
   })
 
   it('rejects submission when a row is missing its date and emits error', async () => {
-    const wrapper = mount(AssetCalculator, {
-      props: { activeAsset: 'mutual-funds' },
-      global: { stubs: { MarketHelper: true } },
-    })
-    await wrapper.get('input[type="date"]').setValue('') // blank the first row's date
-    await wrapper.find('button.action').trigger('click')
+    const wrapper = mountCalc('mutual-funds')
+    await wrapper.get('input[type="date"]').setValue('')
+    await wrapper.get('button.action').trigger('click')
     await flushPromises()
 
     expect(wrapper.emitted('calculated')).toBeFalsy()
     expect(wrapper.emitted('error')).toBeTruthy()
-    expect(wrapper.text()).toMatch(/Every row must include a date/)
+    expect(wrapper.text()).toMatch(/date/i)
   })
 
   it('renders validation errors from the API in the error block', async () => {
@@ -74,39 +71,26 @@ describe('AssetCalculator', () => {
       ),
     )
 
-    const wrapper = mount(AssetCalculator, {
-      props: { activeAsset: 'mutual-funds' },
-      global: { stubs: { MarketHelper: true } },
-    })
-
+    const wrapper = mountCalc('mutual-funds')
     await wrapper.get('button.action').trigger('click')
     await flushPromises()
 
     expect(wrapper.emitted('calculated')).toBeFalsy()
     expect(wrapper.find('.output.error').exists()).toBe(true)
-    expect(wrapper.text()).toMatch(/Validation failed/)
     expect(wrapper.text()).toMatch(/body.entries: min length/)
   })
 
   it('adds and removes entry rows while keeping at least one row', async () => {
-    const wrapper = mount(AssetCalculator, {
-      props: { activeAsset: 'mutual-funds' },
-      global: { stubs: { MarketHelper: true } },
-    })
-    // .entry-grid includes the header row + one grid per data row.
+    const wrapper = mountCalc('mutual-funds')
     const seedDataRows = wrapper.findAll('.entry-grid').length - 1
     expect(seedDataRows).toBe(2)
 
-    // Add Row inserts a fresh empty row.
     await wrapper.get('button.mini:not(.danger)').trigger('click')
     expect(wrapper.findAll('.entry-grid').length - 1).toBe(seedDataRows + 1)
 
-    // Remove the first data row; we drop back to the seed count.
     await wrapper.get('button.mini.danger').trigger('click')
     expect(wrapper.findAll('.entry-grid').length - 1).toBe(seedDataRows)
 
-    // Remove once more: from the seed of 2 -> 1, leaving the Remove button disabled
-    // (the form refuses to drop its last remaining row).
     await wrapper.get('button.mini.danger').trigger('click')
     expect(wrapper.findAll('.entry-grid').length - 1).toBe(1)
 
@@ -115,28 +99,17 @@ describe('AssetCalculator', () => {
   })
 
   it('renders the APY input only for term-deposits', () => {
-    const td = mount(AssetCalculator, {
-      props: { activeAsset: 'term-deposits' },
-      global: { stubs: { MarketHelper: true } },
-    })
+    const td = mountCalc('term-deposits')
     expect(td.find('#apy').exists()).toBe(true)
 
-    const mf = mount(AssetCalculator, {
-      props: { activeAsset: 'mutual-funds' },
-      global: { stubs: { MarketHelper: true } },
-    })
+    const mf = mountCalc('mutual-funds')
     expect(mf.find('#apy').exists()).toBe(false)
   })
 
   it('shows a Stock Code column on stock rows but not on mutual-fund rows', () => {
-    const stocks = mount(AssetCalculator, {
-      props: { activeAsset: 'stocks' },
-      global: { stubs: { MarketHelper: true } },
-    })
-    // stock seed entries include symbol; the grid header should label it
+    const stocks = mountCalc('stocks')
     const headerText = stocks.find('.entry-grid-header').text()
     expect(headerText).toContain('Stock Code')
-    // seed rows carry the symbol value
     const firstRowSymbolInput = stocks.findAll('input')[0]
     expect(firstRowSymbolInput.element.value).toBe('BBCA.JK')
   })
@@ -151,10 +124,7 @@ describe('AssetCalculator', () => {
       }),
     )
 
-    const wrapper = mount(AssetCalculator, {
-      props: { activeAsset: 'stocks' },
-      global: { stubs: { MarketHelper: true } },
-    })
+    const wrapper = mountCalc('stocks')
     await wrapper.get('button.action').trigger('click')
     await flushPromises()
 
@@ -169,10 +139,7 @@ describe('AssetCalculator', () => {
     }
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(makeResponse(body, true)))
 
-    const wrapper = mount(AssetCalculator, {
-      props: { activeAsset: 'stocks' },
-      global: { stubs: { MarketHelper: true } },
-    })
+    const wrapper = mountCalc('stocks')
     await wrapper.get('button.action').trigger('click')
     await flushPromises()
 

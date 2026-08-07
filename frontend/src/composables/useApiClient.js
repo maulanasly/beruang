@@ -1,6 +1,9 @@
 import { ref } from 'vue'
+import i18n from '../i18n/index.js'
 
 export function formatApiError(detail) {
+  const t = i18n.global.t
+
   if (Array.isArray(detail)) {
     const lines = detail.map((item) => {
       const loc = Array.isArray(item?.loc) ? item.loc.join('.') : 'body'
@@ -9,7 +12,7 @@ export function formatApiError(detail) {
     })
 
     return {
-      title: 'Validation failed. Please fix the following fields.',
+      title: t('error.validationFailed'),
       lines,
     }
   }
@@ -19,7 +22,7 @@ export function formatApiError(detail) {
   }
 
   return {
-    title: 'Request failed. Please review your input and try again.',
+    title: t('error.requestFailed'),
     lines: [],
   }
 }

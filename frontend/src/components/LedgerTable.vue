@@ -1,6 +1,7 @@
 <script setup>
 import { computed, inject } from 'vue'
-import { columnLabel, MOM_COLUMNS } from '../composables/columns'
+import { useI18n } from 'vue-i18n'
+import { MOM_COLUMNS } from '../composables/columns'
 
 const props = defineProps({
   ledger: { type: Array, default: () => [] },
@@ -8,7 +9,26 @@ const props = defineProps({
   titleSuffix: { type: String, default: '' },
 })
 
+const { t } = useI18n()
 const formatter = inject('formatter')
+
+const COLUMN_I18N_KEYS = {
+  date: 'column.date',
+  installment_amount: 'column.installment',
+  current_value: 'column.currentValue',
+  symbol: 'column.stockCode',
+  new_share_purchases: 'column.newPurchases',
+  dividends: 'column.dividends',
+  month_start_value: 'column.startValue',
+  mom_return: 'column.momReturn',
+  prorated_interest: 'column.proratedInterest',
+  expected_month_end_value: 'column.expectedValue',
+  capital_invested: 'column.capitalInvested',
+}
+
+function columnLabel(key) {
+  return t(COLUMN_I18N_KEYS[key] || key)
+}
 
 const columns = computed(() => {
   const firstRow = props.ledger?.[0]
@@ -28,19 +48,19 @@ function isMomColumn(column) {
   return MOM_COLUMNS.has(column)
 }
 
-function isNegativeMom(row, column) {
-  return (
-    MOM_COLUMNS.has(column) &&
-    typeof row?.[column] === 'number' &&
-    row[column] < 0
-  )
-}
-
 function isPositiveMom(row, column) {
   return (
     MOM_COLUMNS.has(column) &&
     typeof row?.[column] === 'number' &&
     row[column] > 0
+  )
+}
+
+function isNegativeMom(row, column) {
+  return (
+    MOM_COLUMNS.has(column) &&
+    typeof row?.[column] === 'number' &&
+    row[column] < 0
   )
 }
 
@@ -52,9 +72,6 @@ function cellClass(row, column) {
   }
 }
 
-// Total amount contributed per row, used to render an inline
-// "Capital Invested" column so beginners can scan contribution vs current
-// value without bouncing to the chart.
 const rowsWithCumulative = computed(() => {
   let running = 0
   return props.ledger.map((row) => {
@@ -67,8 +84,6 @@ const rowsWithCumulative = computed(() => {
 
 const columnsWithCumulative = computed(() => {
   if (!columns.value.length) return []
-  // Insert the running capital column right after the current_value column
-  // so it sits visually beside Current Value for side-by-side reading.
   const keys = [...columns.value]
   const insertAt = keys.indexOf('current_value') + 1 || keys.length
   keys.splice(insertAt, 0, 'capital_invested')
@@ -78,11 +93,8 @@ const columnsWithCumulative = computed(() => {
 
 <template>
   <div class="ledger-block">
-    <h2>Ledger<span v-if="titleSuffix" class="section-symbol">{{ titleSuffix }}</span></h2>
-    <p v-if="!ledger.length" class="ledger-empty">
-      Fill the rows above and click <strong>Calculate Returns</strong> to see
-      your monthly ledger here.
-    </p>
+    <h2>{{ t('common.ledger') }}<span v-if="titleSuffix" class="section-symbol">{{ titleSuffix }}</span></h2>
+    <p v-if="!ledger.length" class="ledger-empty">{{ t('ledger.empty') }}</p>
     <div v-else class="table-wrap">
       <table>
         <thead>

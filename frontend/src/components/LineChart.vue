@@ -11,6 +11,7 @@ import {
   Tooltip,
 } from 'chart.js'
 import { useSettings } from '../composables/useSettings'
+import { useI18n } from 'vue-i18n'
 
 Chart.register(
   CategoryScale,
@@ -27,6 +28,7 @@ const props = defineProps({
 })
 
 const settings = useSettings()
+const { t } = useI18n()
 
 const labels = computed(() => props.ledger.map((row) => row.date))
 
@@ -141,7 +143,7 @@ watch(
 
 <template>
   <section v-if="ledger.length" class="chart-block">
-    <h2>Capital Invested vs Current Market Value</h2>
+    <h2>{{ t('chart.title') }}</h2>
     <div class="chart-canvas">
       <Line :key="renderKey" :data="chartData" :options="chartOptions" />
     </div>

@@ -1,5 +1,6 @@
 <script setup>
 import { computed, inject } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
   symbols: { type: Array, default: () => [] },
@@ -20,6 +21,7 @@ const emit = defineEmits([
   'apply',
 ])
 
+const { t } = useI18n()
 const formatter = inject('formatter')
 
 const formattedPrice = computed(() => {
@@ -32,34 +34,34 @@ const formattedPrice = computed(() => {
 <template>
   <div class="row market-helper">
     <div class="rows-head">
-      <label>Live IDX Price (Kompas 100 Starter)</label>
+      <label>{{ t('market.liveIdxPrice') }}</label>
       <button
         class="mini"
         type="button"
         :disabled="loading"
         @click="emit('refresh')"
       >
-        {{ loading ? 'Refreshing...' : 'Refresh List' }}
+        {{ loading ? t('market.refreshing') : t('market.refresh') }}
       </button>
     </div>
 
     <div class="row row-2up market-grid">
       <div>
-        <label for="idx-symbol">Stock Code</label>
+        <label for="idx-symbol">{{ t('form.stockCode') }}</label>
         <select
           id="idx-symbol"
           :value="selectedSymbol"
           :disabled="loading || !symbols.length"
           @change="emit('update:selected-symbol', $event.target.value)"
         >
-          <option value="" disabled>Select a ticker</option>
+          <option value="" disabled>{{ t('market.pickTicker') }}</option>
           <option v-for="item in symbols" :key="item.symbol" :value="item.symbol">
             {{ item.symbol }} - {{ item.name }}
           </option>
         </select>
       </div>
       <div>
-        <label for="target-row">Target Ledger Row</label>
+        <label for="target-row">{{ t('market.targetLedgerRow') }}</label>
         <select
           id="target-row"
           :value="targetRowIndex"
@@ -70,7 +72,7 @@ const formattedPrice = computed(() => {
             :key="`row-target-${index}`"
             :value="index"
           >
-            Row {{ index + 1 }}{{ entry.date ? ` (${entry.date})` : '' }}
+            {{ t('market.row') }} {{ index + 1 }}{{ entry.date ? ` (${entry.date})` : '' }}
           </option>
         </select>
       </div>
@@ -83,10 +85,10 @@ const formattedPrice = computed(() => {
         :disabled="quoteLoading || !selectedSymbol"
         @click="emit('apply')"
       >
-        {{ quoteLoading ? 'Fetching Quote...' : 'Apply Latest Price to Current Value' }}
+        {{ quoteLoading ? t('market.fetchingQuote') : t('market.applyLatestPrice') }}
       </button>
       <div v-if="lastQuote" class="last-quote">
-        <span class="last-quote-label">Last Fetched</span>
+        <span class="last-quote-label">{{ t('market.lastFetched') }}</span>
         <span class="last-quote-value">{{ formattedPrice }}</span>
         <span class="last-quote-symbol">{{ lastQuote.symbol }}</span>
       </div>
