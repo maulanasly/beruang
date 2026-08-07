@@ -8,6 +8,7 @@ import BenchmarkChart from '../components/BenchmarkChart.vue'
 import InfoTip from '../components/InfoTip.vue'
 import PortfolioIo from '../components/PortfolioIo.vue'
 import GoalsPanel from '../components/GoalsPanel.vue'
+import MonthlyReturnsTable from '../components/MonthlyReturnsTable.vue'
 
 const { t } = useI18n()
 const formatter = inject('formatter')
@@ -97,6 +98,8 @@ function formatRoi(roi) {
       :labels="portfolio.lineLabels.value"
       :values="benchmarkValues"
     />
+
+    <MonthlyReturnsTable />
   </section>
 
   <section v-else class="result-block">

@@ -149,6 +149,14 @@ export default {
     noGoals: 'Set a target value to track your progress toward a goal.',
     paceMonths: '~{months} months to goal at current pace',
   },
+  monthlyReturns: {
+    title: 'Monthly Returns',
+    month: 'Month',
+    portfolio: 'Portfolio',
+    subtitle:
+      'Cash-flow adjusted month-over-month change for each asset class and the portfolio as a whole.',
+    insufficient: 'Add entries across at least two months to see month-over-month returns.',
+  },
   benchmark: {
     title: 'Portfolio vs Index',
     idxComposite: 'IDX Composite (IHSG)',

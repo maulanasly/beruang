@@ -149,6 +149,14 @@ export default {
     noGoals: 'Tetapkan nilai target untuk melacak kemajuan menuju tujuan Anda.',
     paceMonths: '~{months} bulan menuju tujuan dengan langkah saat ini',
   },
+  monthlyReturns: {
+    title: 'Return Bulanan',
+    month: 'Bulan',
+    portfolio: 'Portofolio',
+    subtitle:
+      'Perubahan bulan-ke-bulan yang disesuaikan arus kas untuk setiap kelas aset dan portofolio secara keseluruhan.',
+    insufficient: 'Tambahkan entri pada minimal dua bulan untuk melihat return bulan-ke-bulan.',
+  },
   benchmark: {
     title: 'Portofolio vs Indeks',
     idxComposite: 'IDX Composite (IHSG)',

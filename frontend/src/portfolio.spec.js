@@ -142,6 +142,23 @@ describe('OverviewView', () => {
     expect(wrapper.text()).toContain('Portfolio vs Index')
   })
 
+  it('renders the monthly returns table when entries span two months', async () => {
+    const wrapper = mountWith(OverviewView)
+    await flushPromises()
+    expect(wrapper.text()).toContain('Monthly Returns')
+    expect(wrapper.find('.monthly-returns').exists()).toBe(true)
+  })
+
+  it('omits the monthly returns table when entries span fewer than two months', async () => {
+    const ledgers = useLedgers()
+    ledgers.setEntries('mutual-funds', [{ date: '2026-05-31', installment_amount: 1000, current_value: 1000 }])
+    ledgers.setEntries('stocks', [])
+    ledgers.setEntries('term-deposits', [])
+    const wrapper = mountWith(OverviewView)
+    await flushPromises()
+    expect(wrapper.text()).toContain('Add entries across at least two months')
+  })
+
   it('omits the benchmark chart in the empty state', async () => {
     const ledgers = useLedgers()
     ledgers.setEntries('mutual-funds', [])
