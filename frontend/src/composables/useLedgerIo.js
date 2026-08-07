@@ -18,6 +18,16 @@ const NUMERIC_FIELDS = new Set([
   'dividends',
 ])
 
+const HEADER_ALIASES = {
+  'stock code': 'symbol',
+  symbol: 'symbol',
+}
+
+function headerLabel(column) {
+  if (column === 'symbol') return 'stock code'
+  return column
+}
+
 export function columnsFor(asset) {
   return ASSET_COLUMNS[asset] || []
 }
@@ -54,11 +64,11 @@ export function exportLedgerJson(asset, entries) {
 
 export function exportLedgerCsvTemplate(asset) {
   const columns = columnsFor(asset)
-  const header = columns.join(',')
+  const header = columns.map(headerLabel).join(',')
   const sample = columns
     .map((column) => {
       if (column === 'date') return '2026-07-31'
-      if (column === 'symbol') return 'BBCA.JK'
+      if (column === 'symbol') return 'BBCA'
       return '1000'
     })
     .join(',')
@@ -111,7 +121,8 @@ export function parseLedgerCsv(asset, text) {
   }
 
   const header = parseCsvRow(rawLines[headerLine]).map((h) => h.trim())
-  if (header.join(',') !== columns.join(',')) {
+  const resolvedHeader = header.map((h) => HEADER_ALIASES[h] ?? h)
+  if (resolvedHeader.join(',') !== columns.join(',')) {
     return {
       entries: [],
       errors: [{ line: headerLine + 1, type: 'missingHeader' }],

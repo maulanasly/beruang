@@ -140,9 +140,9 @@ describe('exportLedgerCsvTemplate', () => {
     const csv = exportLedgerCsvTemplate('stocks')
     const lines = csv.split('\n')
     expect(lines[0]).toBe(
-      'symbol,date,installment_amount,new_share_purchases,dividends,current_value',
+      'stock code,date,installment_amount,new_share_purchases,dividends,current_value',
     )
-    expect(lines[1]).toBe('BBCA.JK,2026-07-31,1000,1000,1000,1000')
+    expect(lines[1]).toBe('BBCA,2026-07-31,1000,1000,1000,1000')
   })
 
   it('produces a template that parses back to one valid sample entry', () => {
@@ -152,6 +152,18 @@ describe('exportLedgerCsvTemplate', () => {
     expect(entries).toEqual([
       { date: '2026-07-31', installment_amount: 1000, current_value: 1000 },
     ])
+  })
+
+  it('accepts the stock code alias when parsing stock templates', () => {
+    const csv = exportLedgerCsvTemplate('stocks')
+    const { entries, errors } = parseLedgerCsv('stocks', csv)
+    expect(errors).toEqual([])
+    expect(entries[0]).toMatchObject({
+      symbol: 'BBCA',
+      date: '2026-07-31',
+      installment_amount: 1000,
+      current_value: 1000,
+    })
   })
 })
 
