@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { flushPromises } from '@vue/test-utils'
 import { usePortfolio } from './composables/usePortfolio.js'
 import { useLedgers } from './composables/useLedgers.js'
 import OverviewView from './views/OverviewView.vue'
-import { mountWith, resetLedgers, resetSettings } from './test/helpers.js'
+import { mountWith, resetGoals, resetLedgers, resetSettings } from './test/helpers.js'
 
 // Mock chart.js chart components so the test never touches a canvas; we only
 // assert on layout/data through the components' props.
@@ -14,6 +15,7 @@ vi.mock('vue-chartjs', () => ({
 beforeEach(() => {
   resetSettings()
   resetLedgers()
+  resetGoals()
 })
 
 describe('usePortfolio', () => {
@@ -116,12 +118,9 @@ describe('OverviewView', () => {
     )
   })
 
-  afterEach(() => {
-    vi.unstubAllGlobals()
-  })
-
   it('renders portfolio KPIs, per-asset cards, and charts', async () => {
     const wrapper = mountWith(OverviewView)
+    await flushPromises()
     expect(wrapper.findAll('.kpi-card')).toHaveLength(4)
     expect(wrapper.findAll('.summary-card')).toHaveLength(3)
     expect(wrapper.find('.donut-stub').exists()).toBe(true)
@@ -132,12 +131,14 @@ describe('OverviewView', () => {
 
   it('renders the full-portfolio backup section', async () => {
     const wrapper = mountWith(OverviewView)
+    await flushPromises()
     expect(wrapper.text()).toContain('Full Portfolio Backup')
     expect(wrapper.text()).toContain('Backup All Data')
   })
 
   it('renders the benchmark comparison chart when data exists', async () => {
     const wrapper = mountWith(OverviewView)
+    await flushPromises()
     expect(wrapper.text()).toContain('Portfolio vs Index')
   })
 
@@ -147,7 +148,24 @@ describe('OverviewView', () => {
     ledgers.setEntries('stocks', [])
     ledgers.setEntries('term-deposits', [])
     const wrapper = mountWith(OverviewView)
+    await flushPromises()
     expect(wrapper.text()).not.toContain('Portfolio vs Index')
+  })
+
+  it('renders the goals section with data present', async () => {
+    const wrapper = mountWith(OverviewView)
+    await flushPromises()
+    expect(wrapper.text()).toContain('Goals & Targets')
+  })
+
+  it('still renders the goals section when there is no portfolio data', async () => {
+    const ledgers = useLedgers()
+    ledgers.setEntries('mutual-funds', [])
+    ledgers.setEntries('stocks', [])
+    ledgers.setEntries('term-deposits', [])
+    const wrapper = mountWith(OverviewView)
+    await flushPromises()
+    expect(wrapper.text()).toContain('Goals & Targets')
   })
 
   it('renders the empty-state message when no data exists', async () => {
@@ -156,6 +174,7 @@ describe('OverviewView', () => {
     ledgers.setEntries('stocks', [])
     ledgers.setEntries('term-deposits', [])
     const wrapper = mountWith(OverviewView)
+    await flushPromises()
     expect(wrapper.find('.kpi-card').exists()).toBe(false)
     expect(wrapper.find('.ledger-empty').exists()).toBe(true)
   })

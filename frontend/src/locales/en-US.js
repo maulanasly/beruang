@@ -133,6 +133,21 @@ export default {
     pnl: 'Profit/Loss: current value minus total invested. Positive means you are up.',
     benchmark:
       'Both lines start at 100 on your first entry date. A portfolio line above the index means your holdings grew faster than the market over that window.',
+    goals:
+      'Set a target value for your whole portfolio and each asset class. The progress bar compares current value against the target; the pace estimate assumes you keep contributing your current monthly average.',
+  },
+  goals: {
+    title: 'Goals & Targets',
+    edit: 'Edit',
+    save: 'Save',
+    cancel: 'Cancel',
+    overall: 'Overall Portfolio Goal',
+    target: 'Target value',
+    targetDate: 'Target date',
+    remaining: 'Remaining:',
+    reached: 'Goal reached',
+    noGoals: 'Set a target value to track your progress toward a goal.',
+    paceMonths: '~{months} months to goal at current pace',
   },
   benchmark: {
     title: 'Portfolio vs Index',

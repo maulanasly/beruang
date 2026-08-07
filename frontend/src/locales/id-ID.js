@@ -133,6 +133,21 @@ export default {
     pnl: 'Untung/Rugi: nilai saat ini dikurangi total investasi. Positif berarti Anda untung.',
     benchmark:
       'Kedua garis dimulai dari 100 pada tanggal entri pertama Anda. Garis portofolio di atas indeks berarti aset Anda tumbuh lebih cepat daripada pasar dalam rentang tersebut.',
+    goals:
+      'Tetapkan nilai target untuk seluruh portofolio dan setiap kelas aset. Bilah kemajuan membandingkan nilai saat ini dengan target; perkiraan langkah mengasumsikan Anda terus menyetor rata-rata bulanan saat ini.',
+  },
+  goals: {
+    title: 'Tujuan & Target',
+    edit: 'Ubah',
+    save: 'Simpan',
+    cancel: 'Batal',
+    overall: 'Tujuan Portofolio Keseluruhan',
+    target: 'Nilai target',
+    targetDate: 'Tanggal target',
+    remaining: 'Sisa:',
+    reached: 'Tujuan tercapai',
+    noGoals: 'Tetapkan nilai target untuk melacak kemajuan menuju tujuan Anda.',
+    paceMonths: '~{months} bulan menuju tujuan dengan langkah saat ini',
   },
   benchmark: {
     title: 'Portofolio vs Indeks',

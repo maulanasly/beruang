@@ -2,6 +2,7 @@ import { mount } from '@vue/test-utils'
 import i18n from '../i18n/index.js'
 import { useSettings } from '../composables/useSettings'
 import { useLedgers } from '../composables/useLedgers'
+import { useGoals } from '../composables/useGoals'
 import { useFormatter } from '../composables/useFormatter'
 
 export function resetSettings(overrides = {}) {
@@ -14,6 +15,11 @@ export function resetSettings(overrides = {}) {
 export function resetLedgers() {
   const ledgers = useLedgers()
   ledgers.resetAll()
+}
+
+export function resetGoals() {
+  const goals = useGoals()
+  goals.resetGoals()
 }
 
 export const formatter = useFormatter()

@@ -147,6 +147,118 @@ textarea {
   margin-top: 1rem;
 }
 
+.goals-panel {
+  border: 1px solid #d9e2ec;
+  border-radius: 10px;
+  padding: 0.65rem;
+  background: #f8fbff;
+  margin-top: 1rem;
+}
+
+.goal-card {
+  border: 1px solid #d9e2ec;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 0.65rem;
+  margin-top: 0.5rem;
+}
+
+.goal-rows {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+
+.goal-row {
+  border: 1px solid #d9e2ec;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 0.55rem 0.65rem;
+}
+
+.goal-row-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.goal-label {
+  margin: 0;
+  color: #486581;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.goal-current {
+  margin-left: auto;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #102a43;
+}
+
+.goal-pct {
+  font-weight: 700;
+  color: #334e68;
+  min-width: 2.6rem;
+  text-align: right;
+}
+
+.goal-input {
+  width: 9rem;
+  margin-left: auto;
+}
+
+.goal-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.goal-edit-row input[type='number'],
+.goal-edit-row input[type='date'] {
+  flex: 1 1 10rem;
+}
+
+.goal-progress {
+  height: 0.55rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+  margin: 0.5rem 0 0.35rem;
+}
+
+.goal-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+}
+
+.goal-stats {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #102a43;
+}
+
+.goal-sub {
+  margin: 0.3rem 0 0;
+  color: #486581;
+  font-size: 0.82rem;
+}
+
+.goal-reached {
+  margin: 0.35rem 0 0;
+  color: #0f6b3a;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
 .io-actions {
   display: flex;
   gap: 0.5rem;
