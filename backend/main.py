@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.schemas import (
     IdxStockListResponse,
+    IdxStockSearchResponse,
     MutualFundReturnsRequest,
     MutualFundReturnsResponse,
     StockQuoteResponse,
@@ -21,6 +22,7 @@ from backend.services import (
     calculate_term_deposit_returns,
     get_kompas100_starter_stocks,
     get_latest_stock_quote,
+    search_idx_stocks,
 )
 
 app = FastAPI(
@@ -89,6 +91,21 @@ def term_deposit_returns(
 )
 def kompas100_starter_stock_list() -> IdxStockListResponse:
     return get_kompas100_starter_stocks()
+
+
+@app.get(
+    "/api/v1/market-data/idx/search",
+    response_model=IdxStockSearchResponse,
+)
+def idx_stock_search(
+    q: str = Query(min_length=1, max_length=64),
+    limit: int = Query(default=10, ge=1, le=50),
+) -> IdxStockSearchResponse:
+    try:
+        items = search_idx_stocks(q, limit=limit)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return IdxStockSearchResponse(query=q.strip(), items=items)
 
 
 @app.get("/api/v1/market-data/quote", response_model=StockQuoteResponse)

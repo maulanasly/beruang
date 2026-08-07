@@ -57,6 +57,31 @@ def get_kompas100_starter_stocks() -> IdxStockListResponse:
     )
 
 
+def search_idx_stocks(query: str, limit: int = 10) -> list[IdxStockItem]:
+    """Search the IDX universe via Yahoo Finance and return only IDX listings."""
+    normalized = query.strip()
+    if not normalized:
+        raise ValueError("Query is required.")
+
+    search = yf.Search(query=normalized, max_results=max(limit * 4, 20))
+
+    seen: set[str] = set()
+    items: list[IdxStockItem] = []
+    for quote in search.quotes or []:
+        symbol = quote.get("symbol") or ""
+        if not symbol.endswith(".JK") and quote.get("exchange") != "JKT":
+            continue
+        if symbol in seen:
+            continue
+        seen.add(symbol)
+        name = quote.get("shortname") or quote.get("longname") or symbol
+        items.append(IdxStockItem(symbol=symbol, name=name))
+        if len(items) >= limit:
+            break
+
+    return items
+
+
 def get_latest_stock_quote(symbol: str) -> StockQuoteResponse:
     normalized_symbol = symbol.strip().upper()
     if not normalized_symbol:

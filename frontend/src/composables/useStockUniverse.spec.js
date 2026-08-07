@@ -185,4 +185,55 @@ describe('useStockUniverse', () => {
 
     expect(fetchMock.mock.calls[0][0]).toContain('symbol=BBCA.JK')
   })
+
+  it('searchSymbols populates symbols from the IDX search endpoint', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        makeResponse(
+          {
+            query: 'bank',
+            items: [
+              { symbol: 'BBCA.JK', name: 'Bank Central Asia' },
+              { symbol: 'BBRI.JK', name: 'Bank Rakyat' },
+            ],
+          },
+          true,
+        ),
+      ),
+    )
+
+    const uni = useStockUniverse('')
+    await uni.searchSymbols('bank')
+
+    expect(uni.symbols.value).toHaveLength(2)
+    expect(uni.symbols.value[0].symbol).toBe('BBCA.JK')
+    expect(uni.searching.value).toBe(false)
+    expect(uni.universeError.value).toBe('')
+  })
+
+  it('searchSymbols surfaces upstream errors and keeps the search flag reset', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(makeResponse({ detail: 'search down' }, false)),
+    )
+
+    const uni = useStockUniverse('')
+    uni.symbols.value = [{ symbol: 'OLD.JK', name: 'stale' }]
+    await uni.searchSymbols('bank')
+
+    expect(uni.symbols.value).toEqual([])
+    expect(uni.universeError.value).toBe('search down')
+    expect(uni.searching.value).toBe(false)
+  })
+
+  it('searchSymbols is a no-op for empty or whitespace queries', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    const uni = useStockUniverse('')
+    await uni.searchSymbols('   ')
+
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
 })

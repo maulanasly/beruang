@@ -100,6 +100,8 @@ export default {
     lastFetched: 'Last Fetched',
     targetLedgerRow: 'Target Ledger Row',
     pickTicker: 'Select a ticker',
+    searchPlaceholder: 'Type to search any IDX stock code…',
+    searching: 'Searching…',
     row: 'Row',
     updatedRow: 'Updated row {row} using {symbol} ({currency}).',
     helperNote:

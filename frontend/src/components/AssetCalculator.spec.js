@@ -110,7 +110,7 @@ describe('AssetCalculator', () => {
     const stocks = mountCalc('stocks')
     const headerText = stocks.find('.entry-grid-header').text()
     expect(headerText).toContain('Stock Code')
-    const firstRowSymbolInput = stocks.findAll('input')[0]
+    const firstRowSymbolInput = stocks.findAll('.entry-grid input')[0]
     expect(firstRowSymbolInput.element.value).toBe('BBCA.JK')
   })
 

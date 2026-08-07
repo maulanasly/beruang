@@ -298,9 +298,11 @@ defineExpose({ calculate, isLoading })
     :quote-status="stockUniverse.quoteStatus.value"
     :last-quote="stockUniverse.lastQuote.value"
     :syncing="stockUniverse.syncing.value"
+    :searching="stockUniverse.searching.value"
     @update:selected-symbol="stockUniverse.selectedSymbol.value = $event"
     @update:target-row-index="stockUniverse.targetRowIndex.value = $event"
     @refresh="stockUniverse.loadSymbols"
+    @search="stockUniverse.searchSymbols"
     @apply="applyQuoteToRow"
     @sync-all="syncAllPrices"
   />

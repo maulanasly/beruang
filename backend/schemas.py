@@ -120,6 +120,11 @@ class IdxStockListResponse(BaseModel):
     items: list[IdxStockItem]
 
 
+class IdxStockSearchResponse(BaseModel):
+    query: str
+    items: list[IdxStockItem]
+
+
 class StockQuoteResponse(BaseModel):
     symbol: str
     name: str

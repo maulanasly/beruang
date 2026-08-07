@@ -37,21 +37,46 @@ describe('MarketHelper', () => {
     expect(wrapper.find('.last-quote-value').text()).toMatch(/9,100\.00/)
   })
 
-  it('strips the market suffix from the option labels', () => {
+  it('strips the market suffix from suggestion labels', async () => {
     const wrapper = mountWithDefaults()
-    const options = wrapper.findAll('#idx-symbol option')
-    expect(options[1].text()).toBe('BBCA - Bank Central Asia')
-    expect(options[1].element.value).toBe('BBCA.JK')
+    await wrapper.find('#idx-symbol').trigger('focus')
+    const firstSuggestion = wrapper.find('.stock-suggestions li')
+    expect(firstSuggestion.find('.stock-suggestion-symbol').text()).toBe('BBCA')
+    expect(firstSuggestion.find('.stock-suggestion-name').text()).toBe('Bank Central Asia')
   })
 
-  it('keeps the full symbol when no suffix is configured', () => {
+  it('keeps the full symbol when no suffix is configured', async () => {
     resetSettings({ market: 'US' })
     const wrapper = mountWithDefaults({
       symbols: [{ symbol: 'AAPL', name: 'Apple' }],
       selectedSymbol: 'AAPL',
     })
-    const options = wrapper.findAll('#idx-symbol option')
-    expect(options[1].text()).toBe('AAPL - Apple')
+    await wrapper.find('#idx-symbol').trigger('focus')
+    const firstSuggestion = wrapper.find('.stock-suggestions li')
+    expect(firstSuggestion.find('.stock-suggestion-symbol').text()).toBe('AAPL')
+  })
+
+  it('emits update:selected-symbol when a suggestion is picked', async () => {
+    const wrapper = mountWithDefaults()
+    await wrapper.find('#idx-symbol').trigger('focus')
+    const firstSuggestion = wrapper.find('.stock-suggestions li')
+    await firstSuggestion.trigger('mousedown')
+    expect(wrapper.emitted('update:selected-symbol')).toBeTruthy()
+    expect(wrapper.emitted('update:selected-symbol')[0][0]).toBe('BBCA.JK')
+  })
+
+  it('emits selected-symbol as the user types and fires a debounced search', async () => {
+    vi.useFakeTimers()
+    const wrapper = mountWithDefaults()
+    const input = wrapper.find('#idx-symbol')
+    await input.setValue('GOTO')
+    expect(wrapper.emitted('update:selected-symbol')).toBeTruthy()
+    expect(wrapper.emitted('update:selected-symbol')[0][0]).toBe('GOTO')
+
+    vi.advanceTimersByTime(300)
+    expect(wrapper.emitted('search')).toBeTruthy()
+    expect(wrapper.emitted('search')[0][0]).toBe('GOTO')
+    vi.useRealTimers()
   })
 
   it('emits apply when the fetch button is clicked', async () => {

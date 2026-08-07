@@ -100,6 +100,8 @@ export default {
     lastFetched: 'Terakhir Diambil',
     targetLedgerRow: 'Baris Buku Besar Target',
     pickTicker: 'Pilih ticker',
+    searchPlaceholder: 'Ketik untuk mencari kode saham IDX apa pun…',
+    searching: 'Mencari…',
     row: 'Baris',
     updatedRow: 'Memperbarui baris {row} menggunakan {symbol} ({currency}).',
     helperNote:

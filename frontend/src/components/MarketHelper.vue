@@ -1,5 +1,5 @@
 <script setup>
-import { computed, inject } from 'vue'
+import { computed, inject, onBeforeUnmount, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useMarket } from '../composables/useMarket'
 
@@ -14,6 +14,7 @@ const props = defineProps({
   quoteStatus: { type: String, default: '' },
   lastQuote: { type: Object, default: null },
   syncing: { type: Boolean, default: false },
+  searching: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
@@ -22,6 +23,7 @@ const emit = defineEmits([
   'refresh',
   'apply',
   'sync-all',
+  'search',
 ])
 
 const { t } = useI18n()
@@ -33,6 +35,47 @@ const formattedPrice = computed(() => {
   if (!quote || typeof quote.price !== 'number') return '-'
   return formatter.formatCurrency(quote.price, quote.currency)
 })
+
+const query = ref(props.selectedSymbol)
+const showSuggestions = ref(false)
+let searchTimer = null
+
+watch(
+  () => props.selectedSymbol,
+  (value) => {
+    query.value = value
+  },
+)
+
+function onQueryInput(event) {
+  const value = event.target.value
+  query.value = value
+  emit('update:selected-symbol', value)
+  showSuggestions.value = true
+
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => {
+    if (value.trim()) emit('search', value)
+  }, 300)
+}
+
+function onFocus() {
+  showSuggestions.value = true
+}
+
+function selectSuggestion(item) {
+  query.value = item.symbol
+  emit('update:selected-symbol', item.symbol)
+  showSuggestions.value = false
+}
+
+function onBlur() {
+  setTimeout(() => {
+    showSuggestions.value = false
+  }, 120)
+}
+
+onBeforeUnmount(() => clearTimeout(searchTimer))
 </script>
 
 <template>
@@ -54,17 +97,33 @@ const formattedPrice = computed(() => {
     <div class="row row-2up market-grid">
       <div>
         <label for="idx-symbol">{{ t('form.stockCode') }}</label>
-        <select
-          id="idx-symbol"
-          :value="selectedSymbol"
-          :disabled="loading || !symbols.length"
-          @change="emit('update:selected-symbol', $event.target.value)"
-        >
-          <option value="" disabled>{{ t('market.pickTicker') }}</option>
-          <option v-for="item in symbols" :key="item.symbol" :value="item.symbol">
-            {{ displaySymbol(item.symbol) }} - {{ item.name }}
-          </option>
-        </select>
+        <div class="stock-picker">
+          <input
+            id="idx-symbol"
+            class="stock-picker-input"
+            :value="query"
+            :placeholder="t('market.searchPlaceholder')"
+            :disabled="loading"
+            autocomplete="off"
+            @input="onQueryInput"
+            @focus="onFocus"
+            @blur="onBlur"
+          />
+          <ul
+            v-if="showSuggestions && symbols.length"
+            class="stock-suggestions"
+          >
+            <li
+              v-for="item in symbols"
+              :key="item.symbol"
+              @mousedown.prevent="selectSuggestion(item)"
+            >
+              <span class="stock-suggestion-symbol">{{ displaySymbol(item.symbol) }}</span>
+              <span class="stock-suggestion-name">{{ item.name }}</span>
+            </li>
+          </ul>
+          <p v-if="searching" class="market-note">{{ t('market.searching') }}</p>
+        </div>
       </div>
       <div>
         <label for="target-row">{{ t('market.targetLedgerRow') }}</label>

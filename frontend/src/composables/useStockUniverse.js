@@ -16,6 +16,7 @@ export function useStockUniverse(baseUrl = '') {
   const quoteStatus = ref('')
   const lastQuote = ref(null)
   const syncing = ref(false)
+  const searching = ref(false)
   const { market } = useMarket()
 
   function syncTargetRowIndex(maxIndex) {
@@ -45,6 +46,32 @@ export function useStockUniverse(baseUrl = '') {
       symbols.value = []
     } finally {
       loading.value = false
+    }
+  }
+
+  async function searchSymbols(query) {
+    const trimmed = String(query || '').trim()
+    if (!trimmed) return
+    searching.value = true
+    universeError.value = ''
+
+    try {
+      const params = new URLSearchParams({ q: trimmed })
+      const response = await fetch(
+        `${baseUrl}/api/v1/market-data/idx/search?${params}`,
+      )
+      const body = await response.json()
+
+      if (!response.ok) {
+        throw new Error(body?.detail || 'Failed to search IDX stocks.')
+      }
+
+      symbols.value = Array.isArray(body?.items) ? body.items : []
+    } catch (searchError) {
+      universeError.value = searchError.message
+      symbols.value = []
+    } finally {
+      searching.value = false
     }
   }
 
@@ -172,8 +199,10 @@ export function useStockUniverse(baseUrl = '') {
     quoteStatus,
     lastQuote,
     syncing,
+    searching,
     syncTargetRowIndex,
     loadSymbols,
+    searchSymbols,
     fetchQuote,
     fetchAndStoreQuote,
     syncAllQuotes,
