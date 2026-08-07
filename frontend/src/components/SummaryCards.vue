@@ -19,6 +19,8 @@ const SUMMARY_LABEL_KEYS = {
   apy: 'kpi.currentApy',
   monthly_rate: 'column.momReturn',
   projected_fv_constant_installment: 'column.expectedValue',
+  estimated_annual_dividend: 'kpi.latestAnnualDividend',
+  estimated_monthly_dividend: 'kpi.latestMonthlyDividend',
 }
 
 const SUMMARY_HINT_KEYS = {
@@ -27,6 +29,8 @@ const SUMMARY_HINT_KEYS = {
   apy: 'glossary.apy',
   monthly_rate: 'glossary.moM',
   projected_fv_constant_installment: 'glossary.apy',
+  estimated_annual_dividend: 'glossary.dividendYield',
+  estimated_monthly_dividend: 'glossary.dividendYield',
 }
 
 function labelFor(key) {
@@ -40,12 +44,14 @@ function hintFor(key) {
 
 const entries = computed(() => {
   if (!props.summary || typeof props.summary !== 'object') return []
-  return Object.entries(props.summary).map(([key, value]) => ({
-    key,
-    label: labelFor(key),
-    value,
-    hint: hintFor(key),
-  }))
+  return Object.entries(props.summary)
+    .filter(([, value]) => value !== null && value !== undefined)
+    .map(([key, value]) => ({
+      key,
+      label: labelFor(key),
+      value,
+      hint: hintFor(key),
+    }))
 })
 </script>
 

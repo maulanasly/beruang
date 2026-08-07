@@ -20,6 +20,7 @@ const STOCK_ENTRIES = [
     installment_amount: 700,
     new_share_purchases: 300,
     dividends: 0,
+    dividend_yield: 0,
     current_value: 1000,
   },
 ]
@@ -35,7 +36,7 @@ describe('exportLedgerCsv', () => {
   it('includes the symbol column for stocks', () => {
     const csv = exportLedgerCsv('stocks', STOCK_ENTRIES)
     expect(csv.split('\n')[0]).toBe(
-      'symbol,date,installment_amount,new_share_purchases,dividends,current_value',
+      'symbol,date,installment_amount,new_share_purchases,dividends,dividend_yield,current_value',
     )
   })
 })
@@ -140,9 +141,9 @@ describe('exportLedgerCsvTemplate', () => {
     const csv = exportLedgerCsvTemplate('stocks')
     const lines = csv.split('\n')
     expect(lines[0]).toBe(
-      'stock code,date,installment_amount,new_share_purchases,dividends,current_value',
+      'stock code,date,installment_amount,new_share_purchases,dividends,dividend_yield,current_value',
     )
-    expect(lines[1]).toBe('BBCA,2026-07-31,1000,1000,1000,1000')
+    expect(lines[1]).toBe('BBCA,2026-07-31,1000,1000,1000,1000,1000')
   })
 
   it('produces a template that parses back to one valid sample entry', () => {

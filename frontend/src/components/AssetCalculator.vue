@@ -75,6 +75,13 @@ function buildFieldConfig() {
         hintKey: 'glossary.dividends',
       },
       {
+        key: 'dividend_yield',
+        labelKey: 'form.dividendYield',
+        type: 'percent',
+        step: '0.01',
+        hintKey: 'glossary.dividendYield',
+      },
+      {
         key: 'current_value',
         labelKey: 'form.currentValue',
         type: 'number',
@@ -136,6 +143,7 @@ function createEmptyEntry(asset) {
       installment_amount: 0,
       new_share_purchases: 0,
       dividends: 0,
+      dividend_yield: null,
       current_value: 0,
     }
   }
@@ -162,8 +170,14 @@ function normalizeEntries(asset, entries) {
   return entries.map((entry) => {
     const normalized = {}
     fields.forEach((field) => {
-      normalized[field.key] =
-        field.type === 'number' ? Number(entry[field.key] ?? 0) : entry[field.key]
+      if (field.key === 'dividend_yield') {
+        const raw = entry[field.key]
+        normalized[field.key] =
+          raw === null || raw === undefined || raw === '' ? null : Number(raw)
+      } else {
+        normalized[field.key] =
+          field.type === 'number' ? Number(entry[field.key] ?? 0) : entry[field.key]
+      }
     })
     return normalized
   })
@@ -183,6 +197,7 @@ async function applyQuoteToRow() {
     if (entries[rowIndex]) {
       entries[rowIndex].current_value = quote.price
       entries[rowIndex].symbol = quote.symbol
+      entries[rowIndex].dividend_yield = quote.dividend_yield
     }
     stockUniverse.quoteStatus.value = t('market.updatedRow', {
       row: rowIndex + 1,
@@ -202,6 +217,7 @@ async function syncAllPrices() {
     for (const entry of entries) {
       if (entry?.symbol?.trim() === item.symbol) {
         entry.current_value = item.price
+        entry.dividend_yield = item.dividend_yield
       }
     }
   }
@@ -329,14 +345,26 @@ defineExpose({ calculate, isLoading })
         class="entry-grid"
         :style="entryGridStyle"
       >
-        <input
+        <template
           v-for="field in activeEntryFields"
           :key="`field-${index}-${field.key}`"
-          v-model="entry[field.key]"
-          :type="field.type"
-          :min="field.min"
-          :step="field.step"
-        />
+        >
+          <input
+            v-if="field.type !== 'percent'"
+            v-model="entry[field.key]"
+            :type="field.type"
+            :min="field.min"
+            :step="field.step"
+          />
+          <input
+            v-else
+            :type="'number'"
+            :value="entry[field.key] == null || entry[field.key] === '' ? '' : Number(entry[field.key]) * 100"
+            min="0"
+            step="0.01"
+            @input="entry[field.key] = $event.target.value === '' ? null : Number($event.target.value) / 100"
+          />
+        </template>
         <button
           class="mini danger"
           type="button"

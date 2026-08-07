@@ -32,15 +32,20 @@ function seriesFor(asset, entries) {
     const currentValue = Number(entry.current_value) || 0
     const contributions = contributionsFor(asset, entry)
     const dividends = dividendsFor(asset, entry)
+    const estimatedDividend =
+      asset === 'stocks'
+        ? currentValue * (Number(entry.dividend_yield) || 0) / 12
+        : 0
     return {
       date: String(entry.date),
       monthStartValue,
       currentValue,
       contributions,
       dividends,
+      estimatedDividend,
       mom:
         monthStartValue > 0
-          ? (currentValue - contributions + dividends - monthStartValue) /
+          ? (currentValue - contributions + dividends + estimatedDividend - monthStartValue) /
             monthStartValue
           : null,
     }
@@ -66,6 +71,7 @@ export function buildMonthlyReturns(entriesByAsset) {
     let sumValue = 0
     let sumContributions = 0
     let sumDividends = 0
+    let sumEstimated = 0
     let sumStart = 0
     MONTHLY_RETURNS_ASSETS.forEach((asset) => {
       const row = series[asset].find((item) => item.date === month)
@@ -73,10 +79,11 @@ export function buildMonthlyReturns(entriesByAsset) {
       sumValue += row.currentValue
       sumContributions += row.contributions
       sumDividends += row.dividends
+      sumEstimated += row.estimatedDividend
       sumStart += row.monthStartValue
     })
     if (sumStart <= 0) return null
-    return (sumValue - sumContributions + sumDividends - sumStart) / sumStart
+    return (sumValue - sumContributions + sumDividends + sumEstimated - sumStart) / sumStart
   })
 
   return { months: sortedMonths, byAsset, portfolio }

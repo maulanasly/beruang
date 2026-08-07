@@ -59,6 +59,7 @@ class StockLedgerEntry(BaseModel):
     new_share_purchases: float = Field(ge=0)
     dividends: float = Field(ge=0)
     current_value: float = Field(ge=0)
+    dividend_yield: float | None = Field(default=None, ge=0)
 
 
 class StockReturnsRequest(BaseModel):
@@ -93,6 +94,8 @@ class StockSummaryResponse(BaseModel):
     ending_value: float
     roi: float
     xirr: float
+    estimated_annual_dividend: float | None = None
+    estimated_monthly_dividend: float | None = None
 
 
 class StockLedgerRowResponse(BaseModel):
@@ -101,6 +104,8 @@ class StockLedgerRowResponse(BaseModel):
     new_share_purchases: float
     dividends: float
     current_value: float
+    dividend_yield: float | None = None
+    estimated_dividend: float | None = None
     month_start_value: float | None = None
     mom_return: float | None = None
 

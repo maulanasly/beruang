@@ -36,6 +36,7 @@ export default {
     stockCode: 'Kode Saham',
     newSharePurchases: 'Pembelian Saham Baru',
     dividends: 'Dividen',
+    dividendYield: 'Imbal Hasil Dividen (%)',
     apy: 'APY',
   },
   column: {
@@ -45,6 +46,8 @@ export default {
     stockCode: 'Kode Saham',
     newPurchases: 'Pembelian Baru',
     dividends: 'Dividen',
+    dividendYield: 'Imbal Hasil',
+    estimatedDividend: 'Est. Dividen',
     startValue: 'Nilai Awal',
     momReturn: 'Imbal Balik MoM',
     proratedInterest: 'Bunga Prorata',
@@ -60,6 +63,8 @@ export default {
     latestProratedInterest: 'Bunga Prorata Terkini',
     currentApy: 'APY Saat Ini',
     latestTwr: 'TWR',
+    latestAnnualDividend: 'Est. Dividen Tahunan',
+    latestMonthlyDividend: 'Est. Dividen Bulanan',
   },
   chart: {
     title: 'Modal Diinvestasikan vs Nilai Pasar Saat Ini',
@@ -128,6 +133,8 @@ export default {
       'Bunga yang diperoleh hanya untuk sebagian tahun, diskalakan sesuai durasi bulan tersebut.',
     dividends:
       'Pembayaran tunai yang dibagikan perusahaan kepada pemegang sahamnya setiap periode.',
+    dividendYield:
+      'Dividen tahunan sebagai persentase dari harga saham (mis. 5,61%). Estimasi dividen bulanan (nilai saat ini \u00D7 imbal hasil \u00F7 12) ditambahkan ke dalam MoM dan dimasukkan ke dalam aliran kas XIRR.',
     newPurchases:
       'Pembelian saham tambahan pada periode ini, di luar cicilan reguler Anda.',
     capitalInvested:

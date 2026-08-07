@@ -7,7 +7,7 @@ import numpy_financial as npf
 import pandas as pd
 
 LEDGER_COLUMNS = ["date", "installment_amount", "current_value"]
-STOCK_LEDGER_COLUMNS = LEDGER_COLUMNS + ["new_share_purchases", "dividends"]
+STOCK_LEDGER_COLUMNS = LEDGER_COLUMNS + ["new_share_purchases", "dividends", "dividend_yield"]
 
 
 def create_empty_ledger() -> pd.DataFrame:
@@ -131,6 +131,7 @@ def stock_metrics(ledger: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, float]]
     """Calculate stock MoM return, ROI, and XIRR with purchases/dividends."""
     df = _prepare_ledger(ledger, STOCK_LEDGER_COLUMNS)
     df["month_start_value"] = df["current_value"].shift(1)
+    df["estimated_dividend"] = df["current_value"] * df["dividend_yield"] / 12.0
 
     df["mom_return"] = np.where(
         df["month_start_value"] > 0,
@@ -138,6 +139,7 @@ def stock_metrics(ledger: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, float]]
             df["current_value"]
             - df["new_share_purchases"]
             + df["dividends"]
+            + df["estimated_dividend"]
             - df["month_start_value"]
         )
         / df["month_start_value"],
@@ -145,9 +147,9 @@ def stock_metrics(ledger: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, float]]
     )
 
     cash_outflow = df["installment_amount"] + df["new_share_purchases"]
-    cash_flows = (-cash_outflow).tolist()
-    cash_flows[-1] += float(df["current_value"].iloc[-1])
-    xirr = calculate_xirr(df["date"], cash_flows)
+    per_row = (-cash_outflow + df["estimated_dividend"]).tolist()
+    per_row[-1] += float(df["current_value"].iloc[-1])
+    xirr = calculate_xirr(df["date"], per_row)
 
     total_contribution = float(cash_outflow.sum())
     ending_value = float(df["current_value"].iloc[-1])
@@ -157,12 +159,17 @@ def stock_metrics(ledger: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, float]]
         else np.nan
     )
 
+    last_yield = float(df["dividend_yield"].iloc[-1]) if pd.notna(df["dividend_yield"].iloc[-1]) else 0.0
+
     summary = {
         "total_contribution": total_contribution,
         "ending_value": ending_value,
         "roi": float(roi),
         "xirr": float(xirr),
     }
+    if last_yield > 0:
+        summary["estimated_annual_dividend"] = ending_value * last_yield
+        summary["estimated_monthly_dividend"] = ending_value * last_yield / 12.0
     return df, summary
 
 

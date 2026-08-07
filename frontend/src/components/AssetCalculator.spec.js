@@ -198,7 +198,7 @@ describe('AssetCalculator', () => {
 
     const rows = wrapper.findAll('.entry-grid').length - 1
     for (let i = 0; i < rows; i += 1) {
-      await wrapper.findAll('.entry-grid input')[i * 6].setValue('')
+      await wrapper.findAll('.entry-grid input')[i * 7].setValue('')
     }
 
     const syncButton = wrapper
@@ -209,5 +209,100 @@ describe('AssetCalculator', () => {
 
     expect(wrapper.text()).toMatch(/Add a stock code/)
     expect(wrapper.emitted('reset')).toBeFalsy()
+  })
+
+  it('applyQuoteToRow writes dividend_yield from the quote to the target row', async () => {
+    const fetchMock = vi.fn().mockImplementation((url) => {
+      if (url.includes('kompas100')) {
+        return Promise.resolve(
+          makeResponse(
+            { items: [{ symbol: 'BBCA.JK', name: 'Bank Central Asia' }] },
+            true,
+          ),
+        )
+      }
+      return Promise.resolve(
+        makeResponse(
+          {
+            symbol: 'BBCA.JK',
+            price: 9200,
+            currency: 'IDR',
+            dividend_yield: 0.0561,
+          },
+          true,
+        ),
+      )
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = mountCalc('stocks')
+    await flushPromises()
+
+    const applyButton = wrapper
+      .findAll('button')
+      .find((b) => b.text().includes('Apply Latest Price'))
+    await applyButton.trigger('click')
+    await flushPromises()
+
+    const entries = wrapper.vm.getEntries()
+    const row = entries[0]
+    expect(row.dividend_yield).toBe(0.0561)
+    expect(row.current_value).toBe(9200)
+  })
+
+  it('percent input shows fraction*100 and stores fraction on edit', async () => {
+    const wrapper = mountCalc('stocks')
+    const inputs = wrapper.findAll('.entry-grid input')
+
+    expect(inputs).toHaveLength(14) // 2 rows × 7 fields
+
+    const yieldInput = inputs[5] // 6th field = dividend_yield (row 0, 0-indexed)
+    expect(yieldInput.element.value).toBe('')
+
+    await yieldInput.setValue('5.61')
+    expect(wrapper.vm.getEntries()[0].dividend_yield).toBeCloseTo(0.0561, 5)
+
+    await yieldInput.setValue('')
+    expect(wrapper.vm.getEntries()[0].dividend_yield).toBeNull()
+  })
+
+  it('syncAllPrices writes dividend_yield to matching rows', async () => {
+    const fetchMock = vi.fn().mockImplementation((url) => {
+      if (url.includes('kompas100')) {
+        return Promise.resolve(
+          makeResponse(
+            { items: [{ symbol: 'BBCA.JK', name: 'Bank Central Asia' }] },
+            true,
+          ),
+        )
+      }
+      return Promise.resolve(
+        makeResponse(
+          {
+            symbol: 'BBCA.JK',
+            price: 9250,
+            currency: 'IDR',
+            dividend_yield: 0.061,
+          },
+          true,
+        ),
+      )
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = mountCalc('stocks')
+    await flushPromises()
+
+    const syncButton = wrapper
+      .findAll('button')
+      .find((b) => b.text().includes('Sync All Prices'))
+    await syncButton.trigger('click')
+    await flushPromises()
+
+    const rows = wrapper.vm.getEntries()
+    rows.forEach((row) => {
+      expect(row.dividend_yield).toBe(0.061)
+      expect(row.current_value).toBe(9250)
+    })
   })
 })

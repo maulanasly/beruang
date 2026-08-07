@@ -266,6 +266,8 @@ def calculate_stock_returns(
 
     ledger_rows: list[StockLedgerRowResponse] = []
     for row in metrics_table.to_dict(orient="records"):
+        raw_yield = float(row.get("dividend_yield", 0.0))
+        raw_estimated = float(row.get("estimated_dividend", 0.0))
         ledger_rows.append(
             StockLedgerRowResponse(
                 date=pd.to_datetime(row["date"]).date(),
@@ -273,6 +275,8 @@ def calculate_stock_returns(
                 new_share_purchases=float(row["new_share_purchases"]),
                 dividends=float(row["dividends"]),
                 current_value=float(row["current_value"]),
+                dividend_yield=raw_yield if raw_yield > 0 else None,
+                estimated_dividend=raw_estimated if raw_estimated > 0 else None,
                 month_start_value=(
                     float(row["month_start_value"])
                     if pd.notna(row.get("month_start_value"))
@@ -291,6 +295,8 @@ def calculate_stock_returns(
         ending_value=float(summary["ending_value"]),
         roi=float(summary["roi"]),
         xirr=float(summary["xirr"]),
+        estimated_annual_dividend=summary.get("estimated_annual_dividend"),
+        estimated_monthly_dividend=summary.get("estimated_monthly_dividend"),
     )
     return summary_response, ledger_rows
 

@@ -18,6 +18,7 @@ const LEDGERS = {
       installment_amount: 700,
       new_share_purchases: 300,
       dividends: 0,
+      dividend_yield: 0,
       current_value: 1000,
     },
   ],

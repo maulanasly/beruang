@@ -14,6 +14,7 @@ const DEFAULT_STOCK_ENTRIES = [
     installment_amount: 700,
     new_share_purchases: 300,
     dividends: 0,
+    dividend_yield: null,
     current_value: 1000,
   },
   {
@@ -22,6 +23,7 @@ const DEFAULT_STOCK_ENTRIES = [
     installment_amount: 700,
     new_share_purchases: 200,
     dividends: 10,
+    dividend_yield: null,
     current_value: 1950,
   },
 ]

@@ -36,6 +36,7 @@ export default {
     stockCode: 'Stock Code',
     newSharePurchases: 'New Share Purchases',
     dividends: 'Dividends',
+    dividendYield: 'Div Yield (%)',
     apy: 'APY',
   },
   column: {
@@ -45,6 +46,8 @@ export default {
     stockCode: 'Stock Code',
     newPurchases: 'New Purchases',
     dividends: 'Dividends',
+    dividendYield: 'Div Yield',
+    estimatedDividend: 'Est. Dividend',
     startValue: 'Start Value',
     momReturn: 'MoM Return',
     proratedInterest: 'Prorated Interest',
@@ -60,6 +63,8 @@ export default {
     latestProratedInterest: 'Latest Prorated Interest',
     currentApy: 'Current APY',
     latestTwr: 'TWR',
+    latestAnnualDividend: 'Est. Annual Dividend',
+    latestMonthlyDividend: 'Est. Monthly Dividend',
   },
   chart: {
     title: 'Capital Invested vs Current Market Value',
@@ -128,6 +133,8 @@ export default {
       'Interest earned for only part of the year, scaled down to the month\u2019s duration.',
     dividends:
       'Cash payouts a company distributes to its shareholders each period.',
+    dividendYield:
+      'Annual dividend as a percentage of the stock price (e.g. 5.61%). An estimated monthly dividend (current value \u00D7 yield \u00F7 12) is added to the MoM return and included in the XIRR cash-flow stream.',
     newPurchases:
       'Extra shares bought this period, on top of your regular installment.',
     capitalInvested:

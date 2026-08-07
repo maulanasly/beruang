@@ -77,6 +77,18 @@ const cards = computed(() => {
         value: formatter.formatCellValue('xirr', summary.xirr),
         hint: t('glossary.xirr'),
       },
+      ...(typeof summary.estimated_annual_dividend === 'number'
+        ? [
+            {
+              label: t('kpi.latestAnnualDividend'),
+              value: formatter.formatCellValue(
+                'estimated_annual_dividend',
+                summary.estimated_annual_dividend,
+              ),
+              hint: t('glossary.dividendYield'),
+            },
+          ]
+        : []),
       twrCard.value,
     ]
   }
@@ -106,6 +118,7 @@ const cards = computed(() => {
       :class="{
         'kpi-grid-4': cards.length === 4,
         'kpi-grid-5': cards.length === 5,
+        'kpi-grid-6': cards.length === 6,
       }"
     >
       <article v-for="(card, index) in cards" :key="card.label" class="kpi-card">

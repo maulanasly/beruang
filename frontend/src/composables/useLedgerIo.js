@@ -6,6 +6,7 @@ export const ASSET_COLUMNS = {
     'installment_amount',
     'new_share_purchases',
     'dividends',
+    'dividend_yield',
     'current_value',
   ],
   'term-deposits': ['date', 'installment_amount', 'current_value'],
@@ -16,6 +17,7 @@ const NUMERIC_FIELDS = new Set([
   'current_value',
   'new_share_purchases',
   'dividends',
+  'dividend_yield',
 ])
 
 const HEADER_ALIASES = {
@@ -193,7 +195,7 @@ export function parseLedgerJson(asset, text) {
     for (const column of columnsFor(asset)) {
       if (
         NUMERIC_FIELDS.has(column) &&
-        value[column] !== undefined &&
+        value[column] != null &&
         (typeof value[column] !== 'number' || Number.isNaN(value[column]))
       ) {
         rowErrors.push({ line, type: 'invalidNumber', field: column })
