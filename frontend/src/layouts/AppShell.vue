@@ -24,21 +24,25 @@ const navItems = [
       </header>
 
       <nav class="nav-bar">
-        <RouterLink
-          v-for="item in navItems"
-          :key="item.to"
-          :to="item.to"
-          class="nav-link"
-          active-class="nav-active"
-        >
-          {{ t(item.key) }}
-        </RouterLink>
-      </nav>
+        <div class="nav-links">
+          <RouterLink
+            v-for="item in navItems"
+            :key="item.to"
+            :to="item.to"
+            class="nav-link"
+            active-class="nav-active"
+          >
+            {{ t(item.key) }}
+          </RouterLink>
+        </div>
 
-      <div class="row row-2up settings-row">
-        <div>
-          <label for="locale">{{ t('settings.locale') }}</label>
-          <select id="locale" v-model="settings.locale">
+        <div class="nav-settings">
+          <select
+            id="locale"
+            v-model="settings.locale"
+            :aria-label="t('settings.locale')"
+            :title="t('settings.locale')"
+          >
             <option
               v-for="option in LOCALE_OPTIONS"
               :key="option.value"
@@ -47,10 +51,12 @@ const navItems = [
               {{ option.label }}
             </option>
           </select>
-        </div>
-        <div>
-          <label for="currency">{{ t('settings.currency') }}</label>
-          <select id="currency" v-model="settings.currency">
+          <select
+            id="currency"
+            v-model="settings.currency"
+            :aria-label="t('settings.currency')"
+            :title="t('settings.currency')"
+          >
             <option
               v-for="option in CURRENCY_OPTIONS"
               :key="option.value"
@@ -60,7 +66,7 @@ const navItems = [
             </option>
           </select>
         </div>
-      </div>
+      </nav>
 
       <RouterView />
     </section>

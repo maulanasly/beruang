@@ -48,10 +48,32 @@ body {
 
 .nav-bar {
   display: flex;
-  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
   margin: 1rem 0;
   border-bottom: 2px solid #e8edf2;
   padding-bottom: 0.5rem;
+}
+
+.nav-links {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.nav-settings {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-left: auto;
+}
+
+.nav-settings select {
+  width: auto;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.9rem;
 }
 
 .nav-link {
@@ -75,10 +97,6 @@ body {
 
 .nav-active:hover {
   background: linear-gradient(135deg, #ef6c2f, #f7b267);
-}
-
-.settings-row {
-  margin: 0.85rem 0;
 }
 
 .row {
