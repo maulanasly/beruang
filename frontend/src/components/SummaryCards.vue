@@ -21,6 +21,9 @@ const SUMMARY_LABEL_KEYS = {
   projected_fv_constant_installment: 'column.expectedValue',
   estimated_annual_dividend: 'kpi.latestAnnualDividend',
   estimated_monthly_dividend: 'kpi.latestMonthlyDividend',
+  total_accrued_interest: 'depositMaturity.totalAccruedInterest',
+  rollover_value: 'depositMaturity.rolloverValue',
+  next_maturity_date: 'depositMaturity.nextMaturity',
 }
 
 const SUMMARY_HINT_KEYS = {

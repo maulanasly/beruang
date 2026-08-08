@@ -25,7 +25,13 @@ const LEDGERS = {
   'term-deposits': {
     apy: 0.08,
     entries: [
-      { date: '2026-05-31', installment_amount: 1000, current_value: 1000 },
+      {
+        date: '2026-05-31',
+        installment_amount: 1000,
+        current_value: 1000,
+        term_months: 12,
+        maturity_date: '2027-05-31',
+      },
     ],
   },
 }

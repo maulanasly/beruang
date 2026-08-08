@@ -181,6 +181,8 @@ class TermDepositLedgerEntry(BaseModel):
     date: date
     installment_amount: float = Field(ge=0)
     current_value: float = Field(ge=0)
+    term_months: int = Field(default=12, ge=1, le=120)
+    maturity_date: date | None = None
 
 
 class TermDepositReturnsRequest(BaseModel):
@@ -196,11 +198,15 @@ class TermDepositReturnsRequest(BaseModel):
                         "date": "2026-05-31",
                         "installment_amount": 1000,
                         "current_value": 1000,
+                        "term_months": 12,
+                        "maturity_date": "2027-05-31",
                     },
                     {
                         "date": "2026-06-30",
                         "installment_amount": 1000,
                         "current_value": 2005,
+                        "term_months": 12,
+                        "maturity_date": "2027-06-30",
                     },
                 ],
             }
@@ -213,6 +219,9 @@ class TermDepositSummaryResponse(BaseModel):
     monthly_rate: float
     projected_fv_constant_installment: float
     ending_value: float
+    total_accrued_interest: float = 0.0
+    rollover_value: float = 0.0
+    next_maturity_date: date | None = None
 
 
 class TermDepositLedgerRowResponse(BaseModel):
@@ -222,6 +231,12 @@ class TermDepositLedgerRowResponse(BaseModel):
     month_start_value: float | None = None
     prorated_interest: float | None = None
     expected_month_end_value: float | None = None
+    term_months: int = 12
+    maturity_date: date | None = None
+    days_to_maturity: int | None = None
+    maturity_status: str | None = None
+    maturity_value: float | None = None
+    accrued_interest: float | None = None
 
 
 class TermDepositReturnsResponse(BaseModel):

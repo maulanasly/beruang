@@ -25,6 +25,16 @@ const STOCK_ENTRIES = [
   },
 ]
 
+const TD_ENTRIES = [
+  {
+    date: '2026-05-31',
+    installment_amount: 1000,
+    current_value: 1000,
+    term_months: 12,
+    maturity_date: '2027-05-31',
+  },
+]
+
 describe('exportLedgerCsv', () => {
   it('writes a header row and one line per entry', () => {
     const csv = exportLedgerCsv('mutual-funds', MF_ENTRIES)
@@ -37,6 +47,13 @@ describe('exportLedgerCsv', () => {
     const csv = exportLedgerCsv('stocks', STOCK_ENTRIES)
     expect(csv.split('\n')[0]).toBe(
       'symbol,date,installment_amount,new_share_purchases,dividends,dividend_yield,current_value',
+    )
+  })
+
+  it('includes term and maturity columns for term deposits', () => {
+    const csv = exportLedgerCsv('term-deposits', TD_ENTRIES)
+    expect(csv.split('\n')[0]).toBe(
+      'date,installment_amount,current_value,term_months,maturity_date',
     )
   })
 })
@@ -96,7 +113,7 @@ describe('parseLedgerCsv', () => {
 
 describe('exportLedgerJson / parseLedgerJson', () => {
   it('wraps entries with asset metadata and round-trips', () => {
-    const json = exportLedgerJson('term-deposits', MF_ENTRIES)
+    const json = exportLedgerJson('term-deposits', TD_ENTRIES)
     const parsed = JSON.parse(json)
     expect(parsed.asset).toBe('term-deposits')
     expect(parsed.version).toBe(1)
@@ -104,7 +121,7 @@ describe('exportLedgerJson / parseLedgerJson', () => {
 
     const { entries, errors } = parseLedgerJson('term-deposits', json)
     expect(errors).toEqual([])
-    expect(entries).toEqual(MF_ENTRIES)
+    expect(entries).toEqual(TD_ENTRIES)
   })
 
   it('accepts a bare array of entries', () => {

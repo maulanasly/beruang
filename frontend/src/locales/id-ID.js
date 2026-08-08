@@ -37,6 +37,8 @@ export default {
     dividends: 'Dividen',
     dividendYield: 'Imbal Hasil Dividen (%)',
     apy: 'APY',
+    termMonths: 'Jangka Waktu (bulan)',
+    maturityDate: 'Tanggal Jatuh Tempo',
   },
   column: {
     date: 'Tanggal',
@@ -155,6 +157,12 @@ export default {
       'Time-Weighted Return: tingkat pengembalian tahunan majemuk yang menghilangkan pengaruh setoran dan penarikan, sehingga dapat dibandingkan secara adil dengan indeks pasar. XIRR bersifat money-weighted (terpengaruh arus kas).',
     dividendFocus:
       'Tampilan berperingkat alam semesta Kompas 100 Starter berdasarkan imbal hasil dividen tahunan, plus estimasi pendapatan dividen Anda dari aset yang Anda lacak. Gunakan "Terapkan ke Baris" untuk mengisi baris buku besar dengan simbol dan imbal hasilnya.',
+    termMonths:
+      'Berapa bulan deposito berjangka Anda terkunci. Tanggal jatuh tempo diturunkan dari tanggal mulai ditambah jangka waktu, dan tetap dapat diubah.',
+    maturityDate:
+      'Tanggal deposito berjangka Anda jatuh tempo. Biarkan kosong untuk menurunkannya dari tanggal mulai dan jangka waktu.',
+    depositMaturity:
+      'Menampilkan tanggal jatuh tempo tiap deposito, sisa hari, bunga yang terkumpul, dan nilai proyeksi saat jatuh tempo. Deposito yang telah atau mendekati jatuh tempo ditandai sebagai kandidat perpanjangan, termasuk jumlah yang akan diperpanjang.',
   },
   goals: {
     title: 'Tujuan & Target',
@@ -216,6 +224,28 @@ export default {
     snapshotAnnual: 'Est. Dividen Tahunan',
     snapshotMonthly: 'Est. Dividen Bulanan',
     snapshotNone: 'Tambahkan entri imbal hasil dividen dan hitung untuk melihat estimasi pendapatan dividen Anda.',
+  },
+  depositMaturity: {
+    title: 'Pelacak Jatuh Tempo & Perpanjangan',
+    noData: 'Hitung hasil untuk melihat tanggal jatuh tempo, bunga yang terkumpul, dan saran perpanjangan tiap deposito.',
+    maturityDate: 'Tanggal Jatuh Tempo',
+    daysToMaturity: 'Waktu Menuju Jatuh Tempo',
+    status: 'Status',
+    maturityValue: 'Nilai Jatuh Tempo',
+    accruedInterest: 'Bunga Terkumpul',
+    rollover: 'Perpanjangan',
+    matured: 'Jatuh Tempo',
+    active: 'Aktif',
+    maturedDaysAgo: 'Jatuh tempo {days} hari lalu',
+    maturesToday: 'Jatuh tempo hari ini',
+    daysLeft: '{days} hari tersisa',
+    rolloverMatured: 'Jatuh tempo \u2014 perpanjang pokok + bunga atau tarik.',
+    rolloverSoon: 'Segera jatuh tempo \u2014 \u2248 {value} tersedia untuk diperpanjang.',
+    holding: 'Ditahan hingga jatuh tempo.',
+    nextMaturity: 'Jatuh Tempo Berikutnya',
+    totalAccruedInterest: 'Total Bunga Terkumpul',
+    rolloverValue: 'Nilai Perpanjangan (30 hari)',
+    rate: 'Suku Bunga',
   },
   io: {
     importTitle: 'Cadangan & Pulihkan Buku Besar',

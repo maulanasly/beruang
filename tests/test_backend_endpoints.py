@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import date
+
 import pytest
 from httpx import ASGITransport, AsyncClient
 
@@ -125,6 +127,78 @@ async def test_term_deposit_returns_endpoint(async_client: AsyncClient) -> None:
     assert set(body.keys()) == {"summary", "ledger"}
     assert body["summary"]["apy"] == 0.06
     assert len(body["ledger"]) == 3
+
+
+def test_term_deposit_maturity_fields_derived_from_term_months() -> None:
+    summary, rows = services.calculate_term_deposit_returns(
+        [
+            services.TermDepositLedgerEntry(
+                date=date(2026, 1, 31),
+                installment_amount=1000,
+                current_value=1000,
+                term_months=12,
+            )
+        ],
+        apy=0.06,
+        reference_date=date(2026, 6, 30),
+    )
+
+    assert rows[0].term_months == 12
+    assert rows[0].maturity_date == date(2027, 1, 31)
+    assert rows[0].days_to_maturity == 215
+    assert rows[0].maturity_status == "active"
+    assert rows[0].maturity_value == pytest.approx(1000 * (1.06) ** 1.0)
+    assert rows[0].accrued_interest == pytest.approx(1000 * (1.06 ** (150 / 365) - 1))
+    assert summary.next_maturity_date == date(2027, 1, 31)
+    assert summary.total_accrued_interest == pytest.approx(rows[0].accrued_interest)
+
+
+def test_term_deposit_matured_status_when_after_maturity() -> None:
+    summary, rows = services.calculate_term_deposit_returns(
+        [
+            services.TermDepositLedgerEntry(
+                date=date(2025, 1, 31),
+                installment_amount=5000,
+                current_value=5000,
+                term_months=12,
+                maturity_date=date(2026, 1, 31),
+            )
+        ],
+        apy=0.06,
+        reference_date=date(2026, 8, 8),
+    )
+
+    assert rows[0].maturity_status == "matured"
+    assert rows[0].days_to_maturity == -189
+    assert rows[0].accrued_interest == pytest.approx(5000 * (1.06 - 1))
+    assert summary.next_maturity_date is None
+
+
+def test_term_deposit_rollover_value_counts_matured_and_near_maturity() -> None:
+    summary, _ = services.calculate_term_deposit_returns(
+        [
+            services.TermDepositLedgerEntry(
+                date=date(2025, 6, 30),
+                installment_amount=2000,
+                current_value=2000,
+                term_months=12,
+                maturity_date=date(2026, 6, 30),
+            ),
+            services.TermDepositLedgerEntry(
+                date=date(2026, 1, 31),
+                installment_amount=3000,
+                current_value=3000,
+                term_months=12,
+                maturity_date=date(2027, 1, 31),
+            ),
+        ],
+        apy=0.06,
+        reference_date=date(2026, 7, 15),
+    )
+
+    matured_value = 2000 * (1.06) ** 1.0
+    assert summary.rollover_value == pytest.approx(matured_value)
+    assert summary.next_maturity_date == date(2027, 1, 31)
 
 
 @pytest.mark.anyio

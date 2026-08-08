@@ -29,8 +29,8 @@ const DEFAULT_STOCK_ENTRIES = [
 ]
 
 const DEFAULT_TD_ENTRIES = [
-  { date: '2026-05-31', installment_amount: 1000, current_value: 1000 },
-  { date: '2026-06-30', installment_amount: 1000, current_value: 2005 },
+  { date: '2026-05-31', installment_amount: 1000, current_value: 1000, term_months: 12, maturity_date: '2027-05-31' },
+  { date: '2026-06-30', installment_amount: 1000, current_value: 2005, term_months: 12, maturity_date: '2027-06-30' },
 ]
 
 function loadStored() {
@@ -124,7 +124,13 @@ export function useLedgers() {
     const td = payload?.['term-deposits'] ?? {}
     ledgers['term-deposits'] = {
       apy: typeof td.apy === 'number' ? td.apy : 0.06,
-      entries: (td.entries ?? []).map((e) => ({ ...e })),
+      entries: (td.entries ?? []).map((e) => ({
+        date: e.date ?? '',
+        installment_amount: e.installment_amount ?? 0,
+        current_value: e.current_value ?? 0,
+        term_months: e.term_months ?? 12,
+        maturity_date: e.maturity_date ?? '',
+      })),
     }
     ledgers.results = {
       'mutual-funds': null,

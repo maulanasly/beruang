@@ -109,6 +109,71 @@ describe('AssetCalculator', () => {
     expect(mf.find('#apy').exists()).toBe(false)
   })
 
+  it('renders term months and maturity date fields for term-deposits', () => {
+    const wrapper = mountCalc('term-deposits')
+    const headerText = wrapper.find('.entry-grid-header').text()
+    expect(headerText).toContain('Term (months)')
+    expect(headerText).toContain('Maturity Date')
+  })
+
+  it('derives maturity date from term months when the term changes', async () => {
+    const wrapper = mountCalc('term-deposits')
+    const termInput = wrapper.findAll('.entry-grid input')[3]
+    const maturityInput = wrapper.findAll('.entry-grid input')[4]
+
+    await termInput.setValue('24')
+
+    expect(maturityInput.element.value).toBe('2028-05-31')
+  })
+
+  it('derives maturity date from the start date when the date changes and no maturity is set', async () => {
+    const wrapper = mountCalc('term-deposits')
+    const dateInput = wrapper.findAll('.entry-grid input')[0]
+    const maturityInput = wrapper.findAll('.entry-grid input')[4]
+
+    await maturityInput.setValue('')
+    await dateInput.setValue('2026-01-31')
+
+    expect(maturityInput.element.value).toBe('2027-01-31')
+  })
+
+  it('keeps a manually entered maturity date when the start date changes', async () => {
+    const wrapper = mountCalc('term-deposits')
+    const dateInput = wrapper.findAll('.entry-grid input')[0]
+    const maturityInput = wrapper.findAll('.entry-grid input')[4]
+
+    await maturityInput.setValue('2028-03-15')
+    await dateInput.setValue('2026-02-28')
+
+    expect(maturityInput.element.value).toBe('2028-03-15')
+  })
+
+  it('sends null maturity_date and term months in the term-deposit payload', async () => {
+    let capturedPayload = null
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation((_, opts) => {
+        capturedPayload = JSON.parse(opts.body)
+        return Promise.resolve(makeResponse({ summary: {}, ledger: [] }, true))
+      }),
+    )
+
+    const wrapper = mountCalc('term-deposits')
+    const maturityInput = wrapper.findAll('.entry-grid input')[4]
+    await maturityInput.setValue('')
+
+    await wrapper.get('button.action').trigger('click')
+    await flushPromises()
+
+    expect(capturedPayload.entries[0].maturity_date).toBeNull()
+    expect(capturedPayload.entries[0].term_months).toBe(12)
+  })
+
+  it('renders the maturity tracker panel for term-deposits', () => {
+    const wrapper = mountCalc('term-deposits')
+    expect(wrapper.find('.deposit-maturity').exists()).toBe(true)
+  })
+
   it('shows a Stock Code column on stock rows but not on mutual-fund rows', () => {
     const stocks = mountCalc('stocks')
     const headerText = stocks.find('.entry-grid-header').text()

@@ -396,6 +396,28 @@ textarea {
   margin-top: 0.75rem;
 }
 
+.deposit-maturity-summary {
+  margin-bottom: 0.75rem;
+}
+
+.status-chip {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-matured {
+  background: #ffe8e6;
+  color: #b42318;
+}
+
+.status-active {
+  background: #e6f4ea;
+  color: #137333;
+}
+
 .market-helper {
   border: 1px solid #d9e2ec;
   background: #f8fbff;

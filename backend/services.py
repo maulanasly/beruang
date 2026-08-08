@@ -407,12 +407,17 @@ def calculate_stock_returns(
 def calculate_term_deposit_returns(
     entries: list[TermDepositLedgerEntry],
     apy: float,
+    reference_date: date | None = None,
 ) -> tuple[TermDepositSummaryResponse, list[TermDepositLedgerRowResponse]]:
     ledger_frame = pd.DataFrame([entry.model_dump() for entry in entries])
-    metrics_table, summary = term_deposit_metrics(ledger_frame, apy=apy)
+    metrics_table, summary = term_deposit_metrics(
+        ledger_frame, apy=apy, reference_date=reference_date
+    )
 
     ledger_rows: list[TermDepositLedgerRowResponse] = []
     for row in metrics_table.to_dict(orient="records"):
+        maturity_date = row.get("maturity_date")
+        days_to_maturity = row.get("days_to_maturity")
         ledger_rows.append(
             TermDepositLedgerRowResponse(
                 date=pd.to_datetime(row["date"]).date(),
@@ -433,6 +438,32 @@ def calculate_term_deposit_returns(
                     if pd.notna(row.get("expected_month_end_value"))
                     else None
                 ),
+                term_months=int(row.get("term_months") or 12),
+                maturity_date=(
+                    pd.to_datetime(maturity_date).date()
+                    if maturity_date is not None and pd.notna(maturity_date)
+                    else None
+                ),
+                days_to_maturity=(
+                    int(days_to_maturity)
+                    if days_to_maturity is not None and pd.notna(days_to_maturity)
+                    else None
+                ),
+                maturity_status=(
+                    str(row["maturity_status"])
+                    if pd.notna(row.get("maturity_status"))
+                    else None
+                ),
+                maturity_value=(
+                    float(row["maturity_value"])
+                    if pd.notna(row.get("maturity_value"))
+                    else None
+                ),
+                accrued_interest=(
+                    float(row["accrued_interest"])
+                    if pd.notna(row.get("accrued_interest"))
+                    else None
+                ),
             )
         )
 
@@ -443,5 +474,8 @@ def calculate_term_deposit_returns(
             summary["projected_fv_constant_installment"]
         ),
         ending_value=float(summary["ending_value"]),
+        total_accrued_interest=float(summary["total_accrued_interest"]),
+        rollover_value=float(summary["rollover_value"]),
+        next_maturity_date=summary.get("next_maturity_date"),
     )
     return summary_response, ledger_rows

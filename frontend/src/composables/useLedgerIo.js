@@ -9,7 +9,7 @@ export const ASSET_COLUMNS = {
     'dividend_yield',
     'current_value',
   ],
-  'term-deposits': ['date', 'installment_amount', 'current_value'],
+  'term-deposits': ['date', 'installment_amount', 'current_value', 'term_months', 'maturity_date'],
 }
 
 const NUMERIC_FIELDS = new Set([
@@ -18,6 +18,7 @@ const NUMERIC_FIELDS = new Set([
   'new_share_purchases',
   'dividends',
   'dividend_yield',
+  'term_months',
 ])
 
 const HEADER_ALIASES = {
@@ -71,6 +72,8 @@ export function exportLedgerCsvTemplate(asset) {
     .map((column) => {
       if (column === 'date') return '2026-07-31'
       if (column === 'symbol') return 'BBCA'
+      if (column === 'maturity_date') return '2027-07-31'
+      if (column === 'term_months') return '12'
       return '1000'
     })
     .join(',')

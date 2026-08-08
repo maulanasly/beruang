@@ -1,13 +1,19 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from datetime import date
 
 import numpy as np
 import numpy_financial as npf
 import pandas as pd
 
 LEDGER_COLUMNS = ["date", "installment_amount", "current_value"]
-STOCK_LEDGER_COLUMNS = LEDGER_COLUMNS + ["new_share_purchases", "dividends", "dividend_yield"]
+STOCK_LEDGER_COLUMNS = LEDGER_COLUMNS + [
+    "new_share_purchases",
+    "dividends",
+    "dividend_yield",
+]
+TERM_DEPOSIT_COLUMNS = LEDGER_COLUMNS + ["term_months", "maturity_date"]
 
 
 def create_empty_ledger() -> pd.DataFrame:
@@ -174,19 +180,66 @@ def stock_metrics(ledger: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, float]]
 
 
 def term_deposit_metrics(
-    ledger: pd.DataFrame, apy: float
+    ledger: pd.DataFrame, apy: float, reference_date: date | None = None
 ) -> tuple[pd.DataFrame, dict[str, float]]:
-    """Calculate prorated monthly APY progression for term deposits."""
+    """Calculate prorated monthly APY progression for term deposits.
+
+    Each row may carry an optional ``term_months`` (default 12) and an
+    optional ``maturity_date``. When ``maturity_date`` is absent it is derived
+    from the row date plus ``term_months``. Per-row maturity fields
+    (days-to-maturity, status, maturity value, accrued interest) are computed
+    relative to ``reference_date`` (defaults to today).
+    """
     if apy < -1.0:
         raise ValueError("APY must be greater than -100%.")
 
+    if reference_date is None:
+        reference_date = date.today()
+    reference = pd.Timestamp(reference_date)
+
     df = _prepare_ledger(ledger, LEDGER_COLUMNS)
+    if "term_months" not in df.columns:
+        df["term_months"] = 12
+    if "maturity_date" not in df.columns:
+        df["maturity_date"] = pd.NaT
+    df["term_months"] = (
+        pd.to_numeric(df["term_months"], errors="coerce").fillna(12).clip(lower=1)
+    )
+    df["maturity_date"] = pd.to_datetime(df["maturity_date"], errors="coerce")
+
+    derived = pd.to_datetime(
+        {
+            "year": df["date"].dt.year * 1
+            + (df["date"].dt.month - 1 + df["term_months"]) // 12,
+            "month": (df["date"].dt.month - 1 + df["term_months"]) % 12 + 1,
+            "day": df["date"].dt.day,
+        }
+    )
+    df["maturity_date"] = df["maturity_date"].where(
+        df["maturity_date"].notna(), derived
+    )
+
     monthly_rate = (1.0 + apy) ** (1.0 / 12.0) - 1.0
     df["month_start_value"] = df["current_value"].shift(1).fillna(0.0)
     df["prorated_interest"] = df["month_start_value"] * monthly_rate
     df["expected_month_end_value"] = (
         df["month_start_value"] + df["installment_amount"] + df["prorated_interest"]
     )
+
+    term_years = df["term_months"] / 12.0
+    df["days_to_maturity"] = (df["maturity_date"] - reference).dt.days
+    df["maturity_status"] = np.where(df["days_to_maturity"] <= 0, "matured", "active")
+    df["maturity_value"] = df["installment_amount"] * (1.0 + apy) ** term_years
+
+    elapsed_days = (reference - df["date"]).dt.days.clip(lower=0)
+    elapsed_years = (elapsed_days / 365.0).clip(upper=term_years)
+    df["accrued_interest"] = df["installment_amount"] * (
+        (1.0 + apy) ** elapsed_years - 1.0
+    )
+
+    active = df[df["maturity_status"] == "active"]
+    next_maturity = active["maturity_date"].min() if not active.empty else pd.NaT
+    rollover_value = float(df.loc[df["days_to_maturity"] <= 30, "maturity_value"].sum())
 
     periods = len(df)
     installment = float(df["installment_amount"].iloc[0]) if periods > 0 else 0.0
@@ -197,6 +250,11 @@ def term_deposit_metrics(
         "monthly_rate": float(monthly_rate),
         "projected_fv_constant_installment": float(projected_fv),
         "ending_value": float(df["current_value"].iloc[-1]),
+        "total_accrued_interest": float(df["accrued_interest"].sum()),
+        "rollover_value": rollover_value,
+        "next_maturity_date": (
+            pd.Timestamp(next_maturity).date() if pd.notna(next_maturity) else None
+        ),
     }
     return df, summary
 

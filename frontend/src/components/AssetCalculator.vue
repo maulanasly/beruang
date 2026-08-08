@@ -3,6 +3,7 @@ import { computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import MarketHelper from './MarketHelper.vue'
 import DividendFocusPanel from './DividendFocusPanel.vue'
+import DepositMaturityPanel from './DepositMaturityPanel.vue'
 import InfoTip from './InfoTip.vue'
 import { useApiClient } from '../composables/useApiClient'
 import { useStockUniverse } from '../composables/useStockUniverse'
@@ -11,6 +12,7 @@ import { useLedgers } from '../composables/useLedgers'
 const props = defineProps({
   activeAsset: { type: String, required: true },
   resultSummary: { type: Object, default: () => ({}) },
+  resultLedger: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['calculated', 'error', 'reset'])
@@ -107,8 +109,32 @@ function buildFieldConfig() {
         min: 0,
         step: '0.01',
       },
+      {
+        key: 'term_months',
+        labelKey: 'form.termMonths',
+        type: 'number',
+        min: 1,
+        step: '1',
+        hintKey: 'glossary.termMonths',
+      },
+      {
+        key: 'maturity_date',
+        labelKey: 'form.maturityDate',
+        type: 'date',
+        hintKey: 'glossary.maturityDate',
+      },
     ],
   }
+}
+
+function addMonths(dateString, months) {
+  if (!dateString) return ''
+  const [year, month, day] = dateString.split('-').map(Number)
+  const total = year * 12 + (month - 1) + Number(months)
+  const nextYear = Math.floor(total / 12)
+  const nextMonth = (total % 12) + 1
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${nextYear}-${pad(nextMonth)}-${pad(day)}`
 }
 
 const assetFieldConfig = buildFieldConfig()
@@ -149,11 +175,31 @@ function createEmptyEntry(asset) {
       current_value: 0,
     }
   }
+  if (asset === 'term-deposits') {
+    return {
+      date: '',
+      installment_amount: 0,
+      current_value: 0,
+      term_months: 12,
+      maturity_date: '',
+    }
+  }
   return { date: '', installment_amount: 0, current_value: 0 }
 }
 
 function addEntryRow() {
   getEntries().push(createEmptyEntry(props.activeAsset))
+}
+
+function onTermDepositFieldInput(entry, field, event) {
+  if (props.activeAsset !== 'term-deposits') return
+  const key = field?.key
+  const value = event.target.value
+  const months = key === 'term_months' ? Number(value) : Number(entry.term_months || 12)
+  const baseDate = key === 'date' ? value : entry.date
+  if (key === 'term_months' || (key === 'date' && !entry.maturity_date)) {
+    if (baseDate) entry.maturity_date = addMonths(baseDate, months || 12)
+  }
 }
 
 function removeEntryRow(index) {
@@ -176,6 +222,10 @@ function normalizeEntries(asset, entries) {
         const raw = entry[field.key]
         normalized[field.key] =
           raw === null || raw === undefined || raw === '' ? null : Number(raw)
+      } else if (field.key === 'maturity_date') {
+        const raw = entry[field.key]
+        normalized[field.key] =
+          raw === null || raw === undefined || raw === '' ? null : raw
       } else {
         normalized[field.key] =
           field.type === 'number' ? Number(entry[field.key] ?? 0) : entry[field.key]
@@ -358,6 +408,12 @@ defineExpose({ calculate, isLoading })
     @apply="applyDividendFocus"
   />
 
+  <DepositMaturityPanel
+    v-if="activeAsset === 'term-deposits'"
+    :summary="props.resultSummary"
+    :ledger="props.resultLedger"
+  />
+
   <div class="row">
     <div class="rows-head">
       <label>{{ t('common.ledgerRows') }}</label>
@@ -391,6 +447,7 @@ defineExpose({ calculate, isLoading })
               :type="field.type"
               :min="field.min"
               :step="field.step"
+              @input="onTermDepositFieldInput(entry, field, $event)"
             />
             <input
               v-else

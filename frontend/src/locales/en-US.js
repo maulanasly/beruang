@@ -37,6 +37,8 @@ export default {
     dividends: 'Dividends',
     dividendYield: 'Dividend Yield (%)',
     apy: 'APY',
+    termMonths: 'Term (months)',
+    maturityDate: 'Maturity Date',
   },
   column: {
     date: 'Date',
@@ -53,6 +55,7 @@ export default {
     expectedValue: 'Expected Value',
     capitalInvested: 'Capital Invested',
   },
+
   kpi: {
     thisMonthUpdate: 'This Month Update',
     latestEntryDate: 'Latest Entry Date',
@@ -155,6 +158,12 @@ export default {
       'Time-Weighted Return: the compound annualized return that removes the effect of deposits and withdrawals, so it can be compared fairly against a market index. XIRR is money-weighted instead.',
     dividendFocus:
       'A ranked view of the Kompas 100 Starter universe by annual dividend yield, plus your estimated dividend income from the holdings you track. Use "Apply to Row" to fill a ledger row with a symbol and its yield.',
+    termMonths:
+      'How many months your term deposit is locked for. The maturity date is derived from the start date plus the term, and stays editable.',
+    maturityDate:
+      'The date your term deposit matures. Leave it blank to derive it from the start date and term.',
+    depositMaturity:
+      'Shows each term deposit\u2019s maturity date, days remaining, accrued interest, and projected value at maturity. Deposits at or past maturity are flagged as rollover candidates, including the amount that would roll over.',
   },
   goals: {
     title: 'Goals & Targets',
@@ -216,6 +225,28 @@ export default {
     snapshotAnnual: 'Est. Annual Dividend',
     snapshotMonthly: 'Est. Monthly Dividend',
     snapshotNone: 'Add dividend yield entries and calculate to see your estimated dividend income.',
+  },
+  depositMaturity: {
+    title: 'Maturity & Rollover Tracker',
+    noData: 'Calculate returns to see each deposit\u2019s maturity date, accrued interest, and rollover suggestion.',
+    maturityDate: 'Maturity Date',
+    daysToMaturity: 'Time to Maturity',
+    status: 'Status',
+    maturityValue: 'Maturity Value',
+    accruedInterest: 'Accrued Interest',
+    rollover: 'Rollover',
+    matured: 'Matured',
+    active: 'Active',
+    maturedDaysAgo: 'Matured {days} days ago',
+    maturesToday: 'Matures today',
+    daysLeft: '{days} days left',
+    rolloverMatured: 'Matured \u2014 roll over principal + interest or withdraw.',
+    rolloverSoon: 'Maturing soon \u2014 \u2248 {value} available to roll over.',
+    holding: 'Holding until maturity.',
+    nextMaturity: 'Next Maturity',
+    totalAccruedInterest: 'Total Accrued Interest',
+    rolloverValue: 'Rollover Value (30 days)',
+    rate: 'Rate',
   },
   io: {
     importTitle: 'Ledger Backup & Restore',

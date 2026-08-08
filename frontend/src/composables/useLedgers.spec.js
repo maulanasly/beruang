@@ -91,7 +91,13 @@ describe('useLedgers', () => {
     ])
     expect(ledgers.getEntries('stocks')).toEqual([])
     expect(ledgers.getEntries('term-deposits')).toEqual([
-      { date: '2026-07-31', installment_amount: 200, current_value: 220 },
+      {
+        date: '2026-07-31',
+        installment_amount: 200,
+        current_value: 220,
+        term_months: 12,
+        maturity_date: '',
+      },
     ])
     expect(ledgers.getApy()).toBe(0.12)
     expect(ledgers.getResult('stocks')).toBeNull()

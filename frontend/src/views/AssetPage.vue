@@ -45,6 +45,7 @@ const resultSymbolLabel = computed(() => {
     :ref="(el) => (calculatorRef = el)"
     :active-asset="asset"
     :result-summary="resultSummary"
+    :result-ledger="resultLedger"
     @calculated="(v) => ledgers.setResult(asset, v)"
     @reset="() => ledgers.clearResult(asset)"
   />
