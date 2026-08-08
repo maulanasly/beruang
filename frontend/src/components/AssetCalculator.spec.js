@@ -35,7 +35,6 @@ describe('AssetCalculator', () => {
     const wrapper = mountCalc('mutual-funds')
     const inputs = wrapper.findAll('input')
     expect(inputs).toHaveLength(6)
-    expect(wrapper.text()).toContain('POST')
   })
 
   it('emits calculated with the API body on a successful POST', async () => {
@@ -182,7 +181,6 @@ describe('AssetCalculator', () => {
       .map((input) => input.element.value)
     expect(values).toContain('9250')
     expect(values.filter((v) => v === '9250')).toHaveLength(2)
-    expect(wrapper.emitted('reset')).toBeTruthy()
   })
 
   it('reports a sync without symbols and leaves values untouched', async () => {
@@ -304,5 +302,61 @@ describe('AssetCalculator', () => {
       expect(row.dividend_yield).toBe(0.061)
       expect(row.current_value).toBe(9250)
     })
+  })
+
+  it('applyDividendFocus fills the target row from a top-yield pick', async () => {
+    const fetchMock = vi.fn().mockImplementation((url) => {
+      if (url.includes('kompas100')) {
+        return Promise.resolve(
+          makeResponse(
+            { items: [{ symbol: 'TLKM.JK', name: 'Telkom Indonesia' }] },
+            true,
+          ),
+        )
+      }
+      if (url.includes('dividend-yields')) {
+        return Promise.resolve(
+          makeResponse(
+            {
+              as_of: '2026-08-08',
+              items: [
+                {
+                  symbol: 'TLKM.JK',
+                  name: 'Telkom Indonesia',
+                  price: 3850,
+                  currency: 'IDR',
+                  dividend_yield: 0.084,
+                },
+              ],
+            },
+            true,
+          ),
+        )
+      }
+      return Promise.resolve(
+        makeResponse(
+          { symbol: 'TLKM.JK', price: 3850, currency: 'IDR', dividend_yield: 0.084 },
+          true,
+        ),
+      )
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const wrapper = mountCalc('stocks')
+    await flushPromises()
+
+    await wrapper.find('.dividend-focus-toggle').trigger('click')
+    await flushPromises()
+
+    const applyButton = wrapper
+      .findAll('button')
+      .find((b) => b.text().includes('Apply to Row'))
+    await applyButton.trigger('click')
+    await flushPromises()
+
+    const row = wrapper.vm.getEntries()[0]
+    expect(row.symbol).toBe('TLKM.JK')
+    expect(row.dividend_yield).toBe(0.084)
+    expect(row.current_value).toBe(3850)
   })
 })

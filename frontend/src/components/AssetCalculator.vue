@@ -2,6 +2,7 @@
 import { computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import MarketHelper from './MarketHelper.vue'
+import DividendFocusPanel from './DividendFocusPanel.vue'
 import InfoTip from './InfoTip.vue'
 import { useApiClient } from '../composables/useApiClient'
 import { useStockUniverse } from '../composables/useStockUniverse'
@@ -9,6 +10,7 @@ import { useLedgers } from '../composables/useLedgers'
 
 const props = defineProps({
   activeAsset: { type: String, required: true },
+  resultSummary: { type: Object, default: () => ({}) },
 })
 
 const emit = defineEmits(['calculated', 'error', 'reset'])
@@ -209,6 +211,32 @@ async function applyQuoteToRow() {
   }
 }
 
+async function applyDividendFocus(item) {
+  if (!item?.symbol) return
+  stockUniverse.quoteStatus.value = ''
+  stockUniverse.syncTargetRowIndex(getEntries().length - 1)
+  const rowIndex = stockUniverse.targetRowIndex.value
+  const entries = getEntries()
+  if (entries[rowIndex]) {
+    entries[rowIndex].symbol = item.symbol
+    entries[rowIndex].dividend_yield = item.dividend_yield
+  }
+  stockUniverse.selectedSymbol.value = item.symbol
+  try {
+    const quote = await stockUniverse.fetchAndStoreQuote()
+    if (entries[rowIndex]) {
+      entries[rowIndex].current_value = quote.price
+    }
+    stockUniverse.quoteStatus.value = t('market.updatedRow', {
+      row: rowIndex + 1,
+      symbol: quote.symbol,
+      currency: quote.currency,
+    })
+  } catch {
+    // quote fetch may fail; symbol and yield are already applied
+  }
+}
+
 async function syncAllPrices() {
   const entries = getEntries()
   const { updated, failed } = await stockUniverse.syncAllQuotes(entries)
@@ -221,13 +249,11 @@ async function syncAllPrices() {
       }
     }
   }
-  emit('reset')
 }
 
 async function calculate() {
   error.value = ''
   errorLines.value = []
-  emit('reset')
 
   const entries = getEntries()
   if (!Array.isArray(entries) || entries.length === 0) {
@@ -264,6 +290,7 @@ async function calculate() {
         return merged
       })
     }
+    emit('reset')
     emit('calculated', result)
   } else {
     emit('error', error.value)
@@ -324,6 +351,13 @@ defineExpose({ calculate, isLoading })
     @sync-all="syncAllPrices"
   />
 
+  <DividendFocusPanel
+    v-if="activeAsset === 'stocks'"
+    :api-base-url="API_BASE_URL"
+    :summary="props.resultSummary"
+    @apply="applyDividendFocus"
+  />
+
   <div class="row">
     <div class="rows-head">
       <label>{{ t('common.ledgerRows') }}</label>
@@ -349,21 +383,24 @@ defineExpose({ calculate, isLoading })
           v-for="field in activeEntryFields"
           :key="`field-${index}-${field.key}`"
         >
-          <input
-            v-if="field.type !== 'percent'"
-            v-model="entry[field.key]"
-            :type="field.type"
-            :min="field.min"
-            :step="field.step"
-          />
-          <input
-            v-else
-            :type="'number'"
-            :value="entry[field.key] == null || entry[field.key] === '' ? '' : Number(entry[field.key]) * 100"
-            min="0"
-            step="0.01"
-            @input="entry[field.key] = $event.target.value === '' ? null : Number($event.target.value) / 100"
-          />
+          <div class="entry-field-cell">
+            <span class="mobile-label">{{ t(field.labelKey) }}</span>
+            <input
+              v-if="field.type !== 'percent'"
+              v-model="entry[field.key]"
+              :type="field.type"
+              :min="field.min"
+              :step="field.step"
+            />
+            <input
+              v-else
+              :type="'number'"
+              :value="entry[field.key] == null || entry[field.key] === '' ? '' : Number(entry[field.key]) * 100"
+              min="0"
+              step="0.01"
+              @input="entry[field.key] = $event.target.value === '' ? null : Number($event.target.value) / 100"
+            />
+          </div>
         </template>
         <button
           class="mini danger"
@@ -380,8 +417,6 @@ defineExpose({ calculate, isLoading })
   <button class="action" :disabled="isLoading" @click="calculate">
     {{ isLoading ? t('common.calculating') : t('common.calculateReturns') }}
   </button>
-
-  <p class="endpoint">{{ t('common.post') }} {{ endpoint }}</p>
 
   <div v-if="error" class="output error">
     <p class="error-title">{{ error }}</p>

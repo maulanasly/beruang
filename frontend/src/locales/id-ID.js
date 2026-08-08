@@ -27,7 +27,6 @@ export default {
     action: 'Aksi',
     showRawJson: 'Tampilkan JSON Mentah',
     hideRawJson: 'Sembunyikan JSON Mentah',
-    post: 'POST',
   },
   form: {
     date: 'Tanggal',
@@ -46,7 +45,7 @@ export default {
     stockCode: 'Kode Saham',
     newPurchases: 'Pembelian Baru',
     dividends: 'Dividen',
-    dividendYield: 'Imbal Hasil',
+    dividendYield: 'Imbal Hasil Dividen',
     estimatedDividend: 'Est. Dividen',
     startValue: 'Nilai Awal',
     momReturn: 'Imbal Balik MoM',
@@ -65,9 +64,13 @@ export default {
     latestTwr: 'TWR',
     latestAnnualDividend: 'Est. Dividen Tahunan',
     latestMonthlyDividend: 'Est. Dividen Bulanan',
+    totalContribution: 'Total Kontribusi',
   },
   chart: {
     title: 'Modal Diinvestasikan vs Nilai Pasar Saat Ini',
+    seriesInvested: 'Total Kontribusi',
+    seriesValue: 'Nilai Pasar Saat Ini',
+    seriesExpected: 'Nilai Ekspektasi',
   },
   overview: {
     portfolio: 'Portofolio',
@@ -105,7 +108,7 @@ export default {
     syncNoSymbols: 'Tambahkan kode saham ke minimal satu baris sebelum menyinkronkan.',
     syncSummary: 'Harga diperbarui untuk {updated} saham, {failed} gagal.',
     syncYields: 'Imbal hasil dividen: {yields}',
-    dividendYield: 'Imbal hasil dividen',
+    dividendYield: 'Imbal Hasil Dividen',
     lastFetched: 'Terakhir Diambil',
     targetLedgerRow: 'Baris Buku Besar Target',
     pickTicker: 'Pilih ticker',
@@ -150,6 +153,8 @@ export default {
       'Harga penutupan harian saham terpilih pada rentang waktu yang dipilih.',
     twr:
       'Time-Weighted Return: tingkat pengembalian tahunan majemuk yang menghilangkan pengaruh setoran dan penarikan, sehingga dapat dibandingkan secara adil dengan indeks pasar. XIRR bersifat money-weighted (terpengaruh arus kas).',
+    dividendFocus:
+      'Tampilan berperingkat alam semesta Kompas 100 Starter berdasarkan imbal hasil dividen tahunan, plus estimasi pendapatan dividen Anda dari aset yang Anda lacak. Gunakan "Terapkan ke Baris" untuk mengisi baris buku besar dengan simbol dan imbal hasilnya.',
   },
   goals: {
     title: 'Tujuan & Target',
@@ -195,6 +200,22 @@ export default {
     loading: 'Memuat riwayat harga…',
     fetchFailed: 'Tidak dapat memuat riwayat harga.',
     noData: 'Tidak ada data riwayat harga untuk simbol ini.',
+  },
+  dividendFocus: {
+    title: 'Fokus Dividen',
+    refresh: 'Segarkan',
+    loading: 'Memuat data dividen…',
+    fetchFailed: 'Tidak dapat memuat data imbal hasil dividen.',
+    empty: 'Tidak ada data imbal hasil dividen untuk alam semesta Kompas 100 Starter.',
+    apply: 'Terapkan ke Baris',
+    asOf: 'Per {date}',
+    rank: 'Peringkat',
+    name: 'Nama',
+    price: 'Harga',
+    snapshotTitle: 'Ringkasan Dividen Anda',
+    snapshotAnnual: 'Est. Dividen Tahunan',
+    snapshotMonthly: 'Est. Dividen Bulanan',
+    snapshotNone: 'Tambahkan entri imbal hasil dividen dan hitung untuk melihat estimasi pendapatan dividen Anda.',
   },
   io: {
     importTitle: 'Cadangan & Pulihkan Buku Besar',

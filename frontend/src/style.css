@@ -319,6 +319,10 @@ textarea {
   letter-spacing: 0.03em;
 }
 
+.mobile-label {
+  display: none;
+}
+
 .mini {
   border: 1px solid #cbd5e1;
   background: #ffffff;
@@ -344,6 +348,52 @@ textarea {
   border-color: #2563eb;
   background: #2563eb;
   color: #ffffff;
+}
+
+.dividend-focus {
+  border: 1px solid #d9e2ec;
+  background: #f8fbff;
+  border-radius: 10px;
+  padding: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.dividend-focus-title {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0;
+}
+
+.dividend-focus-toggle {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: #102a43;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.chevron {
+  display: inline-block;
+  transition: transform 0.15s ease-out;
+  color: #486581;
+}
+
+.chevron-open {
+  transform: rotate(90deg);
+}
+
+.dividend-focus-body {
+  margin-top: 0.6rem;
+}
+
+.dividend-focus-snapshot {
+  margin-top: 0.75rem;
 }
 
 .market-helper {
@@ -466,12 +516,6 @@ textarea {
 .action:disabled {
   opacity: 0.7;
   cursor: not-allowed;
-}
-
-.endpoint {
-  margin: 0.9rem 0;
-  color: #486581;
-  font-size: 0.9rem;
 }
 
 .output {
@@ -864,6 +908,15 @@ tr.latest-row td:first-child {
 
   .entry-grid-header {
     display: none;
+  }
+
+  .mobile-label {
+    display: block;
+    font-size: 0.72rem;
+    color: #486581;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.15rem;
   }
 
   .panel {

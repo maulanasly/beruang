@@ -111,7 +111,7 @@ const rowsWithCumulative = computed(() => {
 const columnsWithCumulative = computed(() => {
   if (!columns.value.length) return []
   const keys = [...columns.value]
-  const insertAt = keys.indexOf('current_value') + 1 || keys.length
+  const insertAt = keys.indexOf('current_value') || keys.length
   keys.splice(insertAt, 0, 'capital_invested')
   return keys
 })

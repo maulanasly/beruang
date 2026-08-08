@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.schemas import (
+    DividendYieldsResponse,
     IdxStockListResponse,
     IdxStockSearchResponse,
     IndexHistoryResponse,
@@ -26,6 +27,7 @@ from backend.services import (
     get_kompas100_starter_stocks,
     get_latest_stock_quote,
     get_price_history,
+    get_top_dividend_yields,
     search_idx_stocks,
 )
 
@@ -95,6 +97,19 @@ def term_deposit_returns(
 )
 def kompas100_starter_stock_list() -> IdxStockListResponse:
     return get_kompas100_starter_stocks()
+
+
+@app.get(
+    "/api/v1/market-data/idx/dividend-yields",
+    response_model=DividendYieldsResponse,
+)
+def idx_dividend_yields(
+    limit: int = Query(default=10, ge=1, le=30),
+) -> DividendYieldsResponse:
+    try:
+        return get_top_dividend_yields(limit=limit)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @app.get(

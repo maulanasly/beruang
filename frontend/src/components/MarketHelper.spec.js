@@ -69,7 +69,7 @@ describe('MarketHelper', () => {
     })
     const yieldEl = wrapper.find('.last-quote-yield')
     expect(yieldEl.exists()).toBe(true)
-    expect(yieldEl.text()).toContain('Div yield')
+    expect(yieldEl.text()).toContain('Dividend Yield')
     expect(yieldEl.text()).toMatch(/5\.61%/)
   })
 

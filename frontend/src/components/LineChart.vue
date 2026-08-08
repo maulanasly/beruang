@@ -43,9 +43,9 @@ const datasets = computed(() => {
       return running
     })
     return [
-      buildSeries('Total Contribution', invested, '#2563eb'),
+      buildSeries(t('chart.seriesInvested'), invested, '#2563eb'),
       buildSeries(
-        'Current Market Value',
+        t('chart.seriesValue'),
         props.ledger.map((row) => Number(row.current_value) || 0),
         '#f25f3a',
       ),
@@ -55,12 +55,12 @@ const datasets = computed(() => {
   if (props.asset === 'term-deposits') {
     return [
       buildSeries(
-        'Expected Value',
+        t('chart.seriesExpected'),
         props.ledger.map((row) => Number(row.expected_month_end_value) || 0),
         '#2563eb',
       ),
       buildSeries(
-        'Current Value',
+        t('chart.seriesValue'),
         props.ledger.map((row) => Number(row.current_value) || 0),
         '#f25f3a',
       ),
@@ -73,9 +73,9 @@ const datasets = computed(() => {
     return running
   })
   return [
-    buildSeries('Total Capital Invested', invested, '#2563eb'),
+    buildSeries(t('chart.seriesInvested'), invested, '#2563eb'),
     buildSeries(
-      'Current Market Value',
+      t('chart.seriesValue'),
       props.ledger.map((row) => Number(row.current_value) || 0),
       '#f25f3a',
     ),

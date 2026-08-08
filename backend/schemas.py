@@ -164,6 +164,19 @@ class PriceHistoryResponse(BaseModel):
     points: list[PriceHistoryPoint]
 
 
+class DividendYieldItem(BaseModel):
+    symbol: str
+    name: str
+    price: float
+    currency: str
+    dividend_yield: float
+
+
+class DividendYieldsResponse(BaseModel):
+    as_of: date
+    items: list[DividendYieldItem]
+
+
 class TermDepositLedgerEntry(BaseModel):
     date: date
     installment_amount: float = Field(ge=0)

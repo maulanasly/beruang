@@ -27,7 +27,6 @@ export default {
     action: 'Action',
     showRawJson: 'Show Raw JSON',
     hideRawJson: 'Hide Raw JSON',
-    post: 'POST',
   },
   form: {
     date: 'Date',
@@ -36,7 +35,7 @@ export default {
     stockCode: 'Stock Code',
     newSharePurchases: 'New Share Purchases',
     dividends: 'Dividends',
-    dividendYield: 'Div Yield (%)',
+    dividendYield: 'Dividend Yield (%)',
     apy: 'APY',
   },
   column: {
@@ -46,7 +45,7 @@ export default {
     stockCode: 'Stock Code',
     newPurchases: 'New Purchases',
     dividends: 'Dividends',
-    dividendYield: 'Div Yield',
+    dividendYield: 'Dividend Yield',
     estimatedDividend: 'Est. Dividend',
     startValue: 'Start Value',
     momReturn: 'MoM Return',
@@ -65,9 +64,13 @@ export default {
     latestTwr: 'TWR',
     latestAnnualDividend: 'Est. Annual Dividend',
     latestMonthlyDividend: 'Est. Monthly Dividend',
+    totalContribution: 'Total Contribution',
   },
   chart: {
     title: 'Capital Invested vs Current Market Value',
+    seriesInvested: 'Total Contribution',
+    seriesValue: 'Current Market Value',
+    seriesExpected: 'Expected Value',
   },
   overview: {
     portfolio: 'Portfolio',
@@ -105,7 +108,7 @@ export default {
     syncNoSymbols: 'Add a stock code to at least one row before syncing.',
     syncSummary: 'Updated prices for {updated} stock(s), {failed} failed.',
     syncYields: 'Div yields: {yields}',
-    dividendYield: 'Div yield',
+    dividendYield: 'Dividend Yield',
     lastFetched: 'Last Fetched',
     targetLedgerRow: 'Target Ledger Row',
     pickTicker: 'Select a ticker',
@@ -150,6 +153,8 @@ export default {
       'Daily closing prices for the selected stock over the chosen window.',
     twr:
       'Time-Weighted Return: the compound annualized return that removes the effect of deposits and withdrawals, so it can be compared fairly against a market index. XIRR is money-weighted instead.',
+    dividendFocus:
+      'A ranked view of the Kompas 100 Starter universe by annual dividend yield, plus your estimated dividend income from the holdings you track. Use "Apply to Row" to fill a ledger row with a symbol and its yield.',
   },
   goals: {
     title: 'Goals & Targets',
@@ -195,6 +200,22 @@ export default {
     loading: 'Loading price history…',
     fetchFailed: 'Unable to load price history.',
     noData: 'No historical price data available for this symbol.',
+  },
+  dividendFocus: {
+    title: 'Dividend Focus',
+    refresh: 'Refresh',
+    loading: 'Loading dividend data…',
+    fetchFailed: 'Unable to load dividend yield data.',
+    empty: 'No dividend yield data available for the Kompas 100 Starter universe.',
+    apply: 'Apply to Row',
+    asOf: 'As of {date}',
+    rank: 'Rank',
+    name: 'Name',
+    price: 'Price',
+    snapshotTitle: 'Your Dividend Snapshot',
+    snapshotAnnual: 'Est. Annual Dividend',
+    snapshotMonthly: 'Est. Monthly Dividend',
+    snapshotNone: 'Add dividend yield entries and calculate to see your estimated dividend income.',
   },
   io: {
     importTitle: 'Ledger Backup & Restore',

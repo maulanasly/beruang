@@ -75,7 +75,7 @@ describe('PriceHistoryChart', () => {
 
     const tag = wrapper.find('.yield-tag')
     expect(tag.exists()).toBe(true)
-    expect(tag.text()).toContain('Div yield')
+    expect(tag.text()).toContain('Dividend Yield')
     expect(tag.text()).toMatch(/5\.61%/)
   })
 

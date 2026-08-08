@@ -44,14 +44,9 @@ const resultSymbolLabel = computed(() => {
   <AssetCalculator
     :ref="(el) => (calculatorRef = el)"
     :active-asset="asset"
+    :result-summary="resultSummary"
     @calculated="(v) => ledgers.setResult(asset, v)"
     @reset="() => ledgers.clearResult(asset)"
-  />
-
-  <LedgerIo
-    :asset="asset"
-    :entries="ledgers.getEntries(asset)"
-    @import="onImport"
   />
 
   <section v-if="result" class="result-block">
@@ -76,4 +71,10 @@ const resultSymbolLabel = computed(() => {
       :title-suffix="resultSymbolLabel"
     />
   </section>
+
+  <LedgerIo
+    :asset="asset"
+    :entries="ledgers.getEntries(asset)"
+    @import="onImport"
+  />
 </template>

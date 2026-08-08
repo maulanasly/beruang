@@ -1,11 +1,16 @@
 from __future__ import annotations
 
-from datetime import date
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import UTC, date, datetime
+from functools import wraps
 
 import pandas as pd
 import yfinance as yf
 
 from backend.schemas import (
+    DividendYieldItem,
+    DividendYieldsResponse,
     IdxStockItem,
     IdxStockListResponse,
     IndexHistoryPoint,
@@ -89,16 +94,114 @@ def search_idx_stocks(query: str, limit: int = 10) -> list[IdxStockItem]:
 
 
 def _normalize_dividend_yield(raw: object) -> float | None:
-    """yfinance reports dividendYield as a percentage; keep it a fraction."""
+    """Normalize a dividend yield to a fraction.
+
+    yfinance reports dividendYield inconsistently: most symbols return the
+    percentage figure (e.g. 5.58 for 5.58%), but low-yield symbols can come
+    back below 1.0 (e.g. 0.9 for 0.9%). Real yields effectively never exceed
+    20%, so values at or above 0.2 are treated as percentages and divided by
+    100; everything below is already a fraction.
+    """
     if raw is None:
         return None
     try:
         value = float(raw)
     except (TypeError, ValueError):
         return None
-    if value > 1:
+    if value >= 0.2:
         value /= 100.0
     return value if value >= 0 else None
+
+
+def _ttl_cache(ttl_seconds: int):
+    """Decorator: cache the wrapped function's return value for `ttl_seconds`."""
+    cache: dict[str, tuple[object, float]] = {}
+
+    @wraps(_ttl_cache)
+    def wrapper(func):
+        @wraps(func)
+        def cached(*args, **kwargs):
+            now = time.time()
+            key = str(datetime.now(UTC).date()) + repr((args, kwargs))
+            if key in cache:
+                value, deadline = cache[key]
+                if now < deadline:
+                    return value
+            result = func(*args, **kwargs)
+            cache[key] = (result, now + ttl_seconds)
+            return result
+        return cached
+    return wrapper
+
+
+def _quote_snapshot(symbol: str) -> DividendYieldItem | None:
+    """Fetch a single symbol's snapshot: price, name, currency, dividend_yield.
+
+    Returns None if the symbol cannot be resolved or has no dividend yield.
+    """
+    try:
+        ticker = yf.Ticker(symbol)
+        fast_info = getattr(ticker, "fast_info", None)
+        price = None
+        currency = "IDR"
+        name = symbol
+
+        if fast_info:
+            price = fast_info.get("lastPrice") or fast_info.get("last_price")
+            currency = fast_info.get("currency") or currency
+
+        info = getattr(ticker, "info", {}) or {}
+        name = info.get("shortName") or info.get("longName") or name
+        currency = info.get("currency") or currency
+        dividend_yield = _normalize_dividend_yield(info.get("dividendYield"))
+
+        if dividend_yield is None or dividend_yield <= 0:
+            return None
+
+        if price is None:
+            history = ticker.history(period="1d")
+            if not history.empty:
+                close_value = history["Close"].dropna()
+                if not close_value.empty:
+                    price = float(close_value.iloc[-1])
+
+        if price is None:
+            return None
+
+        return DividendYieldItem(
+            symbol=symbol,
+            name=name,
+            price=float(price),
+            currency=currency,
+            dividend_yield=dividend_yield,
+        )
+    except Exception:
+        return None
+
+
+@_ttl_cache(ttl_seconds=21600)  # 6 hours
+def get_top_dividend_yields(limit: int = 10) -> DividendYieldsResponse:
+    """Return the top-N dividend-yielding stocks from the Kompas 100 Starter universe.
+
+    Yield values are fetched from Yahoo Finance in parallel. Results are cached
+    in-process for 6 hours so the frontend never triggers a full re-fetch per
+    page load.
+    """
+    symbols = [sym for sym, _name in IDX_KOMPAS100_STARTER]
+    results: list[DividendYieldItem] = []
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        futures = {pool.submit(_quote_snapshot, sym): sym for sym in symbols}
+        for future in as_completed(futures):
+            item = future.result()
+            if item is not None:
+                results.append(item)
+
+    results.sort(key=lambda i: i.dividend_yield, reverse=True)
+    return DividendYieldsResponse(
+        as_of=date.today(),
+        items=results[:max(limit, 1)],
+    )
 
 
 def get_latest_stock_quote(symbol: str) -> StockQuoteResponse:

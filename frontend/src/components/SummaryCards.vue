@@ -14,7 +14,7 @@ const SUMMARY_LABEL_KEYS = {
   total_installments: 'column.installment',
   ending_value: 'column.currentValue',
   xirr: 'kpi.latestXirr',
-  total_contribution: 'column.installment',
+  total_contribution: 'kpi.totalContribution',
   roi: 'kpi.latestRoi',
   apy: 'kpi.currentApy',
   monthly_rate: 'column.momReturn',

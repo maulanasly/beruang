@@ -53,7 +53,7 @@ describe('LedgerTable', () => {
     expect(headers.some((h) => h.includes('MoM Return'))).toBe(true)
     // Capital Invested sits next to Current Value
     const indexOf = (needle) => headers.findIndex((h) => h.includes(needle))
-    expect(indexOf('Capital Invested')).toBeGreaterThan(indexOf('Current Value'))
+    expect(indexOf('Capital Invested')).toBeLessThan(indexOf('Current Value'))
     // Cumulative invested stats: 1000 then 2000
     expect(wrapper.text()).toContain('1,000')
     expect(wrapper.text()).toContain('2,000')
@@ -149,11 +149,12 @@ describe('LatestMomentumKpi', () => {
       props: { ledger, summary, asset: 'stocks' },
     })
     const tips = wrapper.findAll('.info-tip')
-    expect(tips).toHaveLength(4)
+    expect(tips).toHaveLength(5)
     expect(tips[0].attributes('title')).toMatch(/Month-over-Month/)
     expect(tips[1].attributes('title')).toMatch(/Return on Investment/)
     expect(tips[2].attributes('title')).toMatch(/Extended Internal Rate/)
-    expect(tips[3].attributes('title')).toMatch(/Time-Weighted Return/)
+    expect(tips[3].attributes('title')).toMatch(/dividend/i)
+    expect(tips[4].attributes('title')).toMatch(/Time-Weighted Return/)
   })
 
   it('shows 5 cards for stocks: date, MoM, ROI, XIRR, TWR', () => {
@@ -162,7 +163,7 @@ describe('LatestMomentumKpi', () => {
     const wrapper = mountWith(LatestMomentumKpi, {
       props: { ledger, summary, asset: 'stocks' },
     })
-    expect(wrapper.findAll('.kpi-card')).toHaveLength(5)
+    expect(wrapper.findAll('.kpi-card')).toHaveLength(6)
     expect(wrapper.text()).toContain('Latest ROI')
     expect(wrapper.text()).toContain('TWR')
   })
@@ -197,7 +198,7 @@ describe('LineChart series assembly', () => {
     const labels = wrapper.vm.labels
     const datasets = wrapper.vm.datasets
     expect(labels).toEqual(['2026-01-31', '2026-02-28'])
-    expect(datasets[0].label).toBe('Total Capital Invested')
+    expect(datasets[0].label).toBe('Total Contribution')
     expect(datasets[0].data).toEqual([1000, 2000])
     expect(datasets[1].label).toBe('Current Market Value')
     expect(datasets[1].data).toEqual([1000, 2050])
@@ -220,7 +221,7 @@ describe('LineChart series assembly', () => {
     ]
     const wrapper = mountWith(LineChart, { props: { ledger, asset: 'term-deposits' } })
     expect(wrapper.vm.datasets[0].label).toBe('Expected Value')
-    expect(wrapper.vm.datasets[1].label).toBe('Current Value')
+    expect(wrapper.vm.datasets[1].label).toBe('Current Market Value')
   })
 
   it('renders no chart section when the ledger is empty', () => {

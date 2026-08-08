@@ -1,5 +1,6 @@
 <script setup>
 import { computed, inject } from 'vue'
+import { RouterLink } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { usePortfolio } from '../composables/usePortfolio'
 import { useTwr } from '../composables/useTwr'
@@ -107,6 +108,11 @@ function formatRoi(roi) {
 
   <section v-else class="result-block">
     <p class="ledger-empty">{{ t('overview.noData') }}</p>
+    <p class="ledger-empty">
+      <RouterLink class="ghost" to="/mutual-funds">{{ t('nav.mutualFunds') }}</RouterLink>
+      <RouterLink class="ghost" to="/stocks">{{ t('nav.stocks') }}</RouterLink>
+      <RouterLink class="ghost" to="/term-deposits">{{ t('nav.termDeposits') }}</RouterLink>
+    </p>
   </section>
 
   <GoalsPanel />

@@ -243,6 +243,22 @@ def test_quote_omits_dividend_yield_when_missing() -> None:
     assert response.json()["dividend_yield"] is None
 
 
+def test_quote_normalizes_low_yield_below_one() -> None:
+    ticker = MagicMock()
+    ticker.fast_info = {"lastPrice": 8325.0, "currency": "IDR"}
+    ticker.info = {
+        "shortName": "Indah Kiat Pulp & Paper",
+        "currency": "IDR",
+        "dividendYield": 0.9,
+    }
+
+    with patch("backend.services.yf.Ticker", return_value=ticker):
+        response = client.get("/api/v1/market-data/quote", params={"symbol": "INKP.JK"})
+
+    assert response.status_code == 200
+    assert response.json()["dividend_yield"] == pytest.approx(0.009)
+
+
 def test_price_history_includes_normalized_dividend_yield() -> None:
     history = make_index_history([("2026-05-01", 9050.0)])
     ticker = MagicMock()
@@ -261,3 +277,72 @@ def test_price_history_includes_normalized_dividend_yield() -> None:
 
     assert response.status_code == 200
     assert response.json()["dividend_yield"] == pytest.approx(0.0842)
+
+
+def _make_yield_ticker(
+    symbol: str, name: str, price: float, yield_pct: float | None
+) -> MagicMock:
+    """Factory helper: create a mock yf.Ticker with optional dividend yield."""
+    ticker = MagicMock()
+    ticker.fast_info = {"lastPrice": price, "currency": "IDR"}
+    info: dict = {"shortName": name, "currency": "IDR"}
+    if yield_pct is not None:
+        info["dividendYield"] = yield_pct
+    ticker.info = info
+    return ticker
+
+
+def _mock_ticker_side_effect(symbol: str) -> MagicMock:
+    """Return a mock yf.Ticker for a known symbol, or a zero-yield fallback."""
+    registry = {
+        "BBCA.JK": ("Bank Central Asia", 10250, 4.2),
+        "TLKM.JK": ("Telkom Indonesia", 3850, 8.4),
+        "BMRI.JK": ("Bank Mandiri", 6950, 5.1),
+        "BBRI.JK": ("Bank Rakyat Indonesia", 5750, 6.3),
+        "ASII.JK": ("Astra International", 5125, 7.8),
+        "ADRO.JK": ("Alamtri Resources", 2950, None),  # no yield
+    }
+    if symbol in registry:
+        name, price, yield_pct = registry[symbol]
+        return _make_yield_ticker(symbol, name, price, yield_pct)
+    return _make_yield_ticker(symbol, "Unknown", 1000, None)
+
+
+def test_dividend_yields_returns_top_n_sorted_by_yield() -> None:
+    with patch(
+        "backend.services.yf.Ticker", side_effect=_mock_ticker_side_effect
+    ):
+        response = client.get(
+            "/api/v1/market-data/idx/dividend-yields", params={"limit": 3}
+        )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["as_of"] is not None
+    items = body["items"]
+    assert len(items) == 3
+    assert items[0]["symbol"] == "TLKM.JK"
+    assert items[0]["dividend_yield"] == pytest.approx(0.084)
+    assert items[1]["symbol"] == "ASII.JK"
+    assert items[2]["symbol"] == "BBRI.JK"
+
+
+def test_dividend_yields_omits_symbols_without_yield() -> None:
+    with patch("backend.services.yf.Ticker", side_effect=_mock_ticker_side_effect):
+        response = client.get("/api/v1/market-data/idx/dividend-yields")
+
+    assert response.status_code == 200
+    symbols = [item["symbol"] for item in response.json()["items"]]
+    assert "ADRO.JK" not in symbols
+
+
+def test_dividend_yields_respects_limit_and_returns_at_most_limit() -> None:
+    with patch(
+        "backend.services.yf.Ticker", side_effect=_mock_ticker_side_effect
+    ):
+        response = client.get(
+            "/api/v1/market-data/idx/dividend-yields", params={"limit": 30}
+        )
+
+    assert response.status_code == 200
+    assert len(response.json()["items"]) <= 30

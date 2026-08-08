@@ -98,6 +98,10 @@ describe('usePortfolio', () => {
   })
 })
 
+function mountOverview() {
+  return mountWith(OverviewView, { global: { stubs: { RouterLink: true } } })
+}
+
 describe('OverviewView', () => {
   beforeEach(() => {
     vi.stubGlobal(
@@ -119,7 +123,7 @@ describe('OverviewView', () => {
   })
 
   it('renders portfolio KPIs, per-asset cards, and charts', async () => {
-    const wrapper = mountWith(OverviewView)
+    const wrapper = mountOverview()
     await flushPromises()
     expect(wrapper.findAll('.kpi-card')).toHaveLength(5)
     expect(wrapper.findAll('.summary-card')).toHaveLength(3)
@@ -130,7 +134,7 @@ describe('OverviewView', () => {
   })
 
   it('renders the TWR KPI card with its glossary tip', async () => {
-    const wrapper = mountWith(OverviewView)
+    const wrapper = mountOverview()
     await flushPromises()
     const twrCard = wrapper
       .findAll('.kpi-card')
@@ -140,20 +144,20 @@ describe('OverviewView', () => {
   })
 
   it('renders the full-portfolio backup section', async () => {
-    const wrapper = mountWith(OverviewView)
+    const wrapper = mountOverview()
     await flushPromises()
     expect(wrapper.text()).toContain('Full Portfolio Backup')
     expect(wrapper.text()).toContain('Backup All Data')
   })
 
   it('renders the benchmark comparison chart when data exists', async () => {
-    const wrapper = mountWith(OverviewView)
+    const wrapper = mountOverview()
     await flushPromises()
     expect(wrapper.text()).toContain('Portfolio vs Index')
   })
 
   it('renders the monthly returns table when entries span two months', async () => {
-    const wrapper = mountWith(OverviewView)
+    const wrapper = mountOverview()
     await flushPromises()
     expect(wrapper.text()).toContain('Monthly Returns')
     expect(wrapper.find('.monthly-returns').exists()).toBe(true)
@@ -164,7 +168,7 @@ describe('OverviewView', () => {
     ledgers.setEntries('mutual-funds', [{ date: '2026-05-31', installment_amount: 1000, current_value: 1000 }])
     ledgers.setEntries('stocks', [])
     ledgers.setEntries('term-deposits', [])
-    const wrapper = mountWith(OverviewView)
+    const wrapper = mountOverview()
     await flushPromises()
     expect(wrapper.text()).toContain('Add entries across at least two months')
   })
@@ -174,13 +178,13 @@ describe('OverviewView', () => {
     ledgers.setEntries('mutual-funds', [])
     ledgers.setEntries('stocks', [])
     ledgers.setEntries('term-deposits', [])
-    const wrapper = mountWith(OverviewView)
+    const wrapper = mountOverview()
     await flushPromises()
     expect(wrapper.text()).not.toContain('Portfolio vs Index')
   })
 
   it('renders the goals section with data present', async () => {
-    const wrapper = mountWith(OverviewView)
+    const wrapper = mountOverview()
     await flushPromises()
     expect(wrapper.text()).toContain('Goals & Targets')
   })
@@ -190,7 +194,7 @@ describe('OverviewView', () => {
     ledgers.setEntries('mutual-funds', [])
     ledgers.setEntries('stocks', [])
     ledgers.setEntries('term-deposits', [])
-    const wrapper = mountWith(OverviewView)
+    const wrapper = mountOverview()
     await flushPromises()
     expect(wrapper.text()).toContain('Goals & Targets')
   })
@@ -200,7 +204,7 @@ describe('OverviewView', () => {
     ledgers.setEntries('mutual-funds', [])
     ledgers.setEntries('stocks', [])
     ledgers.setEntries('term-deposits', [])
-    const wrapper = mountWith(OverviewView)
+    const wrapper = mountOverview()
     await flushPromises()
     expect(wrapper.find('.kpi-card').exists()).toBe(false)
     expect(wrapper.find('.ledger-empty').exists()).toBe(true)
