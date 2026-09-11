@@ -1,6 +1,6 @@
 import { html, useState, useEffect } from '../vendor/preact-htm-signals.js';
 import { loadLedgers, saveLedgers } from '../store.js';
-import { calculateReturns, fetchQuote, searchIdx } from '../api.js';
+import { calculateReturns, fetchQuote, searchIdx, fetchKompas100 } from '../api.js';
 import { LedgerTable, SummaryCards } from './AssetForm.js';
 
 export function Stocks({ settings }) {
@@ -12,8 +12,14 @@ export function Stocks({ settings }) {
     const [quote, setQuote] = useState(null);
     const [searchQ, setSearchQ] = useState('');
     const [searchRes, setSearchRes] = useState([]);
+    const [universe, setUniverse] = useState([]);
+    const [syncing, setSyncing] = useState(false);
+    const [syncMsg, setSyncMsg] = useState('');
 
-    useEffect(()=> { const l=loadLedgers(); setEntries(l.stocks); setResult(l.results.stocks); }, []);
+    useEffect(()=> {
+        const l=loadLedgers(); setEntries(l.stocks); setResult(l.results.stocks);
+        fetchKompas100().then(r=>setUniverse(r.items||[])).catch(()=>{});
+    }, []);
 
     function upd(idx, field, val){ setEntries(entries.map((e,i)=> i===idx ? {...e,[field]:val}:e)); }
     function addRow(){ setEntries([...entries, { symbol:'BBCA.JK', date:new Date().toISOString().slice(0,10), installment_amount:700, new_share_purchases:200, dividends:0, dividend_yield:null, current_value:1000 }]); }
@@ -35,6 +41,23 @@ export function Stocks({ settings }) {
         if(!searchQ.trim()) return;
         try{ const r=await searchIdx(searchQ); setSearchRes(r.items||[]); }catch(e){ setError(e.message); }
     }
+    async function syncAll(){
+        const symbols = [...new Set(entries.map(e=>e.symbol).filter(Boolean))];
+        if(!symbols.length){ setSyncMsg('Add a stock code to at least one row before syncing.'); return; }
+        setSyncing(true); setSyncMsg('');
+        let updated = 0, failed = 0;
+        const next = [...entries];
+        for(const sym of symbols){
+            try{
+                const q = await fetchQuote(sym);
+                next.forEach((e,i)=>{ if(e.symbol===sym) next[i] = {...e, current_value: String(q.price), dividend_yield: q.dividend_yield!=null ? (q.dividend_yield*100).toFixed(2) : e.dividend_yield}; });
+                updated++;
+            }catch{ failed++; }
+        }
+        setEntries(next);
+        setSyncing(false);
+        setSyncMsg(`Updated prices for ${updated} stock(s), ${failed} failed.`);
+    }
 
     return html`<div>
         <div class="page-head"><h1>Stocks</h1><p class="muted">MoM + ROI + XIRR · optional dividend yield (%).</p></div>
@@ -44,6 +67,12 @@ export function Stocks({ settings }) {
             ${quote && html`<span class="muted" style="font-size:13px">${quote.symbol} ${quote.price} ${quote.currency} ${quote.dividend_yield!=null ? `yield ${(quote.dividend_yield*100).toFixed(2)}%`:''}</span>`}
             <label>Search IDX <input value=${searchQ} onInput=${e=>setSearchQ(e.target.value)} placeholder="bank" style="width:140px" /></label>
             <button class="btn-ghost" onClick=${doSearch}>Search</button>
+            <button class="btn-ghost" onClick=${syncAll} disabled=${syncing}>${syncing?'Syncing…':'Sync All Prices'}</button>
+            ${syncMsg && html`<span class="muted" style="font-size:13px">${syncMsg}</span>`}
+            ${universe.length>0 && html`<label style="width:100%">Kompas 100 Starter <select onChange=${e=>{ if(e.target.value) setQuoteSym(e.target.value); }}>
+                <option value="">Select a ticker</option>
+                ${universe.map(s=> html`<option value=${s.symbol}>${s.symbol} — ${s.name}</option>`)}
+            </select></label>`}
             ${searchRes.length>0 && html`<div style="width:100%">${searchRes.map(s=> html`<span style="margin-right:8px"><a href="#" onClick=${e=>{e.preventDefault(); setQuoteSym(s.symbol);}}>${s.symbol}</a> ${s.name}</span>`)}</div>`}
         </div>
         <div class="card">

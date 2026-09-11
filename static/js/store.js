@@ -1,5 +1,8 @@
 const SETTINGS_KEY = 'beruang.settings';
 const LEDGERS_KEY = 'beruang.ledgers';
+const GOALS_KEY = 'beruang.goals';
+
+export const GOALS_ASSETS = ['mutual-funds', 'stocks', 'term-deposits'];
 
 const DEFAULT_MF = [
     { date: '2026-05-31', installment_amount: 1100, current_value: 6500 },
@@ -42,6 +45,32 @@ export function loadLedgers() {
     };
 }
 export function saveLedgers(ledgers) { save(LEDGERS_KEY, ledgers); }
+
+function defaultGoals() {
+    return {
+        overall: { target: 0, targetDate: '' },
+        assets: {
+            'mutual-funds': { target: 0 },
+            stocks: { target: 0 },
+            'term-deposits': { target: 0 },
+        },
+    };
+}
+export function loadGoals() {
+    const goals = defaultGoals();
+    let raw = null;
+    try { const s = localStorage.getItem(GOALS_KEY); raw = s ? JSON.parse(s) : null; } catch { return goals; }
+    if (!raw || typeof raw !== 'object') return goals;
+    const overallTarget = Number(raw.overall?.target);
+    if (Number.isFinite(overallTarget) && overallTarget > 0) goals.overall.target = overallTarget;
+    if (raw.overall?.targetDate) goals.overall.targetDate = String(raw.overall.targetDate);
+    for (const asset of GOALS_ASSETS) {
+        const v = Number(raw.assets?.[asset]?.target);
+        if (Number.isFinite(v) && v > 0) goals.assets[asset].target = v;
+    }
+    return goals;
+}
+export function saveGoals(goals) { save(GOALS_KEY, goals); }
 
 export const MARKET_OPTIONS = [
     { value: 'IDX', label: 'Indonesia (IDX)', suffix: '.JK' },

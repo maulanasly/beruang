@@ -7,6 +7,8 @@ pub enum AppError {
     BadGateway(String),
     #[error("Gateway timeout")]
     Timeout,
+    #[error("Bad request: {0}")]
+    BadRequest(String),
 }
 
 impl IntoResponse for AppError {
@@ -17,6 +19,7 @@ impl IntoResponse for AppError {
                 StatusCode::GATEWAY_TIMEOUT,
                 "Calc service timeout".to_string(),
             ),
+            AppError::BadRequest(m) => (StatusCode::BAD_REQUEST, m),
         };
         let body = serde_json::json!({ "detail": msg });
         (status, axum::Json(body)).into_response()
