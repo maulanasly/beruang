@@ -1,9 +1,12 @@
 import { html, useState, useEffect } from '../vendor/preact-htm-signals.js';
 import { loadLedgers } from '../store.js';
 import { formatCurrency, formatPercent } from '../utils.js';
+import { buildMonthlyReturns, portfolioTwr } from '../finance.js';
 import { GoalsPanel } from './GoalsPanel.js';
 import { PortfolioIo } from './PortfolioIo.js';
 import { TrendChart } from './TrendChart.js';
+import { MonthlyReturnsTable } from './MonthlyReturnsTable.js';
+import { BenchmarkPanel } from './BenchmarkPanel.js';
 
 function cumulativeByDate(entries, withPurchases) {
     const sorted = [...entries].sort((a, b) => String(a.date).localeCompare(String(b.date)));
@@ -62,6 +65,15 @@ export function Overview({ settings }) {
         (lastAt(mfCum, d)?.value || 0) + (lastAt(stCum, d)?.value || 0) + (lastAt(tdCum, d)?.value || 0));
     const monthlyAvg = dates.length >= 2 && totalInv > 0 ? totalInv / Math.max(dates.length - 1, 1) : 0;
 
+    // Cash-flow adjusted monthly returns + time-weighted return (chain-linked,
+    // annualized over the entry window) — same formulas as Vue useTwr/useMonthlyReturns.
+    const monthly = buildMonthlyReturns({
+        'mutual-funds': mfEntries,
+        stocks: stEntries.map(e => ({ ...e, dividend_yield: e.dividend_yield > 1 ? e.dividend_yield / 100 : e.dividend_yield })),
+        'term-deposits': tdEntries,
+    });
+    const twr = portfolioTwr(monthly);
+
     const hasData = total > 0 || totalInv > 0;
     if (!hasData) {
         return html`<div class="card">
@@ -80,9 +92,12 @@ export function Overview({ settings }) {
                 <div class="card"><div class="smallcaps">Current Value</div><div class="amount">${formatCurrency(total, settings.locale, settings.currency)}</div></div>
                 <div class="card"><div class="smallcaps">P/L</div><div class="amount" style="color:${pnl >= 0 ? 'var(--success)' : 'var(--danger)'}">${formatCurrency(pnl, settings.locale, settings.currency)} <span style="font-size:12px">(${totalInv ? formatPercent(pnl / totalInv, settings.locale) : '-'})</span></div></div>
                 <div class="card"><div class="smallcaps">Weighted XIRR</div><div class="amount">${weightedXirr != null ? formatPercent(weightedXirr, settings.locale) : '-'}</div></div>
+                <div class="card"><div class="smallcaps">TWR (annualized)</div><div class="amount">${twr.annualized != null ? formatPercent(twr.annualized, settings.locale) : '-'}</div></div>
             </div>
         </div>
         <${TrendChart} labels=${dates} invested=${investedSeries} values=${valueSeries} settings=${settings} />
+        <${MonthlyReturnsTable} monthly=${monthly} settings=${settings} />
+        <${BenchmarkPanel} labels=${dates} values=${valueSeries} />
         <div class="summary-cards">
             <div class="card"><div class="smallcaps">Mutual Funds</div><div class="amount">${formatCurrency(mfVal, settings.locale, settings.currency)}</div><div class="muted" style="font-size:12px">Invested ${formatCurrency(mfInv, settings.locale, settings.currency)}</div></div>
             <div class="card"><div class="smallcaps">Stocks</div><div class="amount">${formatCurrency(stVal, settings.locale, settings.currency)}</div><div class="muted" style="font-size:12px">Invested ${formatCurrency(stInv, settings.locale, settings.currency)}</div></div>

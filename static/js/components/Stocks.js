@@ -2,6 +2,8 @@ import { html, useState, useEffect } from '../vendor/preact-htm-signals.js';
 import { loadLedgers, saveLedgers } from '../store.js';
 import { calculateReturns, fetchQuote, searchIdx, fetchKompas100 } from '../api.js';
 import { LedgerTable, SummaryCards } from './AssetForm.js';
+import { DividendFocus } from './DividendFocus.js';
+import { PriceHistory } from './PriceHistory.js';
 
 export function Stocks({ settings }) {
     const [entries, setEntries] = useState(()=> loadLedgers().stocks);
@@ -106,5 +108,13 @@ export function Stocks({ settings }) {
                 {key:'mom_return', label:'MoM', fmt:'percent'},
             ]} />
         </div>`}
+        <${DividendFocus} settings=${settings} onApply=${(symbol, yieldPct) => {
+            setQuoteSym(symbol);
+            if (entries.length) {
+                const idx = entries.length - 1;
+                setEntries(entries.map((e, i) => i === idx ? { ...e, symbol, dividend_yield: yieldPct } : e));
+            }
+        }} />
+        <${PriceHistory} symbol=${quoteSym} />
     </div>`;
 }
