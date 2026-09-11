@@ -55,7 +55,7 @@ function formatRoi(roi) {
     <div class="kpi-block">
       <p class="kpi-caption">{{ t('overview.portfolio') }}</p>
       <p class="market-note">{{ t('overview.subtitle') }}</p>
-      <div class="kpi-grid">
+      <div class="kpi-grid kpi-grid-5">
         <article
           v-for="card in kpiCards"
           :key="card.key"
@@ -70,38 +70,42 @@ function formatRoi(roi) {
       </div>
     </div>
 
-    <PortfolioDonut :series="portfolio.proportionSeries.value" />
+    <div class="overview-grid">
+      <PortfolioDonut :series="portfolio.proportionSeries.value" />
 
-    <div class="summary-section">
-      <h2>
-        {{ t('overview.perAsset') }}
-        <InfoTip :text="t('glossary.roi')" />
-      </h2>
-      <div class="summary-grid">
-        <article
-          v-for="item in portfolio.assets.value"
-          :key="item.asset"
-          class="summary-card"
-        >
-          <p class="summary-label">
-            {{ t(item.labelKey) }}
-            <span class="section-symbol">{{ formatter.formatCellValue('value', item.value) }}</span>
-          </p>
-          <p class="summary-value">{{ formatRoi(item.roi) }}</p>
-          <p class="summary-sub">{{ t('overview.invested') }} {{ formatter.formatCellValue('value', item.invested) }}</p>
-        </article>
+      <div class="summary-section">
+        <h2>
+          {{ t('overview.perAsset') }}
+          <InfoTip :text="t('glossary.roi')" />
+        </h2>
+        <div class="summary-grid">
+          <article
+            v-for="item in portfolio.assets.value"
+            :key="item.asset"
+            class="summary-card"
+          >
+            <p class="summary-label">
+              {{ t(item.labelKey) }}
+              <span class="section-symbol">{{ formatter.formatCellValue('value', item.value) }}</span>
+            </p>
+            <p class="summary-value">{{ formatRoi(item.roi) }}</p>
+            <p class="summary-sub">{{ t('overview.invested') }} {{ formatter.formatCellValue('value', item.invested) }}</p>
+          </article>
+        </div>
       </div>
     </div>
 
-    <PortfolioChart
-      :labels="portfolio.lineLabels.value"
-      :datasets="portfolio.lineDatasets.value"
-    />
+    <div class="overview-grid">
+      <PortfolioChart
+        :labels="portfolio.lineLabels.value"
+        :datasets="portfolio.lineDatasets.value"
+      />
 
-    <BenchmarkChart
-      :labels="portfolio.lineLabels.value"
-      :values="benchmarkValues"
-    />
+      <BenchmarkChart
+        :labels="portfolio.lineLabels.value"
+        :values="benchmarkValues"
+      />
+    </div>
 
     <MonthlyReturnsTable />
   </section>
