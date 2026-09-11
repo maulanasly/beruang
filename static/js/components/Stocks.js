@@ -4,6 +4,9 @@ import { calculateReturns, fetchQuote, searchIdx, fetchKompas100 } from '../api.
 import { LedgerTable, SummaryCards } from './AssetForm.js';
 import { DividendFocus } from './DividendFocus.js';
 import { PriceHistory } from './PriceHistory.js';
+import { LedgerIo } from './LedgerIo.js';
+import { InfoTip } from './InfoTip.js';
+import { t } from '../i18n.js';
 
 export function Stocks({ settings }) {
     const [entries, setEntries] = useState(()=> loadLedgers().stocks);
@@ -61,8 +64,9 @@ export function Stocks({ settings }) {
         setSyncMsg(`Updated prices for ${updated} stock(s), ${failed} failed.`);
     }
 
+    const locale = settings.locale;
     return html`<div>
-        <div class="page-head"><h1>Stocks</h1><p class="muted">MoM + ROI + XIRR · optional dividend yield (%).</p></div>
+        <div class="page-head"><h1>${t(locale, 'nav.stocks')}</h1><p class="muted">MoM + ROI + XIRR · optional dividend yield (%). <${InfoTip} locale=${locale} tipKey="glossary.dividendYield" /></p></div>
         <div class="card" style="display:flex; gap:8px; flex-wrap:wrap; align-items:end">
             <label>Quote <input value=${quoteSym} onInput=${e=>setQuoteSym(e.target.value)} placeholder="BBCA.JK" style="width:140px" /></label>
             <button class="btn-ghost" onClick=${doQuote}>Fetch Quote</button>
@@ -91,10 +95,11 @@ export function Stocks({ settings }) {
                 <label>Current Value <input type="number" value=${e.current_value} onInput=${ev=>upd(idx,'current_value',ev.target.value)} /></label>
                 ${quote && html`<button class="btn-ghost btn-sm" onClick=${()=>upd(idx,'current_value', String(quote.price))}>Apply ${quote.price}</button>`}
             </div>`)}
-            <button class="btn-ghost" onClick=${addRow}>+ Add Row</button>
-            <div style="margin-top:12px"><button onClick=${onCalc} disabled=${loading}>${loading?'Calculating…':'Calculate Returns'}</button></div>
+            <button class="btn-ghost" onClick=${addRow}>${t(locale, 'common.addRow')}</button>
+            <div style="margin-top:12px"><button onClick=${onCalc} disabled=${loading}>${loading ? t(locale, 'common.calculating') : t(locale, 'common.calculateReturns')}</button></div>
             ${error && html`<p style="color:var(--danger)">${error}</p>`}
         </div>
+        <${LedgerIo} asset="stocks" entries=${entries} locale=${locale} onImport=${(rows) => setEntries(rows)} />
         ${result && html`<div>
             <${SummaryCards} summary=${result.summary} settings=${settings} />
             <${LedgerTable} rows=${result.ledger} settings=${settings} columns=${[

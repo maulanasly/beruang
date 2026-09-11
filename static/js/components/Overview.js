@@ -1,6 +1,8 @@
 import { html, useState, useEffect } from '../vendor/preact-htm-signals.js';
 import { loadLedgers } from '../store.js';
 import { formatCurrency, formatPercent } from '../utils.js';
+import { t } from '../i18n.js';
+import { InfoTip } from './InfoTip.js';
 import { buildMonthlyReturns, portfolioTwr } from '../finance.js';
 import { GoalsPanel } from './GoalsPanel.js';
 import { PortfolioIo } from './PortfolioIo.js';
@@ -74,25 +76,26 @@ export function Overview({ settings }) {
     });
     const twr = portfolioTwr(monthly);
 
+    const locale = settings.locale;
     const hasData = total > 0 || totalInv > 0;
     if (!hasData) {
         return html`<div class="card">
-            <h2>Overview</h2>
-            <p class="muted">Add entries on asset pages and Calculate Returns to populate this overview.</p>
-            <p><a href="#/mutual-funds">Mutual Funds</a> · <a href="#/stocks">Stocks</a> · <a href="#/term-deposits">Term Deposits</a></p>
+            <h2>${t(locale, 'nav.overview')}</h2>
+            <p class="muted">${t(locale, 'overview.noData')}</p>
+            <p><a href="#/mutual-funds">${t(locale, 'nav.mutualFunds')}</a> · <a href="#/stocks">${t(locale, 'nav.stocks')}</a> · <a href="#/term-deposits">${t(locale, 'nav.termDeposits')}</a></p>
         </div>`;
     }
 
     return html`<div>
         <div class="card">
-            <h2>Portfolio</h2>
-            <p class="muted">Your portfolio at a glance: how much you have put in, what it is worth now, and how it is split.</p>
+            <h2>${t(locale, 'overview.portfolio')}</h2>
+            <p class="muted">${t(locale, 'overview.subtitle')}</p>
             <div class="summary-cards">
-                <div class="card"><div class="smallcaps">Invested</div><div class="amount">${formatCurrency(totalInv, settings.locale, settings.currency)}</div></div>
-                <div class="card"><div class="smallcaps">Current Value</div><div class="amount">${formatCurrency(total, settings.locale, settings.currency)}</div></div>
-                <div class="card"><div class="smallcaps">P/L</div><div class="amount" style="color:${pnl >= 0 ? 'var(--success)' : 'var(--danger)'}">${formatCurrency(pnl, settings.locale, settings.currency)} <span style="font-size:12px">(${totalInv ? formatPercent(pnl / totalInv, settings.locale) : '-'})</span></div></div>
-                <div class="card"><div class="smallcaps">Weighted XIRR</div><div class="amount">${weightedXirr != null ? formatPercent(weightedXirr, settings.locale) : '-'}</div></div>
-                <div class="card"><div class="smallcaps">TWR (annualized)</div><div class="amount">${twr.annualized != null ? formatPercent(twr.annualized, settings.locale) : '-'}</div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'overview.totalInvested')} <${InfoTip} locale=${locale} tipKey="glossary.capitalInvested" /></div><div class="amount">${formatCurrency(totalInv, locale, settings.currency)}</div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'overview.totalValue')}</div><div class="amount">${formatCurrency(total, locale, settings.currency)}</div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'overview.totalPnl')} <${InfoTip} locale=${locale} tipKey="glossary.pnl" /></div><div class="amount" style="color:${pnl >= 0 ? 'var(--success)' : 'var(--danger)'}">${formatCurrency(pnl, locale, settings.currency)} <span style="font-size:12px">(${totalInv ? formatPercent(pnl / totalInv, locale) : '-'})</span></div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'overview.weightedXirr')} <${InfoTip} locale=${locale} tipKey="glossary.weightedXirr" /></div><div class="amount">${weightedXirr != null ? formatPercent(weightedXirr, locale) : '-'}</div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'overview.twr')} <${InfoTip} locale=${locale} tipKey="glossary.twr" /></div><div class="amount">${twr.annualized != null ? formatPercent(twr.annualized, locale) : '-'}</div></div>
             </div>
         </div>
         <${TrendChart} labels=${dates} invested=${investedSeries} values=${valueSeries} settings=${settings} />

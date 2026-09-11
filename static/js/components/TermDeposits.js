@@ -1,7 +1,10 @@
 import { html, useState, useEffect } from '../vendor/preact-htm-signals.js';
 import { loadLedgers, saveLedgers } from '../store.js';
 import { calculateReturns } from '../api.js';
+import { t } from '../i18n.js';
 import { LedgerTable, SummaryCards } from './AssetForm.js';
+import { LedgerIo } from './LedgerIo.js';
+import { InfoTip } from './InfoTip.js';
 
 export function TermDeposits({ settings }) {
     const [td, setTd] = useState(()=> loadLedgers()['term-deposits']);
@@ -27,8 +30,9 @@ export function TermDeposits({ settings }) {
         }catch(e){ setError(e.detail ? JSON.stringify(e.detail) : e.message); } finally{ setLoading(false); }
     }
 
+    const locale = settings.locale;
     return html`<div>
-        <div class="page-head"><h1>Term Deposits</h1><p class="muted">APY prorated interest · maturity & rollover tracker.</p></div>
+        <div class="page-head"><h1>${t(locale, 'nav.termDeposits')}</h1><p class="muted">APY prorated interest · maturity & rollover tracker. <${InfoTip} locale=${locale} tipKey="glossary.apy" /> <${InfoTip} locale=${locale} tipKey="glossary.depositMaturity" /></p></div>
         <div class="card">
             <label>APY (e.g. 0.06 = 6%) <input type="number" step="0.001" value=${apy} onInput=${e=>setApy(e.target.value)} /></label>
         </div>
@@ -41,10 +45,11 @@ export function TermDeposits({ settings }) {
                 <label>Maturity <input type="date" value=${e.maturity_date||''} onInput=${ev=>upd(idx,'maturity_date',ev.target.value)} /></label>
                 <button class="btn-ghost btn-sm" onClick=${()=>rm(idx)}>Remove</button>
             </div>`)}
-            <button class="btn-ghost" onClick=${addRow}>+ Add Row</button>
-            <div style="margin-top:12px"><button onClick=${onCalc} disabled=${loading}>${loading?'Calculating…':'Calculate Returns'}</button></div>
+            <button class="btn-ghost" onClick=${addRow}>${t(locale, 'common.addRow')}</button>
+            <div style="margin-top:12px"><button onClick=${onCalc} disabled=${loading}>${loading ? t(locale, 'common.calculating') : t(locale, 'common.calculateReturns')}</button></div>
             ${error && html`<p style="color:var(--danger)">${error}</p>`}
         </div>
+        <${LedgerIo} asset="term-deposits" entries=${entries} locale=${locale} onImport=${(rows) => setEntries(rows)} />
         ${result && html`<div>
             <${SummaryCards} summary=${result.summary} settings=${settings} />
             <${LedgerTable} rows=${result.ledger} settings=${settings} columns=${[

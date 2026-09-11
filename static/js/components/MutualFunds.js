@@ -1,7 +1,10 @@
 import { html, useState, useEffect } from '../vendor/preact-htm-signals.js';
 import { loadLedgers, saveLedgers } from '../store.js';
 import { calculateReturns } from '../api.js';
+import { t } from '../i18n.js';
 import { LedgerTable, SummaryCards } from './AssetForm.js';
+import { LedgerIo } from './LedgerIo.js';
+import { InfoTip } from './InfoTip.js';
 
 export function MutualFunds({ settings }) {
     const [entries, setEntries] = useState(()=> loadLedgers()['mutual-funds']);
@@ -29,8 +32,9 @@ export function MutualFunds({ settings }) {
         finally{ setLoading(false); }
     }
 
+    const locale = settings.locale;
     return html`<div>
-        <div class="page-head"><h1>Mutual Funds</h1><p class="muted">Cash-flow adjusted MoM · XIRR via exact dates.</p></div>
+        <div class="page-head"><h1>${t(locale, 'nav.mutualFunds')}</h1><p class="muted">Cash-flow adjusted MoM · XIRR via exact dates. <${InfoTip} locale=${locale} tipKey="glossary.moM" /> <${InfoTip} locale=${locale} tipKey="glossary.xirr" /></p></div>
         <div class="card">
             ${entries.map((e,idx)=> html`<div style="display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:8px; margin-bottom:8px; align-items:end">
                 <label>Date <input type="date" value=${e.date} onInput=${ev=>updateRow(idx,'date',ev.target.value)} /></label>
@@ -38,10 +42,11 @@ export function MutualFunds({ settings }) {
                 <label>Current Value <input type="number" value=${e.current_value} onInput=${ev=>updateRow(idx,'current_value',ev.target.value)} /></label>
                 <button class="btn-ghost btn-sm" onClick=${()=>removeRow(idx)}>Remove</button>
             </div>`)}
-            <button class="btn-ghost" onClick=${addRow}>+ Add Row</button>
-            <div style="margin-top:12px"><button onClick=${onCalc} disabled=${loading}>${loading?'Calculating…':'Calculate Returns'}</button></div>
+            <button class="btn-ghost" onClick=${addRow}>${t(locale, 'common.addRow')}</button>
+            <div style="margin-top:12px"><button onClick=${onCalc} disabled=${loading}>${loading ? t(locale, 'common.calculating') : t(locale, 'common.calculateReturns')}</button></div>
             ${error && html`<p style="color:var(--danger)">${error}</p>`}
         </div>
+        <${LedgerIo} asset="mutual-funds" entries=${entries} locale=${locale} onImport=${(rows) => setEntries(rows)} />
         ${result && html`<div>
             <${SummaryCards} summary=${result.summary} settings=${settings} />
             <${LedgerTable} rows=${result.ledger} settings=${settings} columns=${[
