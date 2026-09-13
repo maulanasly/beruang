@@ -269,6 +269,8 @@ export default {
     invalidNumber: 'Baris {line}: {field} harus berupa angka.',
     invalidApp: 'Bukan file cadangan Beruang.',
     invalidStructure: 'Format cadangan tidak dikenali.',
+    storageFull: 'Penyimpanan browser penuh atau tidak tersedia — tidak ada yang tersimpan.',
+    fileError: 'File itu tidak bisa dibaca.',
   },
   backup: {
     title: 'Cadangan Seluruh Portofolio',
@@ -277,8 +279,14 @@ export default {
     validSummary: 'Cadangan berisi {assets} kelas aset dan {rows} baris.',
     invalidCount: '{errors} masalah dalam cadangan ini',
     confirmRestore: 'Konfirmasi Pemulihan',
+    reviewRestore: 'Tinjau pemulihan',
+    applyRestore: 'Terapkan pemulihan',
+    overwriteWarning: 'Pemulihan menimpa buku besar, pengaturan, dan target saat ini.',
+    snapshotSaved: 'Snapshot sebelum pemulihan diunduh — pulihkan file itu untuk membatalkan.',
+    emptyBackup: 'Cadangan ini tidak berisi data yang bisa dipakai.',
+    wrongFile: 'Bukan cadangan penuh — buka dari halaman kalkulatornya.',
     restored: 'Portofolio dipulihkan. Hitung hasil kembali untuk menyegarkan ringkasan.',
-    downloaded: 'Backup diunduh.',
+    downloaded: 'Cadangan diunduh.',
   },
 
   ui: {

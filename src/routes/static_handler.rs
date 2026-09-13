@@ -516,6 +516,8 @@ mod tests {
             "calculators:",
             "breadcrumb:",
             "navLabel:",
+            "storageFull:",
+            "reviewRestore:",
             "themeDark:",
             "themeToggle:",
         ] {

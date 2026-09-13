@@ -23,6 +23,15 @@ function load(key) {
 function save(key, val) {
     try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
 }
+// Fallible variant: localStorage can throw (quota, private mode) and the
+// silent `save` would let backup/restore UI claim success it didn't earn.
+function trySave(key, val) {
+    try { localStorage.setItem(key, JSON.stringify(val)); return { ok: true }; }
+    catch (e) { return { ok: false }; }
+}
+export function trySaveSettings(s) { return trySave(SETTINGS_KEY, s); }
+export function trySaveLedgers(l) { return trySave(LEDGERS_KEY, l); }
+export function trySaveGoals(g) { return trySave(GOALS_KEY, g); }
 
 export function loadSettings() {
     const s = load(SETTINGS_KEY);

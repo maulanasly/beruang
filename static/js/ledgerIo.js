@@ -113,8 +113,10 @@ export function parseLedgerJson(asset, text) {
         const rowErrors = [];
         if (!isValidDate(value.date)) rowErrors.push({ line, type: 'invalidDate', field: 'date' });
         for (const column of columnsFor(asset)) {
+            // Lenient like the CSV path: numeric strings coerce (spreadsheets
+            // and hand-edited backups); only truly non-numeric values fail.
             if (NUMERIC_FIELDS.has(column) && value[column] != null && value[column] !== '' &&
-                (typeof value[column] !== 'number' || Number.isNaN(value[column]))) {
+                Number.isNaN(Number(value[column]))) {
                 rowErrors.push({ line, type: 'invalidNumber', field: column });
             }
         }

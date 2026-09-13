@@ -144,13 +144,16 @@ export function Overview({ settings }) {
 
     const hasData = total > 0 || totalInv > 0;
     if (!hasData) {
-        return html`<div class="card">
-            <h1 style="font-size:22px; margin:0 0 4px">${t(locale, 'nav.portfolio')}</h1>
-            <p class="muted">${t(locale, 'overview.noData')}</p>
-            <p style="display:flex; gap:8px; flex-wrap:wrap">
-                <button onClick=${loadDemo}>${t(locale, 'overview.loadDemo')}</button>
-            </p>
-            <p><a href="/kalkulator/reksa-dana" onClick=${e=>go(e,'/kalkulator/reksa-dana')}>${t(locale, 'nav.mutualFunds')}</a> · <a href="/kalkulator/saham" onClick=${e=>go(e,'/kalkulator/saham')}>${t(locale, 'nav.stocks')}</a> · <a href="/kalkulator/deposito" onClick=${e=>go(e,'/kalkulator/deposito')}>${t(locale, 'nav.termDeposits')}</a></p>
+        return html`<div>
+            <div class="card">
+                <h1 style="font-size:22px; margin:0 0 4px">${t(locale, 'nav.portfolio')}</h1>
+                <p class="muted">${t(locale, 'overview.noData')}</p>
+                <p style="display:flex; gap:8px; flex-wrap:wrap">
+                    <button onClick=${loadDemo}>${t(locale, 'overview.loadDemo')}</button>
+                </p>
+                <p><a href="/kalkulator/reksa-dana" onClick=${e=>go(e,'/kalkulator/reksa-dana')}>${t(locale, 'nav.mutualFunds')}</a> · <a href="/kalkulator/saham" onClick=${e=>go(e,'/kalkulator/saham')}>${t(locale, 'nav.stocks')}</a> · <a href="/kalkulator/deposito" onClick=${e=>go(e,'/kalkulator/deposito')}>${t(locale, 'nav.termDeposits')}</a></p>
+            </div>
+            <${PortfolioIo} settings=${settings} />
         </div>`;
     }
 
