@@ -172,9 +172,7 @@ def build_cases() -> list[dict]:
     ]
     mf6 = [
         {"date": d, "installment_amount": 1000, "current_value": v}
-        for d, v in zip(
-            dates6, [1000, 2050, 3120, 4200, 5300, 6450], strict=True
-        )
+        for d, v in zip(dates6, [1000, 2050, 3120, 4200, 5300, 6450], strict=True)
     ]
     cases.append(ok_case("mf_six_rows", "mutual-funds", {"entries": mf6}, run_mf(mf6)))
 
@@ -195,7 +193,9 @@ def build_cases() -> list[dict]:
         )
     ]
     cases.append(
-        ok_case("stocks_six_rows_dividends", "stocks", {"entries": st6}, run_stocks(st6))
+        ok_case(
+            "stocks_six_rows_dividends", "stocks", {"entries": st6}, run_stocks(st6)
+        )
     )
 
     # Stocks with a trailing dividend yield (exercises estimated_dividend).
@@ -212,9 +212,7 @@ def build_cases() -> list[dict]:
 
     td6 = [
         {"date": d, "installment_amount": 1000, "current_value": v}
-        for d, v in zip(
-            dates6, [1000, 2005, 3020, 4042, 5075, 6115], strict=True
-        )
+        for d, v in zip(dates6, [1000, 2005, 3020, 4042, 5075, 6115], strict=True)
     ]
     cases.append(
         ok_case(
@@ -250,9 +248,7 @@ def build_cases() -> list[dict]:
     try:
         resp = run_mf(mf_huge)
         cases.append(
-            ok_case(
-                "mf_xirr_unbracketable", "mutual-funds", {"entries": mf_huge}, resp
-            )
+            ok_case("mf_xirr_unbracketable", "mutual-funds", {"entries": mf_huge}, resp)
         )
     except ValueError as exc:
         cases.append(
@@ -273,9 +269,7 @@ def build_cases() -> list[dict]:
     try:
         resp = run_mf(mf_zero)
         cases.append(
-            ok_case(
-                "mf_zero_contributions", "mutual-funds", {"entries": mf_zero}, resp
-            )
+            ok_case("mf_zero_contributions", "mutual-funds", {"entries": mf_zero}, resp)
         )
     except ValueError as exc:
         cases.append(
@@ -354,9 +348,7 @@ def build_cases() -> list[dict]:
         # the Rust port reproduces verbatim ("day is out of range").
         detail = str(exc)
         detail = (
-            "day is out of range for month"
-            if "out of range" in detail
-            else detail[:80]
+            "day is out of range for month" if "out of range" in detail else detail[:80]
         )
         cases.append(
             err_case(

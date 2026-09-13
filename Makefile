@@ -172,6 +172,9 @@ test-rust: ## Run Rust gateway tests
 test-all: test-backend test-rust ## Run all tests (backend + rust; add test-frontend if needed)
 	@echo "test-all: backend + rust passed"
 
+shadow-report: ## Aggregate shadow-diff events from a gateway log (LOG=path, BURN_IN=YYYY-MM-DD)
+	$(PYTHON) scripts/shadow_report.py $(LOG) $(if $(BURN_IN),--burn-in $(BURN_IN))
+
 # ------------------------------------------------------------------------------
 # Lint / Format / Typecheck / Verify
 # ------------------------------------------------------------------------------

@@ -63,6 +63,7 @@ pub async fn handler(req: Request) -> Response {
         builder = builder.body(bytes.to_vec());
     }
 
+    let upstream_started = std::time::Instant::now();
     let upstream = match builder.send().await {
         Ok(r) => r,
         Err(e) if e.is_timeout() => return AppError::Timeout.into_response(),
@@ -81,6 +82,17 @@ pub async fn handler(req: Request) -> Response {
     }
 
     let body_bytes = upstream.bytes().await.unwrap_or_default();
+    // Shadow-diff: market-data responses are compared against the native
+    // implementation detached — the client never waits for it.
+    if super::super::shadow::classify(&path).is_some() {
+        super::super::shadow::spawn_compare(
+            path.clone(),
+            query.clone(),
+            status.as_u16(),
+            body_bytes.to_vec(),
+            upstream_started.elapsed().as_millis(),
+        );
+    }
     resp_builder
         .body(Body::from(body_bytes.to_vec()))
         .unwrap_or(AppError::BadGateway("Proxy error".to_string()).into_response())
