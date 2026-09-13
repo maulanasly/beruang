@@ -21,6 +21,14 @@ export function LedgerIo({ asset, entries, onImport, locale }) {
     function doTemplate() {
         download(`${asset}-template.csv`, exportLedgerCsvTemplate(asset), 'text/csv');
     }
+    function onFile(e) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => setText(String(reader.result || ''));
+        reader.readAsText(file);
+        e.target.value = '';
+    }
     function doPreview() {
         setStatus('');
         const trimmed = text.trim();
@@ -45,7 +53,12 @@ export function LedgerIo({ asset, entries, onImport, locale }) {
             <button class="btn-ghost btn-sm" onClick=${doExportJson}>${t(locale, 'io.exportJson')}</button>
         </div>
         <textarea class="io-textarea" value=${text} onInput=${e => setText(e.target.value)}
-            placeholder=${t(locale, 'io.pasteCsv')}></textarea>
+            placeholder=${t(locale, 'io.pasteCsv')} aria-label=${t(locale, 'io.importTitle')}></textarea>
+        <div style="margin-top:8px">
+            <label class="muted" style="font-size:12px">${t(locale, 'io.chooseFile')}
+                <input type="file" accept=".csv,.json,text/csv,application/json" onChange=${onFile} style="font-size:12px" />
+            </label>
+        </div>
         <div class="io-actions" style="margin-top:8px">
             <button class="btn-sm" onClick=${doPreview} disabled=${!text.trim()}>${t(locale, 'io.confirmImport')}</button>
             <button class="btn-ghost btn-sm" onClick=${() => { setText(''); setPreview(null); setStatus(''); }}>${t(locale, 'io.cancel')}</button>

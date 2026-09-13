@@ -67,3 +67,53 @@ export function ShareLink({ route, state, locale }) {
         ${copied ? t(locale, 'share.copied') : t(locale, 'share.copyLink')}
     </button>`;
 }
+
+// Payload normalization shared by calculate actions and the dashboard's
+// staleness check: identical input always yields identical output.
+export function normalizeLedgerEntries(asset, entries, apy) {
+    const num = (v) => Number(v) || 0;
+    if (asset === 'mutual-funds') {
+        return entries.map(e => ({
+            date: e.date,
+            installment_amount: num(e.installment_amount),
+            current_value: num(e.current_value),
+        }));
+    }
+    if (asset === 'stocks') {
+        return entries.map(e => ({
+            date: e.date,
+            installment_amount: num(e.installment_amount),
+            new_share_purchases: num(e.new_share_purchases),
+            dividends: num(e.dividends),
+            current_value: num(e.current_value),
+            dividend_yield: e.dividend_yield ? Number(e.dividend_yield) / 100 : null,
+        }));
+    }
+    return {
+        apy: Number(apy),
+        entries: (entries || []).map(e => ({
+            date: e.date,
+            installment_amount: num(e.installment_amount),
+            current_value: num(e.current_value),
+            term_months: Number(e.term_months) || 12,
+            maturity_date: e.maturity_date || null,
+        })),
+    };
+}
+
+// Key-order-stable serialization so snapshots compare equal regardless
+// of property insertion order (e.g. after CSV import).
+export function stableStringify(value) {
+    if (value === null || typeof value !== 'object') {
+        const n = typeof value === 'number' && Number.isNaN(value) ? null : value;
+        return JSON.stringify(n);
+    }
+    if (Array.isArray(value)) {
+        return `[${value.map(stableStringify).join(',')}]`;
+    }
+    return `{${Object.keys(value).sort().map(k => `${JSON.stringify(k)}:${stableStringify(value[k])}`).join(',')}}`;
+}
+
+export function calcSnapshot(asset, entries, apy) {
+    return stableStringify(normalizeLedgerEntries(asset, entries, apy));
+}

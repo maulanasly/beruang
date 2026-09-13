@@ -46,6 +46,18 @@ export function loadLedgers() {
 }
 export function saveLedgers(ledgers) { save(LEDGERS_KEY, ledgers); }
 
+// Persist edited rows without touching stored results, so navigating
+// away never loses uncalculated edits. Results keep their own snapshot.
+export function saveEntries(asset, entries, apy) {
+    const l = loadLedgers();
+    if (asset === 'term-deposits') {
+        l['term-deposits'] = { apy: apy ?? l['term-deposits'].apy, entries };
+    } else {
+        l[asset] = entries;
+    }
+    saveLedgers(l);
+}
+
 export const SAMPLE_STOCKS = DEFAULT_STOCKS.map(e => ({ ...e }));
 export const SAMPLE_MF = DEFAULT_MF.map(e => ({ ...e }));
 export const SAMPLE_TD = { apy: 0.06, entries: DEFAULT_TD.map(e => ({ ...e })) };

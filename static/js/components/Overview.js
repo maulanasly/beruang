@@ -1,6 +1,7 @@
 import { html, useState, useEffect } from '../vendor/preact-htm-signals.js';
 import { loadLedgers } from '../store.js';
 import { navigate } from '../router.js';
+import { calcSnapshot } from '../share.js';
 import { formatCurrency, formatPercent } from '../utils.js';
 import { t } from '../i18n.js';
 import { InfoTip } from './InfoTip.js';
@@ -76,6 +77,19 @@ export function Overview({ settings }) {
     const tdEst = !tdLedger && tdEntries.length > 0;
     const estimatedAny = mfEst || stEst || tdEst;
 
+    // Edited-since-calculation: live rows no longer match the snapshot
+    // stored with the result (autosave persists every keystroke, so the
+    // store always holds the newest edits, never the calc-time rows).
+    const tdApyLive = ledgers['term-deposits']?.apy;
+    const mfEdited = ledgers.results?.['mutual-funds']?.calcSnapshot != null
+        && calcSnapshot('mutual-funds', mfEntries) !== ledgers.results['mutual-funds'].calcSnapshot;
+    const stEdited = ledgers.results?.stocks?.calcSnapshot != null
+        && calcSnapshot('stocks', stEntries) !== ledgers.results.stocks.calcSnapshot;
+    const tdEdited = ledgers.results?.['term-deposits']?.calcSnapshot != null
+        && calcSnapshot('term-deposits', tdEntries, tdApyLive) !== ledgers.results['term-deposits'].calcSnapshot;
+    const editedAny = mfEdited || stEdited || tdEdited;
+    const editedText = t(locale, 'overview.edited');
+
     const stDiv = stLedger ? sumField(stLedger, 'dividends') : null;
     const tdApy = typeof ledgers.results?.['term-deposits']?.summary?.apy === 'number'
         ? ledgers.results['term-deposits'].summary.apy : null;
@@ -144,6 +158,7 @@ export function Overview({ settings }) {
         dates.length ? t(locale, 'overview.dataWindow', { from: dates[0], to: dates[dates.length - 1] }) : null,
         latestCalc ? t(locale, 'overview.calculatedAt', { time: new Date(latestCalc).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' }) }) : null,
         estimatedAny ? t(locale, 'overview.estimated') : null,
+        editedAny ? editedText : null,
     ].filter(Boolean).join(' · ');
 
     return html`<div>
@@ -170,9 +185,9 @@ export function Overview({ settings }) {
         ]} />
         <div class="summary-cards">
             ${[
-                { label: t(locale, 'nav.mutualFunds'), value: mfVal, invested: mfInv, extra: mfEst ? t(locale, 'overview.estimated') : null },
-                { label: t(locale, 'nav.stocks'), value: stVal, invested: stInv, div: stDiv, extra: stEst ? t(locale, 'overview.estimated') : null },
-                { label: t(locale, 'nav.termDeposits'), value: tdVal, invested: tdInv, extra: tdEst ? t(locale, 'overview.estimated') : null },
+                { label: t(locale, 'nav.mutualFunds'), value: mfVal, invested: mfInv, extra: mfEdited ? editedText : (mfEst ? t(locale, 'overview.estimated') : null) },
+                { label: t(locale, 'nav.stocks'), value: stVal, invested: stInv, div: stDiv, extra: stEdited ? editedText : (stEst ? t(locale, 'overview.estimated') : null) },
+                { label: t(locale, 'nav.termDeposits'), value: tdVal, invested: tdInv, extra: tdEdited ? editedText : (tdEst ? t(locale, 'overview.estimated') : null) },
             ].map(a => {
                 const roi = a.invested > 0 ? (a.value - a.invested) / a.invested : null;
                 return html`<div class="card"><div class="smallcaps">${a.label}</div><div class="amount">${formatCurrency(a.value, settings.locale, settings.currency)}</div><div style="font-size:15px; font-weight:600">${roi != null ? formatPercent(roi, settings.locale) : '-'}</div><div class="muted" style="font-size:12px">${t(locale, 'overview.invested')} ${formatCurrency(a.invested, settings.locale, settings.currency)}</div>${a.div != null && a.div > 0 ? html`<div class="muted" style="font-size:12px">${t(locale, 'column.dividends')}: ${formatCurrency(a.div, settings.locale, settings.currency)}</div>` : ''}${a.extra ? html`<div class="muted" style="font-size:12px">⚠ ${a.extra}</div>` : ''}</div>`;
