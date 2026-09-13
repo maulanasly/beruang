@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 # install-release.sh — install a GitHub-built beruang binary on the VPS.
 # Usage (run as root, typically via `sudo` from the `deploy` user):
-#   sudo bash /tmp/install-release.sh /tmp/beruang-new
+#   sudo bash /tmp/install-release-<run>.sh /tmp/beruang-new-<run> [/tmp/beruang-<run>.service]
 #
 # Steps: keep .prev binary → install → refresh unit → restart systemd →
 # healthcheck. Beruang keeps no server-side state (ledgers live in the
 # browser) and needs no secrets, so there is no DB backup or env staging.
 set -euo pipefail
 
-BIN_SRC="${1:?usage: install-release.sh <path-to-new-binary>}"
+BIN_SRC="${1:?usage: install-release.sh <path-to-new-binary> [path-to-staged-unit]}"
+STAGED_UNIT="${2:-/tmp/beruang.service}"
 APP_BIN="/usr/local/bin/beruang-gateway"
 APP_PREV="/usr/local/bin/beruang-gateway.prev"
 SERVICE="beruang"
@@ -33,7 +34,6 @@ install -m 755 "$BIN_SRC" "$APP_BIN"
 
 # 3. Refresh systemd unit if the repo version changed (e.g. new Environment).
 # The live unit predates repo changes otherwise.
-STAGED_UNIT="/tmp/beruang.service"
 LIVE_UNIT="/etc/systemd/system/beruang.service"
 if [ -f "$STAGED_UNIT" ]; then
   if ! cmp -s "$STAGED_UNIT" "$LIVE_UNIT"; then
