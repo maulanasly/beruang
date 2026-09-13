@@ -75,6 +75,31 @@ async fn static_serves_index_and_guards_api() {
 }
 
 #[tokio::test]
+async fn dev_version_endpoint_is_prod_404() {
+    // Without BERUANG_DEV the live-reload poller exposes no surface,
+    // and the prod shell carries no dev script tag.
+    let app = beruang_gateway::routes::create_router();
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/__dev_version")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::NOT_FOUND);
+
+    let response = app
+        .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+    let body = response_body_bytes(response).await;
+    assert!(!String::from_utf8_lossy(&body).contains("dev-reload.js"));
+}
+
+#[tokio::test]
 async fn static_index_injects_version_and_caches() {
     let app = beruang_gateway::routes::create_router();
     let response = app

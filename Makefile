@@ -30,12 +30,27 @@ run: ## Run the self-contained binary without Docker (API + UI on :$(GATEWAY_POR
 	@echo "Starting beruang on 0.0.0.0:$(GATEWAY_PORT) -> http://localhost:$(GATEWAY_PORT)"
 	cargo run --manifest-path $(RUST_MANIFEST)
 
-dev: run ## Alias for run (the binary embeds static/)
+dev: ## Run with hot reload: static/ served from disk (no rebuild for UI edits) + browser auto-reload
+	@if lsof -n -iTCP:$(GATEWAY_PORT) -sTCP:LISTEN >/dev/null 2>&1; then \
+		echo "Port $(GATEWAY_PORT) is already in use. Stop the existing process or run: make dev GATEWAY_PORT=<free_port>"; \
+		exit 1; \
+	fi
+	@echo "Starting beruang (DEV: disk-served static/ + live reload) on 0.0.0.0:$(GATEWAY_PORT) -> http://localhost:$(GATEWAY_PORT)"
+	BERUANG_DEV=1 cargo run --manifest-path $(RUST_MANIFEST)
 
 run-gateway: run ## Alias for run
 
-dev-gateway: ## Start Rust gateway with auto-reload (cargo watch)
-	cargo watch -x 'run --manifest-path $(RUST_MANIFEST)'
+dev-gateway: ## Start Rust gateway with auto-reload (cargo watch if installed, else plain dev)
+	@if cargo watch --version >/dev/null 2>&1; then \
+		BERUANG_DEV=1 cargo watch -x 'run --manifest-path $(RUST_MANIFEST)'; \
+	else \
+		echo "cargo-watch not found; falling back to 'make dev' (static hot reload still works)."; \
+		echo "Install the Rust reloader with: make dev-watch-install"; \
+		$(MAKE) dev GATEWAY_PORT=$(GATEWAY_PORT); \
+	fi
+
+dev-watch-install: ## Install cargo-watch (auto-restart on Rust changes)
+	cargo install cargo-watch
 
 # ------------------------------------------------------------------------------
 # Docker

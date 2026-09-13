@@ -1,9 +1,9 @@
 export default {
   nav: {
     home: 'Home',
+    calculators: 'Calculators',
     portfolio: 'Portfolio',
     ev: 'EV vs Petrol',
-    overview: 'Overview',
     mutualFunds: 'Mutual Funds',
     stocks: 'Stocks',
     termDeposits: 'Term Deposits',
@@ -79,7 +79,6 @@ export default {
     seriesExpected: 'Expected Value',
   },
   overview: {
-    portfolio: 'Portfolio',
     totalInvested: 'Total Invested',
     totalValue: 'Current Value',
     totalPnl: 'Profit / Loss',
@@ -109,8 +108,6 @@ export default {
   },
   market: {
     liveIdxPrice: 'Live IDX Price (Kompas 100 Starter)',
-    refresh: 'Refresh List',
-    refreshing: 'Refreshing...',
     chooseStockCode: 'Choose a stock code first.',
     fetchingQuote: 'Fetching Quote...',
     applyLatestPrice: 'Apply Latest Price to Current Value',
@@ -122,7 +119,6 @@ export default {
     dividendYield: 'Dividend Yield',
     lastFetched: 'Last Fetched',
     targetLedgerRow: 'Target Ledger Row',
-    pickTicker: 'Select a ticker',
     searchPlaceholder: 'Type to search any IDX stock code…',
     searching: 'Searching…',
     row: 'Row',
@@ -297,8 +293,9 @@ export default {
     noTarget: 'No target set',
     trendEmpty: 'Add entries across at least two dates to see the trend.',
     line: 'Line',
-    applyPrice: 'Apply {price}',
     latest: 'latest',
+    menu: 'Menu',
+    breadcrumb: 'Breadcrumb',
   },
   calc: {
     mfSubtitle: 'Cash-flow adjusted MoM \u00b7 XIRR via exact dates.',
@@ -422,7 +419,7 @@ export default {
   },
   footer: {
     tagline: 'Free investment return calculators.',
-    navLabel: 'Footer',
+    navLabel: 'Footer navigation',
     dataNote: 'Market data: Yahoo Finance (indicative). Calculations run on this server; ledgers stay in your browser.',
   },
 }

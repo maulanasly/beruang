@@ -1,9 +1,17 @@
 import { html, useState } from '../vendor/preact-htm-signals.js';
 import { t } from '../i18n.js';
+import { navigate } from '../router.js';
 import { loadLedgers, saveLedgers, loadSettings, saveSettings, loadGoals, saveGoals } from '../store.js';
+
+const RECALC_LINKS = [
+    { to: '/kalkulator/reksa-dana', labelKey: 'nav.mutualFunds' },
+    { to: '/kalkulator/saham', labelKey: 'nav.stocks' },
+    { to: '/kalkulator/deposito', labelKey: 'nav.termDeposits' },
+];
 
 export function PortfolioIo({ settings }) {
     const locale = settings?.locale || 'en-US';
+    const go = (e, to) => { e.preventDefault(); navigate(to); };
     const [text, setText] = useState('');
     function onFile(e) {
         const file = e.target.files?.[0];
@@ -71,7 +79,10 @@ export function PortfolioIo({ settings }) {
             </label>
         </div>
         <div style="margin-top:8px"><button class="btn-sm" onClick=${restore} disabled=${!text.trim()}>${t(locale, 'backup.confirmRestore')}</button></div>
-        ${status && html`<p style="color:var(--success); font-size:13px">${status}</p>`}
+        ${status && html`<p style="color:var(--success); font-size:13px">${status}</p>
+            <p style="font-size:13px; display:flex; gap:8px; flex-wrap:wrap">
+                ${RECALC_LINKS.map(l => html`<a href=${l.to} onClick=${e=>go(e,l.to)}>${t(locale, l.labelKey)} →</a>`)}
+            </p>`}
         ${error && html`<p style="color:var(--danger); font-size:13px">${error}</p>`}
     </div>`;
 }

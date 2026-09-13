@@ -89,14 +89,14 @@ export function loadGoals() {
 export function saveGoals(goals) { save(GOALS_KEY, goals); }
 
 export const MARKET_OPTIONS = [
-    { value: 'IDX', label: 'Indonesia (IDX)', suffix: '.JK' },
-    { value: 'US', label: 'United States (NYSE/NASDAQ)', suffix: '' },
+    { value: 'IDX', label: 'Indonesia (IDX)', short: 'IDX', suffix: '.JK' },
+    { value: 'US', label: 'United States (NYSE/NASDAQ)', short: 'US', suffix: '' },
 ];
 export const LOCALE_OPTIONS = [
-    { label: 'English (US)', value: 'en-US' },
-    { label: 'Bahasa Indonesia', value: 'id-ID' },
+    { label: 'English (US)', short: 'EN', value: 'en-US' },
+    { label: 'Bahasa Indonesia', short: 'ID', value: 'id-ID' },
 ];
 export const CURRENCY_OPTIONS = [
-    { label: 'US Dollar (USD)', value: 'USD' },
-    { label: 'Indonesian Rupiah (IDR)', value: 'IDR' },
+    { label: 'US Dollar (USD)', short: 'USD', value: 'USD' },
+    { label: 'Indonesian Rupiah (IDR)', short: 'IDR', value: 'IDR' },
 ];

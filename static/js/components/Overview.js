@@ -163,7 +163,7 @@ export function Overview({ settings }) {
 
     return html`<div>
         <div class="card">
-            <h1 style="font-size:22px; margin:0 0 4px">${t(locale, 'overview.portfolio')}</h1>
+            <h1 style="font-size:22px; margin:0 0 4px">${t(locale, 'nav.portfolio')}</h1>
             <p class="muted">${t(locale, 'overview.subtitle')}</p>
             ${provenance && html`<p class="muted" style="font-size:12px">${provenance}</p>`}
             <div class="summary-cards">
@@ -185,12 +185,12 @@ export function Overview({ settings }) {
         ]} />
         <div class="summary-cards">
             ${[
-                { label: t(locale, 'nav.mutualFunds'), value: mfVal, invested: mfInv, extra: mfEdited ? editedText : (mfEst ? t(locale, 'overview.estimated') : null) },
-                { label: t(locale, 'nav.stocks'), value: stVal, invested: stInv, div: stDiv, extra: stEdited ? editedText : (stEst ? t(locale, 'overview.estimated') : null) },
-                { label: t(locale, 'nav.termDeposits'), value: tdVal, invested: tdInv, extra: tdEdited ? editedText : (tdEst ? t(locale, 'overview.estimated') : null) },
+                { label: t(locale, 'nav.mutualFunds'), to: '/kalkulator/reksa-dana', value: mfVal, invested: mfInv, extra: mfEdited ? editedText : (mfEst ? t(locale, 'overview.estimated') : null) },
+                { label: t(locale, 'nav.stocks'), to: '/kalkulator/saham', value: stVal, invested: stInv, div: stDiv, extra: stEdited ? editedText : (stEst ? t(locale, 'overview.estimated') : null) },
+                { label: t(locale, 'nav.termDeposits'), to: '/kalkulator/deposito', value: tdVal, invested: tdInv, extra: tdEdited ? editedText : (tdEst ? t(locale, 'overview.estimated') : null) },
             ].map(a => {
                 const roi = a.invested > 0 ? (a.value - a.invested) / a.invested : null;
-                return html`<div class="card"><div class="smallcaps">${a.label}</div><div class="amount">${formatCurrency(a.value, settings.locale, settings.currency)}</div><div style="font-size:15px; font-weight:600">${roi != null ? formatPercent(roi, settings.locale) : '-'}</div><div class="muted" style="font-size:12px">${t(locale, 'overview.invested')} ${formatCurrency(a.invested, settings.locale, settings.currency)}</div>${a.div != null && a.div > 0 ? html`<div class="muted" style="font-size:12px">${t(locale, 'column.dividends')}: ${formatCurrency(a.div, settings.locale, settings.currency)}</div>` : ''}${a.extra ? html`<div class="muted" style="font-size:12px">⚠ ${a.extra}</div>` : ''}</div>`;
+                return html`<div class="card"><div class="smallcaps"><a href=${a.to} onClick=${e=>go(e,a.to)}>${a.label} →</a></div><div class="amount">${formatCurrency(a.value, settings.locale, settings.currency)}</div><div style="font-size:15px; font-weight:600">${roi != null ? formatPercent(roi, settings.locale) : '-'}</div><div class="muted" style="font-size:12px">${t(locale, 'overview.invested')} ${formatCurrency(a.invested, settings.locale, settings.currency)}</div>${a.div != null && a.div > 0 ? html`<div class="muted" style="font-size:12px">${t(locale, 'column.dividends')}: ${formatCurrency(a.div, settings.locale, settings.currency)}</div>` : ''}${a.extra ? html`<div class="muted" style="font-size:12px">⚠ ${a.extra}</div>` : ''}</div>`;
             })}
         </div>
         <${GoalsPanel} settings=${settings} totalValue=${total} monthlyAvg=${monthlyAvg} />
