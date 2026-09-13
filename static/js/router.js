@@ -4,7 +4,8 @@
 // also answers its legacy English paths.
 const routes = {
     '/': 'home',
-    '/overview': 'overview',
+    '/portofolio': 'portofolio',
+    '/overview': 'portofolio',
     '/mutual-funds': 'mutual-funds',
     '/kalkulator/reksa-dana': 'mutual-funds',
     '/calculators/mutual-funds': 'mutual-funds',
@@ -19,7 +20,7 @@ const routes = {
 // Canonical (shareable, Indonesian-first) path per route.
 export const canonicalPath = {
     home: '/',
-    overview: '/overview',
+    portofolio: '/portofolio',
     'mutual-funds': '/kalkulator/reksa-dana',
     stocks: '/kalkulator/saham',
     'term-deposits': '/kalkulator/deposito',

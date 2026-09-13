@@ -130,6 +130,7 @@ export function Stocks({ settings }) {
         try{
             const payload = { entries: rows.map(e=>({ date:e.date, installment_amount:Number(e.installment_amount)||0, new_share_purchases:Number(e.new_share_purchases)||0, dividends:Number(e.dividends)||0, current_value:Number(e.current_value)||0, dividend_yield:e.dividend_yield?Number(e.dividend_yield)/100:null })) };
             const data = await calculateReturns('stocks', payload);
+            data.calculatedAt = new Date().toISOString();
             setResult(data);
             const l=loadLedgers(); l.stocks=rows; l.results.stocks=data; saveLedgers(l);
             if (rowsOverride) setEntries(rowsOverride);

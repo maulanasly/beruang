@@ -45,10 +45,10 @@ fn page_meta(path: &str) -> PageMeta {
             hreflang_en: None,
             noscript: "Beruang adalah kalkulator investasi gratis: XIRR reksa dana, return saham dan dividen, serta simulasi deposito. Aktifkan JavaScript untuk memakai kalkulator interaktif.",
         },
-        "overview" => PageMeta {
+        "portofolio" | "overview" => PageMeta {
             title_id: "Portofolio Saya — Beruang",
             desc_id: "Ringkasan portofolio: total setor, nilai kini, laba-rugi, XIRR tertimbang, dan TWR.",
-            canonical: "/overview",
+            canonical: "/portofolio",
             hreflang_en: None,
             noscript: "Dasbor portofolio Beruang: total setoran, nilai saat ini, laba-rugi, XIRR, dan TWR. Aktifkan JavaScript untuk memuat datamu.",
         },

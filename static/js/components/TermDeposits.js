@@ -64,6 +64,7 @@ export function TermDeposits({ settings }) {
         try{
             const payload = { apy: Number(rate), entries: rows.map(e=>({ date:e.date, installment_amount:Number(e.installment_amount)||0, current_value:Number(e.current_value)||0, term_months:Number(e.term_months)||12, maturity_date:e.maturity_date||null })) };
             const data = await calculateReturns('term-deposits', payload);
+            data.calculatedAt = new Date().toISOString();
             setResult(data);
             const l=loadLedgers(); l['term-deposits']={apy:Number(rate), entries:rows}; l.results['term-deposits']=data; saveLedgers(l);
             if (rowsOverride) setEntries(rowsOverride);

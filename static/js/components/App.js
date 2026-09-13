@@ -22,7 +22,7 @@ export function App() {
     useEffect(() => {
         const titles = {
             home: t(locale, 'nav.home'),
-            overview: t(locale, 'nav.overview'),
+            portofolio: t(locale, 'nav.portfolio'),
             'mutual-funds': t(locale, 'nav.mutualFunds'),
             stocks: t(locale, 'nav.stocks'),
             'term-deposits': t(locale, 'nav.termDeposits'),
@@ -33,17 +33,18 @@ export function App() {
 
     const pages = {
         home: html`<${Landing} settings=${settings} />`,
-        overview: html`<${Overview} settings=${settings} />`,
+        portofolio: html`<${Overview} settings=${settings} />`,
         'mutual-funds': html`<${MutualFunds} settings=${settings} />`,
         stocks: html`<${Stocks} settings=${settings} />`,
         'term-deposits': html`<${TermDeposits} settings=${settings} />`,
     };
 
     const navItems = [
-        { to: '/overview', key: 'overview', label: t(locale, 'nav.overview') },
-        { to: '/mutual-funds', key: 'mutual-funds', label: t(locale, 'nav.mutualFunds') },
-        { to: '/stocks', key: 'stocks', label: t(locale, 'nav.stocks') },
-        { to: '/term-deposits', key: 'term-deposits', label: t(locale, 'nav.termDeposits') },
+        { to: '/', key: 'home', label: t(locale, 'nav.home') },
+        { to: '/kalkulator/reksa-dana', key: 'mutual-funds', label: t(locale, 'nav.mutualFunds') },
+        { to: '/kalkulator/saham', key: 'stocks', label: t(locale, 'nav.stocks') },
+        { to: '/kalkulator/deposito', key: 'term-deposits', label: t(locale, 'nav.termDeposits') },
+        { to: '/portofolio', key: 'portofolio', label: t(locale, 'nav.portfolio') },
     ];
     const go = (e, to) => { e.preventDefault(); navigate(to); };
 
@@ -60,7 +61,6 @@ export function App() {
             <div class="app-shell">
                 <nav class="sidebar" aria-label=${t(locale, 'ui.navLabel')}>
                     <div class="sidebar__section">
-                        <div class="sidebar__label">${t(locale, 'overview.portfolio')}</div>
                         ${navItems.map(i => html`<a href=${i.to} class=${route===i.key?'active':''} onClick=${e=>go(e, i.to)}>${i.label}</a>`)}
                     </div>
                     <div class="sidebar__section">

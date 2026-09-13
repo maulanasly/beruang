@@ -1,6 +1,7 @@
 export default {
   nav: {
     home: 'Home',
+    portfolio: 'Portfolio',
     overview: 'Overview',
     mutualFunds: 'Mutual Funds',
     stocks: 'Stocks',
@@ -90,6 +91,10 @@ export default {
     subtitle:
       'Your portfolio at a glance: how much you have put in, what it is worth now, and how your money is split across asset classes.',
     noData: 'Add entries to your asset pages and calculate returns to populate this overview.',
+    loadDemo: 'Load sample data',
+    estimated: 'Estimate \u2014 not calculated yet',
+    dataWindow: 'Data {from} \u2013 {to}',
+    calculatedAt: 'Calculated {time}',
   },
   ledger: {
     empty: 'Fill the rows above and click Calculate Returns to see your monthly ledger here.',
@@ -311,6 +316,9 @@ export default {
     calcStocksDesc: 'ROI, XIRR, and estimated dividend income with live IDX prices.',
     calcTdTitle: 'Term Deposits',
     calcTdDesc: 'Prorated APY interest, maturity dates, and rollover suggestions.',
+    evTitle: 'EV vs Petrol Cost',
+    evDesc: 'Compare running costs and find the break-even month.',
+    soonBadge: 'Coming soon',
     stepsTitle: 'How it works',
     step1Title: '1. Enter rows',
     step1Desc: 'One row per month: date, amount in, current value.',
