@@ -1,8 +1,8 @@
 import { html, useState, useEffect } from '../vendor/preact-htm-signals.js';
-import { loadLedgers, saveLedgers } from '../store.js';
+import { loadLedgers, saveLedgers, saveEntries } from '../store.js';
 import { calculateReturns } from '../api.js';
 import { t } from '../i18n.js';
-import { readSharedState, ShareLink } from '../share.js';
+import { readSharedState, ShareLink, normalizeLedgerEntries, calcSnapshot } from '../share.js';
 import { LedgerTable, SummaryCards } from './AssetForm.js';
 import { LedgerIo } from './LedgerIo.js';
 import { MomentumKpi } from './MomentumKpi.js';
@@ -26,9 +26,18 @@ export function MutualFunds({ settings }) {
     function updateRow(idx, field, value) {
         const next = entries.map((e,i)=> i===idx ? {...e, [field]: value} : e);
         setEntries(next);
+        saveEntries('mutual-funds', next);
     }
-    function addRow(){ setEntries([...entries, { date:new Date().toISOString().slice(0,10), installment_amount:1000, current_value:1000 }]); }
-    function removeRow(idx){ setEntries(entries.filter((_,i)=>i!==idx)); }
+    function addRow(){
+        const next = [...entries, { date:new Date().toISOString().slice(0,10), installment_amount:1000, current_value:1000 }];
+        setEntries(next);
+        saveEntries('mutual-funds', next);
+    }
+    function removeRow(idx){
+        const next = entries.filter((_,i)=>i!==idx);
+        setEntries(next);
+        saveEntries('mutual-funds', next);
+    }
 
     async function onCalc(rowsOverride){
         const rows = rowsOverride || entries;
@@ -44,9 +53,10 @@ export function MutualFunds({ settings }) {
             return;
         }
         try{
-            const payload = { entries: rows.map(e=>({ date:e.date, installment_amount:Number(e.installment_amount)||0, current_value:Number(e.current_value)||0 })) };
+            const payload = { entries: normalizeLedgerEntries('mutual-funds', rows) };
             const data = await calculateReturns('mutual-funds', payload);
             data.calculatedAt = new Date().toISOString();
+            data.calcSnapshot = calcSnapshot('mutual-funds', rows);
             setResult(data);
             const ledgers = loadLedgers(); ledgers['mutual-funds']=rows; ledgers.results['mutual-funds']=data; saveLedgers(ledgers);
             if (rowsOverride) setEntries(rowsOverride);

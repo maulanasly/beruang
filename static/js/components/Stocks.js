@@ -1,5 +1,5 @@
 import { html, useState, useEffect } from '../vendor/preact-htm-signals.js';
-import { loadLedgers, saveLedgers } from '../store.js';
+import { loadLedgers, saveLedgers, saveEntries } from '../store.js';
 import { calculateReturns, fetchQuote, searchIdx, fetchKompas100 } from '../api.js';
 import { formatCurrency, formatPercent, displaySymbol } from '../utils.js';
 import { LedgerTable, SummaryCards } from './AssetForm.js';
@@ -12,7 +12,7 @@ import { HowTo } from './HowTo.js';
 import { RelatedCalcs } from './RelatedCalcs.js';
 import { InfoTip } from './InfoTip.js';
 import { t } from '../i18n.js';
-import { readSharedState, ShareLink } from '../share.js';
+import { readSharedState, ShareLink, normalizeLedgerEntries, calcSnapshot } from '../share.js';
 
 let searchTimer = null;
 
@@ -100,20 +100,43 @@ export function Stocks({ settings }) {
         try {
             const q = await fetchQuote(quoteSym.trim());
             setLastQuote(q);
-            setEntries(entries.map((e, i) => i === idx ? {
+            const next = entries.map((e, i) => i === idx ? {
                 ...e,
                 symbol: q.symbol,
                 current_value: String(q.price),
                 dividend_yield: q.dividend_yield != null ? (q.dividend_yield * 100).toFixed(2) : e.dividend_yield,
-            } : e));
+            } : e);
+            setEntries(next);
+            saveEntries('stocks', next);
             setQuoteStatus(t(locale, 'market.updatedRow', { row: idx + 1, symbol: q.symbol, currency: q.currency }));
         } catch (e) { setQuoteStatus(e.message); }
         finally { setQuoteLoading(false); }
     }
 
-    function upd(idx, field, val){ setEntries(entries.map((e,i)=> i===idx ? {...e,[field]:val}:e)); }
-    function addRow(){ setEntries([...entries, { symbol:'BBCA.JK', date:new Date().toISOString().slice(0,10), installment_amount:700, new_share_purchases:200, dividends:0, dividend_yield:null, current_value:1000 }]); }
-    function rm(idx){ setEntries(entries.filter((_,i)=>i!==idx)); }
+    function upd(idx, field, val){
+        const next = entries.map((e,i)=> i===idx ? {...e,[field]:val}:e);
+        setEntries(next);
+        saveEntries('stocks', next);
+    }
+    function addRow(){
+        const next = [...entries, { symbol:'BBCA.JK', date:new Date().toISOString().slice(0,10), installment_amount:700, new_share_purchases:200, dividends:0, dividend_yield:null, current_value:1000 }];
+        setEntries(next);
+        saveEntries('stocks', next);
+    }
+    function rm(idx){
+        const next = entries.filter((_,i)=>i!==idx);
+        setEntries(next);
+        saveEntries('stocks', next);
+    }
+    function applyDividendFocus(symbol, yieldPct) {
+        const idx = targetIndex();
+        if (idx >= 0) {
+            const next = entries.map((e, i) => i === idx ? { ...e, symbol, dividend_yield: yieldPct } : e);
+            setEntries(next);
+            saveEntries('stocks', next);
+        }
+        setQuoteSym(symbol);
+    }
 
     async function onCalc(rowsOverride){
         const rows = rowsOverride || entries;
@@ -129,9 +152,10 @@ export function Stocks({ settings }) {
             return;
         }
         try{
-            const payload = { entries: rows.map(e=>({ date:e.date, installment_amount:Number(e.installment_amount)||0, new_share_purchases:Number(e.new_share_purchases)||0, dividends:Number(e.dividends)||0, current_value:Number(e.current_value)||0, dividend_yield:e.dividend_yield?Number(e.dividend_yield)/100:null })) };
+            const payload = { entries: normalizeLedgerEntries('stocks', rows) };
             const data = await calculateReturns('stocks', payload);
             data.calculatedAt = new Date().toISOString();
+            data.calcSnapshot = calcSnapshot('stocks', rows);
             setResult(data);
             const l=loadLedgers(); l.stocks=rows; l.results.stocks=data; saveLedgers(l);
             if (rowsOverride) setEntries(rowsOverride);
@@ -151,6 +175,7 @@ export function Stocks({ settings }) {
             }catch{ failed++; }
         }
         setEntries(next);
+        saveEntries('stocks', next);
         setSyncing(false);
         setSyncMsg(t(locale, 'market.syncSummary', { updated, failed }));
     }
@@ -251,11 +276,7 @@ export function Stocks({ settings }) {
             ]} />
             <${RelatedCalcs} current="stocks" settings=${settings} />
         </div>`}
-        <${DividendFocus} settings=${settings} onApply=${(symbol, yieldPct) => {
-            const idx = targetIndex();
-            if (idx >= 0) setEntries(entries.map((e, i) => i === idx ? { ...e, symbol, dividend_yield: yieldPct } : e));
-            setQuoteSym(symbol);
-        }} />
+        <${DividendFocus} settings=${settings} onApply=${applyDividendFocus} />
         <${PriceHistory} symbol=${quoteSym} settings=${settings} />
     </div>`;
 }

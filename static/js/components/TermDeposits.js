@@ -1,8 +1,8 @@
 import { html, useState, useEffect } from '../vendor/preact-htm-signals.js';
-import { loadLedgers, saveLedgers } from '../store.js';
+import { loadLedgers, saveLedgers, saveEntries } from '../store.js';
 import { calculateReturns } from '../api.js';
 import { t } from '../i18n.js';
-import { readSharedState, ShareLink } from '../share.js';
+import { readSharedState, ShareLink, normalizeLedgerEntries, calcSnapshot } from '../share.js';
 import { LedgerTable, SummaryCards } from './AssetForm.js';
 import { LedgerIo } from './LedgerIo.js';
 import { MomentumKpi } from './MomentumKpi.js';
@@ -44,9 +44,22 @@ export function TermDeposits({ settings }) {
             if (base) next[idx] = { ...row, maturity_date: addMonths(base, Number(row.term_months) || 12) };
         }
         setEntries(next);
+        saveEntries('term-deposits', next, Number(apy));
     }
-    function addRow(){ setEntries([...entries, { date:new Date().toISOString().slice(0,10), installment_amount:1000, current_value:1000, term_months:12, maturity_date:'' }]); }
-    function rm(idx){ setEntries(entries.filter((_,i)=>i!==idx)); }
+    function setApySave(v){
+        setApy(v);
+        saveEntries('term-deposits', entries, Number(v));
+    }
+    function addRow(){
+        const next = [...entries, { date:new Date().toISOString().slice(0,10), installment_amount:1000, current_value:1000, term_months:12, maturity_date:'' }];
+        setEntries(next);
+        saveEntries('term-deposits', next, Number(apy));
+    }
+    function rm(idx){
+        const next = entries.filter((_,i)=>i!==idx);
+        setEntries(next);
+        saveEntries('term-deposits', next, Number(apy));
+    }
 
     async function onCalc(rowsOverride, apyOverride){
         const rows = rowsOverride || entries;
@@ -63,9 +76,10 @@ export function TermDeposits({ settings }) {
             return;
         }
         try{
-            const payload = { apy: Number(rate), entries: rows.map(e=>({ date:e.date, installment_amount:Number(e.installment_amount)||0, current_value:Number(e.current_value)||0, term_months:Number(e.term_months)||12, maturity_date:e.maturity_date||null })) };
+            const payload = normalizeLedgerEntries('term-deposits', rows, rate);
             const data = await calculateReturns('term-deposits', payload);
             data.calculatedAt = new Date().toISOString();
+            data.calcSnapshot = calcSnapshot('term-deposits', rows, rate);
             setResult(data);
             const l=loadLedgers(); l['term-deposits']={apy:Number(rate), entries:rows}; l.results['term-deposits']=data; saveLedgers(l);
             if (rowsOverride) setEntries(rowsOverride);
@@ -78,7 +92,7 @@ export function TermDeposits({ settings }) {
         <div class="page-head"><h1>${t(locale, 'nav.termDeposits')}</h1><p class="muted">${t(locale, 'calc.tdSubtitle')} <${InfoTip} locale=${locale} tipKey="glossary.apy" /> <${InfoTip} locale=${locale} tipKey="glossary.depositMaturity" /></p></div>
         <${HowTo} locale=${locale} steps=${[t(locale,'howto.td1'), t(locale,'howto.td2'), t(locale,'howto.td3')]} />
         <div class="card">
-            <label>${t(locale, 'form.apy')} (${t(locale, 'calc.apyHint')}) <input type="number" step="0.001" value=${apy} onInput=${e=>setApy(e.target.value)} /></label>
+            <label>${t(locale, 'form.apy')} (${t(locale, 'calc.apyHint')}) <input type="number" step="0.001" value=${apy} onInput=${e=>setApySave(e.target.value)} /></label>
         </div>
         <div class="card">
             ${entries.map((e,idx)=> html`<div class="entry-grid" style="--cols:5">

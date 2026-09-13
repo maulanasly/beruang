@@ -5,6 +5,14 @@ import { loadLedgers, saveLedgers, loadSettings, saveSettings, loadGoals, saveGo
 export function PortfolioIo({ settings }) {
     const locale = settings?.locale || 'en-US';
     const [text, setText] = useState('');
+    function onFile(e) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => setText(String(reader.result || ''));
+        reader.readAsText(file);
+        e.target.value = '';
+    }
     const [status, setStatus] = useState('');
     const [error, setError] = useState('');
 
@@ -57,6 +65,11 @@ export function PortfolioIo({ settings }) {
             <button class="btn-ghost btn-sm" onClick=${exportAll}>${t(locale, 'backup.exportAll')}</button>
         </div>
         <textarea value=${text} onInput=${e=>setText(e.target.value)} placeholder=${t(locale, 'backup.pasteHint')} aria-label=${t(locale, 'backup.title')} style="width:100%; min-height:64px; font-family:monospace; font-size:12px"></textarea>
+        <div style="margin-top:8px">
+            <label class="muted" style="font-size:12px">${t(locale, 'io.chooseFile')}
+                <input type="file" accept=".json,application/json" onChange=${onFile} style="font-size:12px" />
+            </label>
+        </div>
         <div style="margin-top:8px"><button class="btn-sm" onClick=${restore} disabled=${!text.trim()}>${t(locale, 'backup.confirmRestore')}</button></div>
         ${status && html`<p style="color:var(--success); font-size:13px">${status}</p>`}
         ${error && html`<p style="color:var(--danger); font-size:13px">${error}</p>`}

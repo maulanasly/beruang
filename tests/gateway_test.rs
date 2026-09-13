@@ -537,7 +537,7 @@ async fn ev_comparison_matches_model() {
 #[tokio::test]
 async fn ev_page_meta() {
     let app = beruang_gateway::routes::create_router();
-    for uri in ["/kalkulator/mobil-listrik", "/calculators/ev", "/ev"] {
+    for uri in ["/kalkulator/mobil-listrik", "/ev"] {
         let response = app
             .clone()
             .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
@@ -556,4 +556,46 @@ async fn ev_page_meta() {
             "{uri}"
         );
     }
+}
+
+/// English aliases serve English copy under the Indonesian canonical.
+#[tokio::test]
+async fn english_alias_serves_english_meta() {
+    let app = beruang_gateway::routes::create_router();
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/calculators/stocks")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_text(response).await;
+    assert!(body.contains("<title>Stock and Dividend Calculator — Beruang</title>"));
+    assert!(
+        body.contains("<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/saham\">")
+    );
+}
+
+/// English EV alias serves English copy under the same canonical.
+#[tokio::test]
+async fn ev_english_alias_meta() {
+    let app = beruang_gateway::routes::create_router();
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/calculators/ev")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_text(response).await;
+    assert!(body.contains("<title>EV vs Petrol Cost Calculator — Beruang</title>"));
+    assert!(body.contains(
+        "<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/mobil-listrik\">"
+    ));
 }

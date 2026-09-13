@@ -30,7 +30,9 @@ fn public_base_url() -> String {
 /// `hreflang_en` is the English alias (client router serves both).
 struct PageMeta {
     title_id: &'static str,
+    title_en: &'static str,
     desc_id: &'static str,
+    desc_en: &'static str,
     canonical: &'static str,
     hreflang_en: Option<&'static str>,
     noscript: &'static str,
@@ -40,49 +42,63 @@ fn page_meta(path: &str) -> PageMeta {
     match path {
         "" => PageMeta {
             title_id: "Beruang — Kalkulator Investasi Gratis: XIRR, Saham, Deposito",
+            title_en: "Beruang — Free Investment Calculators: XIRR, Stocks, Deposits",
             desc_id: "Hitung XIRR reksa dana, return saham dan dividen, serta bunga deposito berjangka. Gratis, tanpa daftar, data tersimpan di perangkatmu.",
+            desc_en: "Free calculators for mutual-fund XIRR, stock dividends, and term-deposit maturity. No signup; your data stays on your device.",
             canonical: "/",
             hreflang_en: None,
             noscript: "Beruang adalah kalkulator investasi gratis: XIRR reksa dana, return saham dan dividen, serta simulasi deposito. Aktifkan JavaScript untuk memakai kalkulator interaktif.",
         },
         "portofolio" | "overview" => PageMeta {
             title_id: "Portofolio Saya — Beruang",
+            title_en: "My Portfolio — Beruang",
             desc_id: "Ringkasan portofolio: total setor, nilai kini, laba-rugi, XIRR tertimbang, dan TWR.",
+            desc_en: "Portfolio at a glance: contributions, current value, profit and loss, weighted XIRR, and TWR.",
             canonical: "/portofolio",
             hreflang_en: None,
             noscript: "Dasbor portofolio Beruang: total setoran, nilai saat ini, laba-rugi, XIRR, dan TWR. Aktifkan JavaScript untuk memuat datamu.",
         },
         "mutual-funds" | "kalkulator/reksa-dana" | "calculators/mutual-funds" => PageMeta {
             title_id: "Kalkulator XIRR Reksa Dana — Beruang",
+            title_en: "Mutual Fund XIRR Calculator — Beruang",
             desc_id: "Hitung XIRR dan return bulanan (MoM) reksa dana dari setoran cicilan. Tempel data CSV atau isi manual.",
+            desc_en: "Compute mutual-fund XIRR and month-over-month returns from installment entries. Paste CSV or type manually.",
             canonical: "/kalkulator/reksa-dana",
             hreflang_en: Some("/calculators/mutual-funds"),
             noscript: "Kalkulator XIRR reksa dana: masukkan tanggal, setoran, dan nilai saat ini tiap bulan untuk melihat return bulanan dan XIRR. Aktifkan JavaScript untuk menghitung.",
         },
         "stocks" | "kalkulator/saham" | "calculators/stocks" => PageMeta {
             title_id: "Kalkulator Saham dan Dividen — Beruang",
+            title_en: "Stock and Dividend Calculator — Beruang",
             desc_id: "Hitung return saham, ROI, XIRR, dan estimasi dividen dengan harga live IDX dan riwayat harga.",
+            desc_en: "Compute stock returns, ROI, XIRR, and estimated dividends with live IDX quotes and price history.",
             canonical: "/kalkulator/saham",
             hreflang_en: Some("/calculators/stocks"),
             noscript: "Kalkulator saham dan dividen: catat pembelian saham dan dividen, sinkronkan harga live IDX, lalu hitung ROI dan XIRR. Aktifkan JavaScript untuk menghitung.",
         },
         "term-deposits" | "kalkulator/deposito" | "calculators/term-deposits" => PageMeta {
             title_id: "Kalkulator Deposito Berjangka — Beruang",
+            title_en: "Term Deposit Calculator — Beruang",
             desc_id: "Simulasikan bunga deposito (APY), tanggal jatuh tempo, dan saran rollover.",
+            desc_en: "Simulate term-deposit interest (APY), maturity dates, and rollover suggestions.",
             canonical: "/kalkulator/deposito",
             hreflang_en: Some("/calculators/term-deposits"),
             noscript: "Kalkulator deposito berjangka: masukkan APY dan setoran untuk melihat bunga berjalan, tanggal jatuh tempo, dan saran rollover. Aktifkan JavaScript untuk menghitung.",
         },
         "ev" | "kalkulator/mobil-listrik" | "calculators/ev" => PageMeta {
             title_id: "Kalkulator Mobil Listrik vs Bensin — Beruang",
+            title_en: "EV vs Petrol Cost Calculator — Beruang",
             desc_id: "Bandingkan biaya operasional bulanan mobil listrik vs bensin dan temukan bulan impas.",
+            desc_en: "Compare monthly running costs of an electric car vs a petrol car and find the break-even month.",
             canonical: "/kalkulator/mobil-listrik",
             hreflang_en: Some("/calculators/ev"),
             noscript: "Kalkulator mobil listrik vs bensin: isi harga, jarak bulanan, dan biaya energi untuk melihat hemat per bulan dan titik impas. Aktifkan JavaScript untuk menghitung.",
         },
         _ => PageMeta {
             title_id: "Beruang — Kalkulator Investasi",
+            title_en: "Beruang — Investment Calculators",
             desc_id: "Kalkulator investasi gratis: XIRR reksa dana, saham dan dividen, serta deposito berjangka.",
+            desc_en: "Free investment calculators: mutual-fund XIRR, stocks and dividends, term deposits.",
             canonical: "/",
             hreflang_en: None,
             noscript: "Beruang adalah kalkulator investasi gratis. Aktifkan JavaScript untuk memakai kalkulator interaktif.",
@@ -103,13 +119,13 @@ fn hreflang_links(base: &str, meta: &PageMeta) -> String {
     out
 }
 
-fn json_ld(meta: &PageMeta, canonical: &str) -> String {
+fn json_ld_for(title: &str, description: &str, meta: &PageMeta, canonical: &str) -> String {
     let app = serde_json::json!({
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        "name": meta.title_id,
+        "name": title,
         "url": canonical,
-        "description": meta.desc_id,
+        "description": description,
         "applicationCategory": "FinanceApplication",
         "operatingSystem": "Web",
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "IDR" },
@@ -231,15 +247,27 @@ fn serve_index(route: &str, headers: &HeaderMap) -> Response {
         Some(file) => {
             let base = public_base_url();
             let meta = page_meta(route);
+            // English aliases serve English copy; Indonesian paths serve
+            // Indonesian. URL-keyed, so caches and scrapers stay consistent.
+            let english = route.starts_with("calculators/");
+            let title = if english {
+                meta.title_en
+            } else {
+                meta.title_id
+            };
+            let description = if english { meta.desc_en } else { meta.desc_id };
             let canonical = format!("{base}{}", meta.canonical);
             let html = String::from_utf8_lossy(&file.data)
                 .replace(VERSION_PLACEHOLDER, app_version())
-                .replace("{{TITLE}}", meta.title_id)
-                .replace("{{DESCRIPTION}}", meta.desc_id)
+                .replace("{{TITLE}}", title)
+                .replace("{{DESCRIPTION}}", description)
                 .replace("{{CANONICAL}}", &canonical)
                 .replace("{{OG_IMAGE}}", &format!("{base}/og-image.png"))
                 .replace("{{HREFLANG}}", &hreflang_links(&base, &meta))
-                .replace("{{JSON_LD}}", &json_ld(&meta, &canonical))
+                .replace(
+                    "{{JSON_LD}}",
+                    &json_ld_for(title, description, &meta, &canonical),
+                )
                 .replace("{{NOSCRIPT}}", meta.noscript);
             serve_bytes(INDEX, html.into_bytes(), headers)
         }
