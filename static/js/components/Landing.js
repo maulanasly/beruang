@@ -100,9 +100,9 @@ export function Landing({ settings }) {
         <section class="card">
             <h2 style="margin:0 0 8px; font-size:17px">${t(locale, 'home.stepsTitle')}</h2>
             <ol class="steps">
-                <li><strong>${t(locale, 'home.step1Title')}</strong><br><span class="muted">${t(locale, 'home.step1Desc')}</span></li>
-                <li><strong>${t(locale, 'home.step2Title')}</strong><br><span class="muted">${t(locale, 'home.step2Desc')}</span></li>
-                <li><strong>${t(locale, 'home.step3Title')}</strong><br><span class="muted">${t(locale, 'home.step3Desc')}</span></li>
+                <li><strong>${t(locale, 'home.step1Title')}</strong><br /><span class="muted">${t(locale, 'home.step1Desc')}</span></li>
+                <li><strong>${t(locale, 'home.step2Title')}</strong><br /><span class="muted">${t(locale, 'home.step2Desc')}</span></li>
+                <li><strong>${t(locale, 'home.step3Title')}</strong><br /><span class="muted">${t(locale, 'home.step3Desc')}</span></li>
             </ol>
         </section>
         <section class="card">
