@@ -1,0 +1,46 @@
+{
+  "name": "mf_static_defaults",
+  "request": {
+    "asset": "mutual-funds",
+    "payload": {
+      "entries": [
+        {
+          "date": "2026-05-31",
+          "installment_amount": 1100,
+          "current_value": 6500
+        },
+        {
+          "date": "2026-06-30",
+          "installment_amount": 1100,
+          "current_value": 7700
+        }
+      ]
+    }
+  },
+  "expect": {
+    "ok": true,
+    "response": {
+      "summary": {
+        "total_installments": 2200.0,
+        "ending_value": 7700.0,
+        "xirr": 2934315985.171605
+      },
+      "ledger": [
+        {
+          "date": "2026-05-31",
+          "installment_amount": 1100.0,
+          "current_value": 6500.0,
+          "month_start_value": null,
+          "mom_return": null
+        },
+        {
+          "date": "2026-06-30",
+          "installment_amount": 1100.0,
+          "current_value": 7700.0,
+          "month_start_value": 6500.0,
+          "mom_return": 0.015384615384615385
+        }
+      ]
+    }
+  }
+}

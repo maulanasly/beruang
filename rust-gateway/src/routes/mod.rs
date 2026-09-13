@@ -2,8 +2,12 @@ pub mod health;
 pub mod proxy;
 pub mod static_handler;
 
+use axum::extract::Request;
 use axum::http::{HeaderValue, Method};
+use axum::middleware::{self, Next};
+use axum::response::Response;
 use axum::Router;
+use tower_http::compression::CompressionLayer;
 use tower_http::cors::{AllowHeaders, AllowMethods, AllowOrigin, Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 
@@ -47,5 +51,32 @@ pub fn create_router() -> Router {
         .route("/api/v1/{*path}", axum::routing::any(proxy::handler))
         .fallback(static_handler::handler)
         .layer(cors_layer())
+        .layer(middleware::from_fn(security_headers))
+        .layer(CompressionLayer::new())
         .layer(TraceLayer::new_for_http())
+}
+
+/// Same-origin hardening for the embedded SPA. Inline `style=` attributes
+/// are load-bearing in `static/js/components/*`, hence `style-src
+/// 'unsafe-inline'` — scripts stay `'self'`-only (no CDN, zero-build).
+async fn security_headers(request: Request, next: Next) -> Response {
+    let mut response = next.run(request).await;
+    let headers = response.headers_mut();
+    headers.insert(
+        "x-content-type-options",
+        HeaderValue::from_static("nosniff"),
+    );
+    headers.insert("x-frame-options", HeaderValue::from_static("SAMEORIGIN"));
+    headers.insert(
+        "referrer-policy",
+        HeaderValue::from_static("strict-origin-when-cross-origin"),
+    );
+    headers.insert(
+        "content-security-policy",
+        HeaderValue::from_static(
+            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; \
+             img-src 'self' data:; connect-src 'self'; frame-ancestors 'self'",
+        ),
+    );
+    response
 }

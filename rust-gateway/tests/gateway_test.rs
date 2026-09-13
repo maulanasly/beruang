@@ -9,6 +9,13 @@ async fn response_body_json(response: axum::response::Response) -> serde_json::V
     serde_json::from_slice(&bytes).unwrap()
 }
 
+async fn response_body_bytes(response: axum::response::Response) -> Vec<u8> {
+    axum::body::to_bytes(response.into_body(), 1024 * 1024)
+        .await
+        .unwrap()
+        .to_vec()
+}
+
 #[tokio::test]
 async fn health_returns_ok() {
     let app = beruang_gateway::routes::create_router();
@@ -65,6 +72,97 @@ async fn static_serves_index_and_guards_api() {
         .await
         .unwrap();
     assert_eq!(response.status(), StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
+async fn static_index_injects_version_and_caches() {
+    let app = beruang_gateway::routes::create_router();
+    let response = app
+        .clone()
+        .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(
+        response.headers()["cache-control"],
+        "no-cache",
+        "shell must revalidate so ?v= URLs stay fresh"
+    );
+    let body = String::from_utf8(response_body_bytes(response).await).unwrap();
+    assert!(
+        !body.contains("{{APP_VERSION}}"),
+        "version placeholder must be injected at serve time"
+    );
+    assert!(
+        body.contains("/js/app.js?v="),
+        "asset URLs must carry the cache-busting version"
+    );
+
+    // Immutable tier: versioned JS ships a long cache + ETag.
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/js/app.js?v=abc123")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(
+        response.headers()["cache-control"],
+        "public, max-age=31536000, immutable"
+    );
+    assert!(response.headers()["content-type"]
+        .to_str()
+        .unwrap()
+        .contains("charset=utf-8"));
+    let etag = response.headers()["etag"].to_str().unwrap().to_string();
+
+    // Conditional request short-circuits to 304 with no body.
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/js/app.js")
+                .header("if-none-match", etag)
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::NOT_MODIFIED);
+    assert!(response_body_bytes(response).await.is_empty());
+}
+
+#[tokio::test]
+async fn static_responses_carry_security_headers_and_compression() {
+    let app = beruang_gateway::routes::create_router();
+    let response = app
+        .clone()
+        .oneshot(Request::builder().uri("/").body(Body::empty()).unwrap())
+        .await
+        .unwrap();
+    assert_eq!(response.headers()["x-content-type-options"], "nosniff");
+    assert_eq!(response.headers()["x-frame-options"], "SAMEORIGIN");
+    assert!(response.headers()["content-security-policy"]
+        .to_str()
+        .unwrap()
+        .contains("script-src 'self'"));
+
+    // gzip is negotiated when the client offers it.
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/js/app.js")
+                .header("accept-encoding", "gzip")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert_eq!(response.headers()["content-encoding"], "gzip");
 }
 
 /// Spin a mock calc on an ephemeral port and assert the gateway proxies

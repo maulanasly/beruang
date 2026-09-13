@@ -1,0 +1,46 @@
+{
+  "name": "mf_xirr_bracket_expansion",
+  "request": {
+    "asset": "mutual-funds",
+    "payload": {
+      "entries": [
+        {
+          "date": "2026-05-31",
+          "installment_amount": 1000,
+          "current_value": 1000
+        },
+        {
+          "date": "2026-06-30",
+          "installment_amount": 1000,
+          "current_value": 3100
+        }
+      ]
+    }
+  },
+  "expect": {
+    "ok": true,
+    "response": {
+      "summary": {
+        "total_installments": 2000.0,
+        "ending_value": 3100.0,
+        "xirr": 8323.051387195952
+      },
+      "ledger": [
+        {
+          "date": "2026-05-31",
+          "installment_amount": 1000.0,
+          "current_value": 1000.0,
+          "month_start_value": null,
+          "mom_return": null
+        },
+        {
+          "date": "2026-06-30",
+          "installment_amount": 1000.0,
+          "current_value": 3100.0,
+          "month_start_value": 1000.0,
+          "mom_return": 1.1
+        }
+      ]
+    }
+  }
+}

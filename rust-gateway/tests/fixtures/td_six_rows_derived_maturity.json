@@ -1,0 +1,141 @@
+{
+  "name": "td_six_rows_derived_maturity",
+  "request": {
+    "asset": "term-deposits",
+    "payload": {
+      "apy": 0.06,
+      "entries": [
+        {
+          "date": "2026-01-31",
+          "installment_amount": 1000,
+          "current_value": 1000
+        },
+        {
+          "date": "2026-02-28",
+          "installment_amount": 1000,
+          "current_value": 2005
+        },
+        {
+          "date": "2026-03-31",
+          "installment_amount": 1000,
+          "current_value": 3020
+        },
+        {
+          "date": "2026-04-30",
+          "installment_amount": 1000,
+          "current_value": 4042
+        },
+        {
+          "date": "2026-05-31",
+          "installment_amount": 1000,
+          "current_value": 5075
+        },
+        {
+          "date": "2026-06-30",
+          "installment_amount": 1000,
+          "current_value": 6115
+        }
+      ]
+    }
+  },
+  "expect": {
+    "ok": true,
+    "response": {
+      "summary": {
+        "apy": 0.06,
+        "monthly_rate": 0.004867550565343048,
+        "projected_fv_constant_installment": 6073.488852727817,
+        "ending_value": 6115.0,
+        "total_accrued_interest": 146.2728626239558,
+        "rollover_value": 0.0,
+        "next_maturity_date": "2027-01-31"
+      },
+      "ledger": [
+        {
+          "date": "2026-01-31",
+          "installment_amount": 1000.0,
+          "current_value": 1000.0,
+          "month_start_value": 0.0,
+          "prorated_interest": 0.0,
+          "expected_month_end_value": 1000.0,
+          "term_months": 12,
+          "maturity_date": "2027-01-31",
+          "days_to_maturity": 140,
+          "maturity_status": "active",
+          "maturity_value": 1060.0,
+          "accrued_interest": 36.572077653914015
+        },
+        {
+          "date": "2026-02-28",
+          "installment_amount": 1000.0,
+          "current_value": 2005.0,
+          "month_start_value": 1000.0,
+          "prorated_interest": 4.867550565343048,
+          "expected_month_end_value": 2004.867550565343,
+          "term_months": 12,
+          "maturity_date": "2027-02-28",
+          "days_to_maturity": 168,
+          "maturity_status": "active",
+          "maturity_value": 1060.0,
+          "accrued_interest": 31.94899903920301
+        },
+        {
+          "date": "2026-03-31",
+          "installment_amount": 1000.0,
+          "current_value": 3020.0,
+          "month_start_value": 2005.0,
+          "prorated_interest": 9.759438883512813,
+          "expected_month_end_value": 3014.7594388835128,
+          "term_months": 12,
+          "maturity_date": "2027-03-31",
+          "days_to_maturity": 199,
+          "maturity_status": "active",
+          "maturity_value": 1060.0,
+          "accrued_interest": 26.8546376030403
+        },
+        {
+          "date": "2026-04-30",
+          "installment_amount": 1000.0,
+          "current_value": 4042.0,
+          "month_start_value": 3020.0,
+          "prorated_interest": 14.700002707336006,
+          "expected_month_end_value": 4034.700002707336,
+          "term_months": 12,
+          "maturity_date": "2027-04-30",
+          "days_to_maturity": 229,
+          "maturity_status": "active",
+          "maturity_value": 1060.0,
+          "accrued_interest": 21.948556907659622
+        },
+        {
+          "date": "2026-05-31",
+          "installment_amount": 1000.0,
+          "current_value": 5075.0,
+          "month_start_value": 4042.0,
+          "prorated_interest": 19.674639385116603,
+          "expected_month_end_value": 5061.674639385116,
+          "term_months": 12,
+          "maturity_date": "2027-05-31",
+          "days_to_maturity": 260,
+          "maturity_status": "active",
+          "maturity_value": 1060.0,
+          "accrued_interest": 16.903564061211185
+        },
+        {
+          "date": "2026-06-30",
+          "installment_amount": 1000.0,
+          "current_value": 6115.0,
+          "month_start_value": 5075.0,
+          "prorated_interest": 24.702819119115972,
+          "expected_month_end_value": 6099.702819119116,
+          "term_months": 12,
+          "maturity_date": "2027-06-30",
+          "days_to_maturity": 290,
+          "maturity_status": "active",
+          "maturity_value": 1060.0,
+          "accrued_interest": 12.045027358927651
+        }
+      ]
+    }
+  }
+}

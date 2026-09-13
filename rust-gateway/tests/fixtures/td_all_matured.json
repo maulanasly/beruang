@@ -1,0 +1,69 @@
+{
+  "name": "td_all_matured",
+  "request": {
+    "asset": "term-deposits",
+    "payload": {
+      "apy": 0.06,
+      "entries": [
+        {
+          "date": "2025-01-31",
+          "installment_amount": 1000,
+          "current_value": 1000,
+          "term_months": 6,
+          "maturity_date": "2025-07-31"
+        },
+        {
+          "date": "2025-02-28",
+          "installment_amount": 1000,
+          "current_value": 2005,
+          "term_months": 6,
+          "maturity_date": "2025-08-28"
+        }
+      ]
+    }
+  },
+  "expect": {
+    "ok": true,
+    "response": {
+      "summary": {
+        "apy": 0.06,
+        "monthly_rate": 0.004867550565343048,
+        "projected_fv_constant_installment": 2004.8675505653582,
+        "ending_value": 2005.0,
+        "total_accrued_interest": 59.12602819739998,
+        "rollover_value": 2059.1260281974,
+        "next_maturity_date": null
+      },
+      "ledger": [
+        {
+          "date": "2025-01-31",
+          "installment_amount": 1000.0,
+          "current_value": 1000.0,
+          "month_start_value": 0.0,
+          "prorated_interest": 0.0,
+          "expected_month_end_value": 1000.0,
+          "term_months": 6,
+          "maturity_date": "2025-07-31",
+          "days_to_maturity": -409,
+          "maturity_status": "matured",
+          "maturity_value": 1029.5630140987,
+          "accrued_interest": 29.56301409869999
+        },
+        {
+          "date": "2025-02-28",
+          "installment_amount": 1000.0,
+          "current_value": 2005.0,
+          "month_start_value": 1000.0,
+          "prorated_interest": 4.867550565343048,
+          "expected_month_end_value": 2004.867550565343,
+          "term_months": 6,
+          "maturity_date": "2025-08-28",
+          "days_to_maturity": -381,
+          "maturity_status": "matured",
+          "maturity_value": 1029.5630140987,
+          "accrued_interest": 29.56301409869999
+        }
+      ]
+    }
+  }
+}

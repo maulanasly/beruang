@@ -1,0 +1,133 @@
+{
+  "name": "stocks_six_rows_dividends",
+  "request": {
+    "asset": "stocks",
+    "payload": {
+      "entries": [
+        {
+          "date": "2026-01-31",
+          "installment_amount": 700,
+          "new_share_purchases": 300,
+          "dividends": 0,
+          "current_value": 1000
+        },
+        {
+          "date": "2026-02-28",
+          "installment_amount": 700,
+          "new_share_purchases": 200,
+          "dividends": 10,
+          "current_value": 1950
+        },
+        {
+          "date": "2026-03-31",
+          "installment_amount": 700,
+          "new_share_purchases": 150,
+          "dividends": 0,
+          "current_value": 2850
+        },
+        {
+          "date": "2026-04-30",
+          "installment_amount": 700,
+          "new_share_purchases": 250,
+          "dividends": 12,
+          "current_value": 3920
+        },
+        {
+          "date": "2026-05-31",
+          "installment_amount": 700,
+          "new_share_purchases": 100,
+          "dividends": 8,
+          "current_value": 4900
+        },
+        {
+          "date": "2026-06-30",
+          "installment_amount": 700,
+          "new_share_purchases": 200,
+          "dividends": 15,
+          "current_value": 6080
+        }
+      ]
+    }
+  },
+  "expect": {
+    "ok": true,
+    "response": {
+      "summary": {
+        "total_contribution": 5400.0,
+        "ending_value": 6080.0,
+        "roi": 0.1259259259259259,
+        "xirr": 0.7223048673397563,
+        "estimated_annual_dividend": null,
+        "estimated_monthly_dividend": null
+      },
+      "ledger": [
+        {
+          "date": "2026-01-31",
+          "installment_amount": 700.0,
+          "new_share_purchases": 300.0,
+          "dividends": 0.0,
+          "current_value": 1000.0,
+          "dividend_yield": null,
+          "estimated_dividend": null,
+          "month_start_value": null,
+          "mom_return": null
+        },
+        {
+          "date": "2026-02-28",
+          "installment_amount": 700.0,
+          "new_share_purchases": 200.0,
+          "dividends": 10.0,
+          "current_value": 1950.0,
+          "dividend_yield": null,
+          "estimated_dividend": null,
+          "month_start_value": 1000.0,
+          "mom_return": 0.76
+        },
+        {
+          "date": "2026-03-31",
+          "installment_amount": 700.0,
+          "new_share_purchases": 150.0,
+          "dividends": 0.0,
+          "current_value": 2850.0,
+          "dividend_yield": null,
+          "estimated_dividend": null,
+          "month_start_value": 1950.0,
+          "mom_return": 0.38461538461538464
+        },
+        {
+          "date": "2026-04-30",
+          "installment_amount": 700.0,
+          "new_share_purchases": 250.0,
+          "dividends": 12.0,
+          "current_value": 3920.0,
+          "dividend_yield": null,
+          "estimated_dividend": null,
+          "month_start_value": 2850.0,
+          "mom_return": 0.2919298245614035
+        },
+        {
+          "date": "2026-05-31",
+          "installment_amount": 700.0,
+          "new_share_purchases": 100.0,
+          "dividends": 8.0,
+          "current_value": 4900.0,
+          "dividend_yield": null,
+          "estimated_dividend": null,
+          "month_start_value": 3920.0,
+          "mom_return": 0.22653061224489796
+        },
+        {
+          "date": "2026-06-30",
+          "installment_amount": 700.0,
+          "new_share_purchases": 200.0,
+          "dividends": 15.0,
+          "current_value": 6080.0,
+          "dividend_yield": null,
+          "estimated_dividend": null,
+          "month_start_value": 4900.0,
+          "mom_return": 0.2030612244897959
+        }
+      ]
+    }
+  }
+}

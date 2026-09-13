@@ -1,0 +1,25 @@
+{
+  "name": "mf_zero_contributions",
+  "request": {
+    "asset": "mutual-funds",
+    "payload": {
+      "entries": [
+        {
+          "date": "2026-05-31",
+          "installment_amount": 0,
+          "current_value": 5000
+        },
+        {
+          "date": "2026-06-30",
+          "installment_amount": 0,
+          "current_value": 5200
+        }
+      ]
+    }
+  },
+  "expect": {
+    "ok": false,
+    "status": 422,
+    "detail_contains": "XIRR requires at least one positive and one negative cash flow."
+  }
+}

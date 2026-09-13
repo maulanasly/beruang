@@ -1,0 +1,25 @@
+{
+  "name": "mf_xirr_unbracketable",
+  "request": {
+    "asset": "mutual-funds",
+    "payload": {
+      "entries": [
+        {
+          "date": "2026-05-31",
+          "installment_amount": 1000,
+          "current_value": 1000
+        },
+        {
+          "date": "2026-06-30",
+          "installment_amount": 1000,
+          "current_value": 1000000
+        }
+      ]
+    }
+  },
+  "expect": {
+    "ok": false,
+    "status": 422,
+    "detail_contains": "Could not bracket XIRR root for given cash flows."
+  }
+}

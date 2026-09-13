@@ -147,12 +147,13 @@ Every change follows this exact flow:
 - **Current (`static/`, modeled on `monthly-logs`)**: zero-build Preact + HTM — no npm/node; components in `static/js/components/`; fetch wrapper in `static/js/api.js`; hash router in `static/js/router.js` (`#/overview`, `#/mutual-funds`, `#/stocks`, `#/term-deposits`); same `localStorage` keys as Vue for migration.
 - **Legacy (Vue)**: Composition API in `frontend/src/composables/`, views in `frontend/src/views/`, shared UI in `frontend/src/components/`; hash-free history router; `fetch` wrapper in `useApiClient.js`; locale/currency/market via `useSettings` + `vue-i18n` (kept for migration via `--profile legacy`).
 
-## Rust boundary (`rust-gateway/`, `logic.py` stays Python)
+## Rust boundary (`rust-gateway/` → self-contained binary)
 
-- **Topology**: Axum on `:8000` (public) proxies `/api/v1/*` verbatim (status + body) to Python calc on `:8001` (internal); serves `static/` via `rust-embed`. Keeps 422/502 shapes identical. Compose has `healthcheck` on both services, `depends_on: condition: service_healthy`.
-- **Forbidden**: reimplementing `mutual_fund_metrics` / `stock_metrics` / `term_deposit_metrics` / `calculate_xirr` in Rust; embedding Python via PyO3 (sidecar HTTP only in phase 1).
-- **Config**: `CALC_BASE_URL` env (default `http://127.0.0.1:8001`, compose `http://calc:8001`); CORS in Axum `tower-http` layer; 10s timeout for `*/returns`, 25s for `/market-data/*`.
-- **Layout**: `rust-gateway/src/{main.rs,lib.rs,routes/,errors.rs}` with `thiserror`, `tracing`, `tower-http cors/fs`, `reqwest json/rustls-tls`; release profile `opt-level="s", lto, strip` like reference.
+- **Topology (target)**: Axum on `:8000` (public) serves `static/` via `rust-embed` + native `/api/v1/*/returns` handlers ported from `logic.py`; `/api/v1/market-data/*` stays proxied to Python calc (`CALC_BASE_URL`, default `http://127.0.0.1:8001`, compose `http://calc:8001`) until the Rust market module passes shadow-diff. Keeps 422/502 shapes identical.
+- **Authorized**: porting `mutual_fund_metrics` / `stock_metrics` / `term_deposit_metrics` / `calculate_xirr` into `rust-gateway/src/calc/` — the parity harness (`rust-gateway/tests/calc_parity.rs` replaying `rust-gateway/tests/fixtures/*.json`) is the correctness arbiter (epsilon 1e-9 numerics; exact nulls/statuses/strings). `logic.py` is FROZEN (oracle only — no new features; edits require regenerating fixtures via `backend/oracle_dump.py`).
+- **Forbidden**: embedding Python via PyO3; promoting market-data routes to native before the shadow-diff stability bar is met (≥7 days, zero material diffs post-burn-in, min volumes).
+- **Config**: `CALC_BASE_URL` env; `CALC_RETURNS_MODE=proxy|native`, `SHADOW_MODE=off|compare`, `SHADOW_SAMPLE_RATE`; CORS in Axum `tower-http` layer; 10s timeout for `*/returns`, 25s for `/market-data/*`.
+- **Layout**: `rust-gateway/src/{main.rs,lib.rs,routes/,calc/,market/,shadow.rs,errors.rs}` with `thiserror`, `tracing`, `tower-http cors/compression`, `reqwest json/rustls-tls`, `chrono`, `serde`; release profile `opt-level="s", lto, strip` like reference.
 
 ## Project layout
 
