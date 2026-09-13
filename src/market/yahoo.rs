@@ -5,20 +5,39 @@
 //! - `v10/quoteSummary`: cookie + crumb flow (`fc.yahoo.com` sets the
 //!   cookie, `v1/test/getcrumb` mints the crumb); refresh + single retry
 //!   on 401, mirroring what `yfinance` does under the hood.
+//!
+//! Throttle discipline (the VPS egress IP is edge rate-limited):
+//! - at most [`MAX_CONCURRENT`] in-flight Yahoo requests process-wide
+//!   (the 24-way yields fan-out used to self-inflict 429s);
+//! - HTTP 429 surfaces as [`YahooError::RateLimited`] and is retried with
+//!   exponential backoff (honoring `Retry-After`), alternating
+//!   `query1`/`query2` hosts per attempt.
 
 use std::sync::Mutex;
+use std::time::Duration;
 
 const USER_AGENT: &str = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36";
-const CHART_BASE: &str = "https://query1.finance.yahoo.com/v8/finance/chart";
-const SEARCH_BASE: &str = "https://query1.finance.yahoo.com/v1/finance/search";
-const CRUMB_URL: &str = "https://query1.finance.yahoo.com/v1/test/getcrumb";
+const HOSTS: [&str; 2] = [
+    "https://query1.finance.yahoo.com",
+    "https://query2.finance.yahoo.com",
+];
+const SEARCH_PATH: &str = "/v1/finance/search";
+const CRUMB_PATH: &str = "/v1/test/getcrumb";
 const COOKIE_URL: &str = "https://fc.yahoo.com";
-const SUMMARY_BASE: &str = "https://query1.finance.yahoo.com/v10/finance/quoteSummary";
+const SUMMARY_PATH: &str = "/v10/finance/quoteSummary";
+
+/// Max simultaneous Yahoo requests process-wide (shared semaphore).
+const MAX_CONCURRENT: usize = 2;
+/// Retries after the first attempt on 429/transport errors.
+const MAX_RETRIES: u32 = 3;
+/// Per-request ceiling; retries must fit the 25s route budget.
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(8);
 
 #[derive(Debug)]
 pub enum YahooError {
     Transport(String),
     Unauthorized,
+    RateLimited,
     BadResponse(String),
 }
 
@@ -27,6 +46,10 @@ impl std::fmt::Display for YahooError {
         match self {
             Self::Transport(message) | Self::BadResponse(message) => write!(f, "{message}"),
             Self::Unauthorized => write!(f, "Yahoo Finance rejected the request"),
+            Self::RateLimited => write!(
+                f,
+                "Yahoo Finance is rate-limiting requests from the server right now — please retry in a minute."
+            ),
         }
     }
 }
@@ -37,6 +60,33 @@ impl std::error::Error for YahooError {}
 pub struct YahooClient {
     client: reqwest::Client,
     state: std::sync::Arc<Mutex<AuthState>>,
+    /// Process-wide throttle: every Yahoo hit (chart/search/summary/auth)
+    /// takes a permit, so bursts serialize instead of tripping the edge.
+    throttle: std::sync::Arc<tokio::sync::Semaphore>,
+}
+
+/// Host for an attempt: alternate query1/query2 so a per-host bucket
+/// refill lets the retry through.
+fn host_for_attempt(attempt: u32) -> &'static str {
+    HOSTS[(attempt as usize) % HOSTS.len()]
+}
+
+/// Backoff before retry `attempt` (1-based): 1s, 2s, 4s … capped at 8s.
+fn backoff_for_attempt(attempt: u32) -> Duration {
+    Duration::from_secs(1_u64.saturating_mul(1 << attempt.min(3)).min(8))
+}
+
+/// `Retry-After: <seconds>` value, if the header carries a plain delay.
+fn retry_after_secs(headers: &reqwest::header::HeaderMap) -> Option<Duration> {
+    headers
+        .get(reqwest::header::RETRY_AFTER)
+        .and_then(|v| v.to_str().ok())
+        .and_then(|v| v.trim().parse::<u64>().ok())
+        .map(|s| Duration::from_secs(s.clamp(1, 30)))
+}
+
+fn is_rate_limited(status: reqwest::StatusCode) -> bool {
+    status == reqwest::StatusCode::TOO_MANY_REQUESTS
 }
 
 #[derive(Debug, Default)]
@@ -49,21 +99,79 @@ impl YahooClient {
     pub fn new() -> Result<Self, YahooError> {
         let client = reqwest::Client::builder()
             .user_agent(USER_AGENT)
+            .timeout(REQUEST_TIMEOUT)
             .build()
             .map_err(|e| YahooError::Transport(e.to_string()))?;
         Ok(Self {
             client,
             state: std::sync::Arc::new(Mutex::new(AuthState::default())),
+            throttle: std::sync::Arc::new(tokio::sync::Semaphore::new(MAX_CONCURRENT)),
         })
     }
 
-    async fn refresh_auth(&self) -> Result<(String, String), YahooError> {
-        let cookie_resp = self
-            .client
-            .get(COOKIE_URL)
-            .send()
+    /// Throttled GET with retry: alternate hosts per attempt, back off on
+    /// 429 (honoring `Retry-After`) and transport errors. Returns the
+    /// response for 2xx AND 401 — the caller decides what 401 means.
+    /// 429 after [`MAX_RETRIES`] becomes [`YahooError::RateLimited`].
+    async fn send(
+        &self,
+        build: impl Fn(&str) -> reqwest::RequestBuilder,
+    ) -> Result<reqwest::Response, YahooError> {
+        let mut attempt: u32 = 0;
+        loop {
+            let _permit = self
+                .throttle
+                .acquire()
+                .await
+                .map_err(|e| YahooError::Transport(e.to_string()))?;
+            let resp = build(host_for_attempt(attempt)).send().await;
+            drop(_permit);
+            match resp {
+                Err(e) if attempt < MAX_RETRIES => {
+                    tracing::debug!(
+                        attempt,
+                        error = e.to_string(),
+                        "yahoo transport error, retrying"
+                    );
+                    tokio::time::sleep(backoff_for_attempt(attempt + 1)).await;
+                    attempt += 1;
+                }
+                Err(e) => return Err(YahooError::Transport(e.to_string())),
+                Ok(resp) => {
+                    if is_rate_limited(resp.status()) {
+                        if attempt < MAX_RETRIES {
+                            let wait = retry_after_secs(resp.headers())
+                                .unwrap_or_else(|| backoff_for_attempt(attempt + 1));
+                            tracing::debug!(?wait, attempt, "yahoo rate-limited, retrying");
+                            tokio::time::sleep(wait).await;
+                            attempt += 1;
+                            continue;
+                        }
+                        return Err(YahooError::RateLimited);
+                    }
+                    return Ok(resp);
+                }
+            }
+        }
+    }
+
+    /// GET expecting JSON: 401 surfaces immediately so the caller can run
+    /// its auth-refresh flow.
+    async fn get_json(
+        &self,
+        build: impl Fn(&str) -> reqwest::RequestBuilder,
+    ) -> Result<serde_json::Value, YahooError> {
+        let resp = self.send(build).await?;
+        if resp.status() == reqwest::StatusCode::UNAUTHORIZED {
+            return Err(YahooError::Unauthorized);
+        }
+        resp.json()
             .await
-            .map_err(|e| YahooError::Transport(e.to_string()))?;
+            .map_err(|e| YahooError::BadResponse(e.to_string()))
+    }
+
+    async fn refresh_auth(&self) -> Result<(String, String), YahooError> {
+        let cookie_resp = self.send(|_| self.client.get(COOKIE_URL)).await?;
         let cookie = cookie_resp
             .headers()
             .get_all(reqwest::header::SET_COOKIE)
@@ -79,12 +187,12 @@ impl YahooClient {
             ));
         }
         let crumb = self
-            .client
-            .get(CRUMB_URL)
-            .header(reqwest::header::COOKIE, &cookie)
-            .send()
-            .await
-            .map_err(|e| YahooError::Transport(e.to_string()))?
+            .send(|host| {
+                self.client
+                    .get(format!("{host}{CRUMB_PATH}"))
+                    .header(reqwest::header::COOKIE, &cookie)
+            })
+            .await?
             .text()
             .await
             .map_err(|e| YahooError::Transport(e.to_string()))?;
@@ -110,20 +218,14 @@ impl YahooClient {
 
     /// `v8/chart` — anonymous. Returns the raw JSON value.
     pub async fn chart(&self, symbol: &str, range: &str) -> Result<serde_json::Value, YahooError> {
-        let url = format!("{CHART_BASE}/{symbol}");
-        let resp = self
-            .client
-            .get(&url)
-            .query(&[("range", range), ("interval", "1d")])
-            .send()
-            .await
-            .map_err(|e| YahooError::Transport(e.to_string()))?;
-        if resp.status() == reqwest::StatusCode::UNAUTHORIZED {
-            return Err(YahooError::Unauthorized);
-        }
-        resp.json()
-            .await
-            .map_err(|e| YahooError::BadResponse(e.to_string()))
+        let symbol = symbol.to_string();
+        let range = range.to_string();
+        self.get_json(|host| {
+            self.client
+                .get(format!("{host}/v8/finance/chart/{symbol}"))
+                .query(&[("range", range.as_str()), ("interval", "1d")])
+        })
+        .await
     }
 
     /// `v1/search` — anonymous. Returns the raw JSON value.
@@ -132,26 +234,21 @@ impl YahooClient {
         query: &str,
         max_results: usize,
     ) -> Result<serde_json::Value, YahooError> {
-        let resp = self
-            .client
-            .get(SEARCH_BASE)
-            .query(&[
-                ("q", query),
-                ("quotesCount", &max_results.to_string()),
+        let query = query.to_string();
+        let count = max_results.to_string();
+        self.get_json(|host| {
+            self.client.get(format!("{host}{SEARCH_PATH}")).query(&[
+                ("q", query.as_str()),
+                ("quotesCount", count.as_str()),
                 ("newsCount", "0"),
             ])
-            .send()
-            .await
-            .map_err(|e| YahooError::Transport(e.to_string()))?;
-        if resp.status() == reqwest::StatusCode::UNAUTHORIZED {
-            return Err(YahooError::Unauthorized);
-        }
-        resp.json()
-            .await
-            .map_err(|e| YahooError::BadResponse(e.to_string()))
+        })
+        .await
     }
 
     /// `v10/quoteSummary` — cookie + crumb, refreshed once on 401.
+    /// A 429 from the summary leg is returned (not swallowed): callers
+    /// degrade name/yield but keep chart data when they can.
     pub async fn quote_summary(
         &self,
         symbol: &str,
@@ -177,30 +274,71 @@ impl YahooClient {
         symbol: &str,
         modules: &str,
     ) -> Result<serde_json::Value, YahooError> {
-        let url = format!("{SUMMARY_BASE}/{symbol}");
-        let resp = self
-            .client
-            .get(&url)
-            .header(reqwest::header::COOKIE, cookie)
-            .query(&[("modules", modules), ("crumb", crumb)])
-            .send()
-            .await
-            .map_err(|e| YahooError::Transport(e.to_string()))?;
-        if resp.status() == reqwest::StatusCode::UNAUTHORIZED {
-            return Err(YahooError::Unauthorized);
-        }
-        resp.json()
-            .await
-            .map_err(|e| YahooError::BadResponse(e.to_string()))
+        let cookie = cookie.to_string();
+        let crumb = crumb.to_string();
+        let symbol = symbol.to_string();
+        let modules = modules.to_string();
+        self.get_json(|host| {
+            self.client
+                .get(format!("{host}{SUMMARY_PATH}/{symbol}"))
+                .header(reqwest::header::COOKIE, &cookie)
+                .query(&[("modules", modules.as_str()), ("crumb", crumb.as_str())])
+        })
+        .await
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::YahooClient;
+    use super::{
+        backoff_for_attempt, host_for_attempt, is_rate_limited, retry_after_secs, YahooClient,
+        HOSTS, MAX_RETRIES,
+    };
+    use std::time::Duration;
 
     #[test]
     fn client_builds_without_network() {
         assert!(YahooClient::new().is_ok());
+    }
+
+    #[test]
+    fn attempts_alternate_hosts() {
+        assert_eq!(host_for_attempt(0), HOSTS[0]);
+        assert_eq!(host_for_attempt(1), HOSTS[1]);
+        assert_eq!(host_for_attempt(2), HOSTS[0]);
+    }
+
+    #[test]
+    fn backoff_grows_and_caps() {
+        assert_eq!(backoff_for_attempt(1), Duration::from_secs(2));
+        assert_eq!(backoff_for_attempt(2), Duration::from_secs(4));
+        assert_eq!(backoff_for_attempt(3), Duration::from_secs(8));
+        assert_eq!(backoff_for_attempt(99), Duration::from_secs(8));
+    }
+
+    #[test]
+    fn retry_after_parses_plain_seconds() {
+        let mut headers = reqwest::header::HeaderMap::new();
+        assert!(retry_after_secs(&headers).is_none());
+        headers.insert(
+            reqwest::header::RETRY_AFTER,
+            reqwest::header::HeaderValue::from_static("5"),
+        );
+        assert_eq!(retry_after_secs(&headers), Some(Duration::from_secs(5)));
+    }
+
+    #[test]
+    fn rate_limit_status_detected() {
+        assert!(is_rate_limited(reqwest::StatusCode::TOO_MANY_REQUESTS));
+        assert!(!is_rate_limited(reqwest::StatusCode::OK));
+        assert!(!is_rate_limited(reqwest::StatusCode::UNAUTHORIZED));
+    }
+
+    #[test]
+    fn retry_budget_fits_route_timeout() {
+        // Worst case: initial + MAX_RETRIES backoffs must stay well under
+        // the 25s route budget (8s request timeouts bound the rest).
+        let worst: Duration = (1..=MAX_RETRIES).map(backoff_for_attempt).sum();
+        assert!(worst <= Duration::from_secs(15));
     }
 }
