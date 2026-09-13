@@ -299,6 +299,7 @@ export default {
     line: 'Line',
     applyPrice: 'Apply {price}',
     latest: 'latest',
+    menu: 'Menu',
   },
   calc: {
     mfSubtitle: 'Cash-flow adjusted MoM \u00b7 XIRR via exact dates.',

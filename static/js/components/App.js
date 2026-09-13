@@ -10,15 +10,24 @@ import { TermDeposits } from './TermDeposits.js';
 import { Ev } from './Ev.js';
 import { Footer } from './Footer.js';
 
+// No-JS fallback hook: without JS the nav panel stays visible (see CSS).
+document.documentElement.classList.add('js');
+
 export function App() {
     const [route, setRoute] = useState(getCurrentRoute());
     const [settings, setSettings] = useState(loadSettings());
+    const [menuOpen, setMenuOpen] = useState(false);
     const locale = settings.locale;
 
     useEffect(() => {
-        const h = () => { setRoute(getCurrentRoute()); window.scrollTo(0, 0); };
+        const h = () => { setRoute(getCurrentRoute()); setMenuOpen(false); window.scrollTo(0, 0); };
         window.addEventListener('popstate', h);
         return () => window.removeEventListener('popstate', h);
+    }, []);
+    useEffect(() => {
+        const onKey = (e) => { if (e.key === 'Escape') setMenuOpen(false); };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
     }, []);
     useEffect(() => {
         const titles = {
@@ -50,40 +59,40 @@ export function App() {
         { to: '/portofolio', key: 'portofolio', label: t(locale, 'nav.portfolio') },
         { to: '/kalkulator/mobil-listrik', key: 'ev', label: t(locale, 'nav.ev') },
     ];
-    const go = (e, to) => { e.preventDefault(); navigate(to); };
+    const go = (e, to) => { e.preventDefault(); setMenuOpen(false); navigate(to); };
 
     return html`
         <div>
             <header class="ledger-header">
-                <div class="ledger-header__brand">
-                    <a href="/" onClick=${e => go(e, '/')} aria-label="Beruang — ${t(locale, 'nav.home')}" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:inherit">
-                        <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="14" fill="var(--ledger)"/><circle cx="32" cy="32" r="20" fill="none" stroke="#faf8f3" stroke-width="3.5"/><text x="32" y="41.5" font-family="Georgia, serif" font-size="23" font-weight="bold" fill="#faf8f3" text-anchor="middle">Rp</text></svg>
-                        ${t(locale, 'hero.brand')} <small>${t(locale, 'hero.title')}</small>
-                    </a>
-                </div>
-            </header>
-            <div class="app-shell">
-                <nav class="sidebar" aria-label=${t(locale, 'ui.navLabel')}>
-                    <div class="sidebar__section">
-                        ${navItems.map(i => html`<a href=${i.to} class=${route===i.key?'active':''} onClick=${e=>go(e, i.to)}>${i.label}</a>`)}
+                <div class="topbar-main">
+                    <div class="ledger-header__brand">
+                        <a href="/" onClick=${e => go(e, '/')} aria-label="Beruang — ${t(locale, 'nav.home')}" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:inherit">
+                            <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="14" fill="var(--ledger)"/><circle cx="32" cy="32" r="20" fill="none" stroke="#faf8f3" stroke-width="3.5"/><text x="32" y="41.5" font-family="Georgia, serif" font-size="23" font-weight="bold" fill="#faf8f3" text-anchor="middle">Rp</text></svg>
+                            ${t(locale, 'hero.brand')} <small>${t(locale, 'hero.title')}</small>
+                        </a>
                     </div>
-                    <div class="sidebar__section">
-                        <div class="sidebar__label">${t(locale, 'settings.locale')} / ${t(locale, 'settings.currency')}</div>
+                    <button class="menu-toggle" aria-expanded=${menuOpen} aria-controls="primary-nav" aria-label=${t(locale, 'ui.menu')} onClick=${() => setMenuOpen(!menuOpen)}>
+                        <span class=${menuOpen ? 'menu-icon open' : 'menu-icon'} aria-hidden="true"></span>
+                    </button>
+                    <nav id="primary-nav" class=${menuOpen ? 'topnav open' : 'topnav'} aria-label=${t(locale, 'ui.navLabel')}>
+                        ${navItems.map(i => html`<a href=${i.to} class=${route===i.key?'active':''} aria-current=${route===i.key ? 'page' : null} onClick=${e=>go(e, i.to)}>${i.label}</a>`)}
+                    </nav>
+                    <div class="locale-group" role="group" aria-label=${`${t(locale, 'settings.locale')} / ${t(locale, 'settings.currency')}`}>
                         <select value=${locale} title=${t(locale, 'settings.locale')} aria-label=${t(locale, 'settings.locale')} onChange=${e=>setSettings({...settings, locale:e.target.value})}>
-                            ${LOCALE_OPTIONS.map(o=> html`<option value=${o.value}>${o.label}</option>`)}
+                            ${LOCALE_OPTIONS.map(o=> html`<option value=${o.value}>${o.short || o.label}</option>`)}
                         </select>
                         <select value=${settings.currency} title=${t(locale, 'settings.currency')} aria-label=${t(locale, 'settings.currency')} onChange=${e=>setSettings({...settings, currency:e.target.value})}>
-                            ${CURRENCY_OPTIONS.map(o=> html`<option value=${o.value}>${o.label}</option>`)}
+                            ${CURRENCY_OPTIONS.map(o=> html`<option value=${o.value}>${o.short || o.label}</option>`)}
                         </select>
                         <select value=${settings.market} title=${t(locale, 'settings.market')} aria-label=${t(locale, 'settings.market')} onChange=${e=>setSettings({...settings, market:e.target.value})}>
-                            ${MARKET_OPTIONS.map(o=> html`<option value=${o.value}>${o.label}</option>`)}
+                            ${MARKET_OPTIONS.map(o=> html`<option value=${o.value}>${o.short || o.label}</option>`)}
                         </select>
                     </div>
-                </nav>
-                <main id="main">
-                    ${pages[route] || pages.home}
-                </main>
-            </div>
+                </div>
+            </header>
+            <main id="main">
+                ${pages[route] || pages.home}
+            </main>
             <${Footer} settings=${settings} />
         </div>
     `;

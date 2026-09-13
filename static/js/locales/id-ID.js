@@ -298,6 +298,7 @@ export default {
     line: 'Baris',
     applyPrice: 'Terapkan {price}',
     latest: 'terkini',
+    menu: 'Menu',
   },
   calc: {
     mfSubtitle: 'MoM yang disesuaikan arus kas \u00b7 XIRR memakai tanggal persis.',
