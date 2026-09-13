@@ -106,6 +106,19 @@ verify-rust: verify ## Alias for verify
 verify-all: verify ## Alias for verify
 
 # ------------------------------------------------------------------------------
+# Release (production deploys trigger on published GitHub Releases;
+# see docs/DEPLOY.md for the full runbook)
+# ------------------------------------------------------------------------------
+.PHONY: release
+release: ## Cut a GitHub Release to deploy (usage: make release VERSION=0.2.0)
+	@if [ -z "$(VERSION)" ]; then \
+		echo "usage: make release VERSION=<semver, e.g. 0.2.0>"; \
+		exit 1; \
+	fi
+	@$(MAKE) verify
+	gh release create "v$(VERSION)" --generate-notes
+
+# ------------------------------------------------------------------------------
 # Graphify
 # ------------------------------------------------------------------------------
 .PHONY: graphify-init graphify-query graphify-update
