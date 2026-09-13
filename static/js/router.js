@@ -15,6 +15,9 @@ const routes = {
     '/term-deposits': 'term-deposits',
     '/kalkulator/deposito': 'term-deposits',
     '/calculators/term-deposits': 'term-deposits',
+    '/ev': 'ev',
+    '/kalkulator/mobil-listrik': 'ev',
+    '/calculators/ev': 'ev',
 };
 
 // Canonical (shareable, Indonesian-first) path per route.
@@ -24,6 +27,7 @@ export const canonicalPath = {
     'mutual-funds': '/kalkulator/reksa-dana',
     stocks: '/kalkulator/saham',
     'term-deposits': '/kalkulator/deposito',
+    ev: '/kalkulator/mobil-listrik',
 };
 
 // One-time upgrade: old `#/path` links become real paths without reload.

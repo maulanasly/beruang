@@ -73,6 +73,13 @@ fn page_meta(path: &str) -> PageMeta {
             hreflang_en: Some("/calculators/term-deposits"),
             noscript: "Kalkulator deposito berjangka: masukkan APY dan setoran untuk melihat bunga berjalan, tanggal jatuh tempo, dan saran rollover. Aktifkan JavaScript untuk menghitung.",
         },
+        "ev" | "kalkulator/mobil-listrik" | "calculators/ev" => PageMeta {
+            title_id: "Kalkulator Mobil Listrik vs Bensin — Beruang",
+            desc_id: "Bandingkan biaya operasional bulanan mobil listrik vs bensin dan temukan bulan impas.",
+            canonical: "/kalkulator/mobil-listrik",
+            hreflang_en: Some("/calculators/ev"),
+            noscript: "Kalkulator mobil listrik vs bensin: isi harga, jarak bulanan, dan biaya energi untuk melihat hemat per bulan dan titik impas. Aktifkan JavaScript untuk menghitung.",
+        },
         _ => PageMeta {
             title_id: "Beruang — Kalkulator Investasi",
             desc_id: "Kalkulator investasi gratis: XIRR reksa dana, saham dan dividen, serta deposito berjangka.",

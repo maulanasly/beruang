@@ -46,6 +46,10 @@ export function loadLedgers() {
 }
 export function saveLedgers(ledgers) { save(LEDGERS_KEY, ledgers); }
 
+export const SAMPLE_STOCKS = DEFAULT_STOCKS.map(e => ({ ...e }));
+export const SAMPLE_MF = DEFAULT_MF.map(e => ({ ...e }));
+export const SAMPLE_TD = { apy: 0.06, entries: DEFAULT_TD.map(e => ({ ...e })) };
+
 function defaultGoals() {
     return {
         overall: { target: 0, targetDate: '' },

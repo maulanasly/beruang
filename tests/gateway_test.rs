@@ -480,3 +480,80 @@ async fn portfolio_canonical_and_alias() {
         );
     }
 }
+
+/// EV comparison: typical ID inputs break even; bad input keeps 422 shape.
+#[tokio::test]
+async fn ev_comparison_matches_model() {
+    let app = beruang_gateway::routes::create_router();
+    let payload = serde_json::json!({
+        "price_ice": 250000000.0, "price_ev": 300000000.0,
+        "km_per_month": 1500.0, "fuel_price_per_liter": 10000.0,
+        "fuel_km_per_liter": 12.0, "electricity_price_per_kwh": 1444.0,
+        "ev_kwh_per_100km": 15.0,
+        "service_ice_per_month": 500000.0, "service_ev_per_month": 200000.0,
+    })
+    .to_string();
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/ev/comparison")
+                .header("content-type", "application/json")
+                .body(Body::from(payload))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_json(response).await;
+    assert_eq!(body["upfront_delta"].as_f64().unwrap(), 50_000_000.0);
+    assert_eq!(body["break_even_months"].as_u64().unwrap(), 41);
+    assert!(body["monthly_saving"].as_f64().unwrap() > 0.0);
+
+    let bad = r#"{"price_ice": 1, "price_ev": 2, "km_per_month": 1,
+        "fuel_price_per_liter": 1, "fuel_km_per_liter": 0,
+        "electricity_price_per_kwh": 1, "ev_kwh_per_100km": 1,
+        "service_ice_per_month": 0, "service_ev_per_month": 0}"#;
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/ev/comparison")
+                .header("content-type", "application/json")
+                .body(Body::from(bad))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+    assert!(response_body_json(response).await["detail"]
+        .as_str()
+        .unwrap()
+        .contains("fuel_km_per_liter"));
+}
+
+/// EV page shares the Indonesian canonical like the other calculators.
+#[tokio::test]
+async fn ev_page_meta() {
+    let app = beruang_gateway::routes::create_router();
+    for uri in ["/kalkulator/mobil-listrik", "/calculators/ev", "/ev"] {
+        let response = app
+            .clone()
+            .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK, "{uri}");
+        let body = response_body_text(response).await;
+        assert!(
+            body.contains("<title>Kalkulator Mobil Listrik vs Bensin — Beruang</title>"),
+            "{uri}"
+        );
+        assert!(
+            body.contains(
+                "<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/mobil-listrik\">"
+            ),
+            "{uri}"
+        );
+    }
+}

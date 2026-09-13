@@ -1,3 +1,4 @@
+pub mod ev;
 pub mod health;
 pub mod market;
 pub mod returns;
@@ -67,6 +68,7 @@ pub fn create_router() -> Router {
             "/api/v1/term-deposits/returns",
             axum::routing::post(returns::term_deposits),
         )
+        .route("/api/v1/ev/comparison", axum::routing::post(ev::comparison))
         .route(
             "/api/v1/market-data/idx/kompas100",
             axum::routing::get(market::kompas100),

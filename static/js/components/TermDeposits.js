@@ -9,6 +9,7 @@ import { MomentumKpi } from './MomentumKpi.js';
 import { AssetChart } from './AssetChart.js';
 import { MaturityPanel } from './MaturityPanel.js';
 import { HowTo } from './HowTo.js';
+import { RelatedCalcs } from './RelatedCalcs.js';
 import { InfoTip } from './InfoTip.js';
 
 function addMonths(dateString, months) {
@@ -111,6 +112,7 @@ export function TermDeposits({ settings }) {
                 {key:'maturity_value', label:t(locale, 'depositMaturity.maturityValue'), fmt:'currency'},
                 {key:'accrued_interest', label:t(locale, 'depositMaturity.accruedInterest'), fmt:'currency'},
             ]} />
+            <${RelatedCalcs} current="term-deposits" settings=${settings} />
         </div>`}
     </div>`;
 }

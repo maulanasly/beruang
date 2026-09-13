@@ -28,6 +28,10 @@ export function decodeShareState(raw) {
     try {
         const s = JSON.parse(b64decode(raw));
         if (!s || typeof s !== 'object') return null;
+        // EV snapshots carry {inputs}; ledger pages carry {entries[, apy]}.
+        if (s.inputs && typeof s.inputs === 'object' && !Array.isArray(s.inputs)) {
+            return { inputs: s.inputs };
+        }
         if (!Array.isArray(s.entries) || !s.entries.length || s.entries.length > MAX_ROWS) return null;
         if (!s.entries.every(validRow)) return null;
         if (s.apy !== undefined && !(typeof s.apy === 'number' && Number.isFinite(s.apy))) return null;
