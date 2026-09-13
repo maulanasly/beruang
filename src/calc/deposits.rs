@@ -104,7 +104,7 @@ pub fn term_deposit_returns(
         ));
     }
     let mut sorted = entries;
-    sorted.sort_by(|a, b| a.date.cmp(&b.date));
+    sorted.sort_by_key(|a| a.date);
 
     let monthly_rate = (1.0 + apy).powf(1.0 / 12.0) - 1.0;
 

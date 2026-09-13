@@ -230,7 +230,7 @@ pub fn points_from_chart(payload: &serde_json::Value) -> Result<Vec<HistoryPoint
             "No historical data available.".to_string(),
         ));
     }
-    points.sort_by(|a, b| a.date.cmp(&b.date));
+    points.sort_by_key(|a| a.date);
     Ok(points)
 }
 

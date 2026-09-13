@@ -28,11 +28,12 @@ fn calc_error_response(path: &str, err: CalcError) -> Response {
         .into_response()
 }
 
-async fn read_json(req: Request) -> Result<serde_json::Value, Response> {
+async fn read_json(req: Request) -> Result<serde_json::Value, Box<Response>> {
     let bytes = axum::body::to_bytes(req.into_body(), 5 * 1024 * 1024)
         .await
-        .map_err(|_| unprocessable("Invalid body".to_string()))?;
-    serde_json::from_slice(&bytes).map_err(|e| unprocessable(format!("Invalid JSON: {e}")))
+        .map_err(|_| Box::new(unprocessable("Invalid body".to_string())))?;
+    serde_json::from_slice(&bytes)
+        .map_err(|e| Box::new(unprocessable(format!("Invalid JSON: {e}"))))
 }
 
 fn parse_entries<T>(value: &serde_json::Value) -> Result<Vec<T>, String>
@@ -50,7 +51,7 @@ where
 pub async fn mutual_funds(req: Request) -> Response {
     let body = match read_json(req).await {
         Ok(body) => body,
-        Err(resp) => return resp,
+        Err(resp) => return *resp,
     };
     let entries: Vec<MutualFundEntry> = match parse_entries(&body) {
         Ok(entries) => entries,
@@ -65,7 +66,7 @@ pub async fn mutual_funds(req: Request) -> Response {
 pub async fn stocks(req: Request) -> Response {
     let body = match read_json(req).await {
         Ok(body) => body,
-        Err(resp) => return resp,
+        Err(resp) => return *resp,
     };
     let entries: Vec<StockEntry> = match parse_entries(&body) {
         Ok(entries) => entries,
@@ -80,7 +81,7 @@ pub async fn stocks(req: Request) -> Response {
 pub async fn term_deposits(req: Request) -> Response {
     let body = match read_json(req).await {
         Ok(body) => body,
-        Err(resp) => return resp,
+        Err(resp) => return *resp,
     };
     let apy: f64 = match body.get("apy").and_then(|v| v.as_f64()) {
         Some(apy) => apy,
