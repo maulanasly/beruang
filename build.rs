@@ -14,5 +14,5 @@ fn main() {
     println!("cargo:rustc-env=APP_VERSION={version}");
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=static");
-    println!("cargo:rerun-if-changed=../.git/HEAD");
+    println!("cargo:rerun-if-changed=.git/HEAD");
 }
