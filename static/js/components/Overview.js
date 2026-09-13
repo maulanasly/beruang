@@ -7,8 +7,15 @@ import { buildMonthlyReturns, portfolioTwr } from '../finance.js';
 import { GoalsPanel } from './GoalsPanel.js';
 import { PortfolioIo } from './PortfolioIo.js';
 import { TrendChart } from './TrendChart.js';
+import { DonutChart } from './DonutChart.js';
 import { MonthlyReturnsTable } from './MonthlyReturnsTable.js';
 import { BenchmarkPanel } from './BenchmarkPanel.js';
+
+const ASSET_COLORS = {
+    'mutual-funds': '#2563eb',
+    stocks: '#f25f3a',
+    'term-deposits': '#10b981',
+};
 
 function cumulativeByDate(entries, withPurchases) {
     const sorted = [...entries].sort((a, b) => String(a.date).localeCompare(String(b.date)));
@@ -101,10 +108,21 @@ export function Overview({ settings }) {
         <${TrendChart} labels=${dates} invested=${investedSeries} values=${valueSeries} settings=${settings} />
         <${MonthlyReturnsTable} monthly=${monthly} settings=${settings} />
         <${BenchmarkPanel} labels=${dates} values=${valueSeries} />
+        <div class="card"><div class="smallcaps">${t(locale, 'overview.perAsset')} <${InfoTip} locale=${locale} tipKey="glossary.roi" /></div></div>
+        <${DonutChart} settings=${settings} series=${[
+            { label: t(locale, 'nav.mutualFunds'), value: mfVal, color: ASSET_COLORS['mutual-funds'] },
+            { label: t(locale, 'nav.stocks'), value: stVal, color: ASSET_COLORS.stocks },
+            { label: t(locale, 'nav.termDeposits'), value: tdVal, color: ASSET_COLORS['term-deposits'] },
+        ]} />
         <div class="summary-cards">
-            <div class="card"><div class="smallcaps">Mutual Funds</div><div class="amount">${formatCurrency(mfVal, settings.locale, settings.currency)}</div><div class="muted" style="font-size:12px">Invested ${formatCurrency(mfInv, settings.locale, settings.currency)}</div></div>
-            <div class="card"><div class="smallcaps">Stocks</div><div class="amount">${formatCurrency(stVal, settings.locale, settings.currency)}</div><div class="muted" style="font-size:12px">Invested ${formatCurrency(stInv, settings.locale, settings.currency)}</div></div>
-            <div class="card"><div class="smallcaps">Term Deposits</div><div class="amount">${formatCurrency(tdVal, settings.locale, settings.currency)}</div><div class="muted" style="font-size:12px">Invested ${formatCurrency(tdInv, settings.locale, settings.currency)}</div></div>
+            ${[
+                { label: t(locale, 'nav.mutualFunds'), value: mfVal, invested: mfInv },
+                { label: t(locale, 'nav.stocks'), value: stVal, invested: stInv },
+                { label: t(locale, 'nav.termDeposits'), value: tdVal, invested: tdInv },
+            ].map(a => {
+                const roi = a.invested > 0 ? (a.value - a.invested) / a.invested : null;
+                return html`<div class="card"><div class="smallcaps">${a.label}</div><div class="amount">${formatCurrency(a.value, settings.locale, settings.currency)}</div><div style="font-size:15px; font-weight:600">${roi != null ? formatPercent(roi, settings.locale) : '-'}</div><div class="muted" style="font-size:12px">${t(locale, 'overview.invested')} ${formatCurrency(a.invested, settings.locale, settings.currency)}</div></div>`;
+            })}
         </div>
         <${GoalsPanel} settings=${settings} totalValue=${total} monthlyAvg=${monthlyAvg} />
         <${PortfolioIo} />

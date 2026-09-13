@@ -4,7 +4,18 @@ import { calculateReturns } from '../api.js';
 import { t } from '../i18n.js';
 import { LedgerTable, SummaryCards } from './AssetForm.js';
 import { LedgerIo } from './LedgerIo.js';
+import { MomentumKpi } from './MomentumKpi.js';
+import { AssetChart } from './AssetChart.js';
+import { MaturityPanel } from './MaturityPanel.js';
 import { InfoTip } from './InfoTip.js';
+
+function addMonths(dateString, months) {
+    if (!dateString) return '';
+    const [year, month, day] = String(dateString).split('-').map(Number);
+    const total = year * 12 + (month - 1) + Number(months);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${Math.floor(total / 12)}-${pad((total % 12) + 1)}-${pad(day)}`;
+}
 
 export function TermDeposits({ settings }) {
     const [td, setTd] = useState(()=> loadLedgers()['term-deposits']);
@@ -16,12 +27,32 @@ export function TermDeposits({ settings }) {
 
     useEffect(()=> { const l=loadLedgers(); setEntries(l['term-deposits'].entries); setApy(l['term-deposits'].apy); setResult(l.results['term-deposits']); }, []);
 
-    function upd(idx, f, v){ setEntries(entries.map((e,i)=> i===idx ? {...e,[f]:v}:e)); }
+    function upd(idx, f, v){
+        const next = entries.map((e,i)=> i===idx ? {...e,[f]:v}:e);
+        // Port of AssetCalculator.onTermDepositFieldInput: keep maturity in
+        // sync when the date is set or the term changes.
+        const row = next[idx] || {};
+        if (f === 'term_months' || (f === 'date' && !row.maturity_date)) {
+            const base = f === 'date' ? v : row.date;
+            if (base) next[idx] = { ...row, maturity_date: addMonths(base, Number(row.term_months) || 12) };
+        }
+        setEntries(next);
+    }
     function addRow(){ setEntries([...entries, { date:new Date().toISOString().slice(0,10), installment_amount:1000, current_value:1000, term_months:12, maturity_date:'' }]); }
     function rm(idx){ setEntries(entries.filter((_,i)=>i!==idx)); }
 
     async function onCalc(){
         setLoading(true); setError('');
+        if (!entries.length) {
+            setLoading(false);
+            setError(t(settings.locale, 'error.atLeastOneRow'));
+            return;
+        }
+        if (entries.some((e) => !e.date)) {
+            setLoading(false);
+            setError(t(settings.locale, 'error.everyRowDate'));
+            return;
+        }
         try{
             const payload = { apy: Number(apy), entries: entries.map(e=>({ date:e.date, installment_amount:Number(e.installment_amount)||0, current_value:Number(e.current_value)||0, term_months:Number(e.term_months)||12, maturity_date:e.maturity_date||null })) };
             const data = await calculateReturns('term-deposits', payload);
@@ -51,6 +82,9 @@ export function TermDeposits({ settings }) {
         </div>
         <${LedgerIo} asset="term-deposits" entries=${entries} locale=${locale} onImport=${(rows) => setEntries(rows)} />
         ${result && html`<div>
+            <${MomentumKpi} ledger=${result.ledger} summary=${result.summary} asset="term-deposits" settings=${settings} />
+            <${AssetChart} ledger=${result.ledger} asset="term-deposits" settings=${settings} />
+            <${MaturityPanel} summary=${result.summary} ledger=${result.ledger} settings=${settings} />
             <${SummaryCards} summary=${result.summary} settings=${settings} />
             <${LedgerTable} rows=${result.ledger} settings=${settings} columns=${[
                 {key:'date', label:'Date'},

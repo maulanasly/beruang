@@ -309,9 +309,7 @@ def _mock_ticker_side_effect(symbol: str) -> MagicMock:
 
 
 def test_dividend_yields_returns_top_n_sorted_by_yield() -> None:
-    with patch(
-        "backend.services.yf.Ticker", side_effect=_mock_ticker_side_effect
-    ):
+    with patch("backend.services.yf.Ticker", side_effect=_mock_ticker_side_effect):
         response = client.get(
             "/api/v1/market-data/idx/dividend-yields", params={"limit": 3}
         )
@@ -337,9 +335,7 @@ def test_dividend_yields_omits_symbols_without_yield() -> None:
 
 
 def test_dividend_yields_respects_limit_and_returns_at_most_limit() -> None:
-    with patch(
-        "backend.services.yf.Ticker", side_effect=_mock_ticker_side_effect
-    ):
+    with patch("backend.services.yf.Ticker", side_effect=_mock_ticker_side_effect):
         response = client.get(
             "/api/v1/market-data/idx/dividend-yields", params={"limit": 30}
         )

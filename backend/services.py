@@ -130,7 +130,9 @@ def _ttl_cache(ttl_seconds: int):
             result = func(*args, **kwargs)
             cache[key] = (result, now + ttl_seconds)
             return result
+
         return cached
+
     return wrapper
 
 
@@ -200,7 +202,7 @@ def get_top_dividend_yields(limit: int = 10) -> DividendYieldsResponse:
     results.sort(key=lambda i: i.dividend_yield, reverse=True)
     return DividendYieldsResponse(
         as_of=date.today(),
-        items=results[:max(limit, 1)],
+        items=results[: max(limit, 1)],
     )
 
 

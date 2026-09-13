@@ -4,6 +4,8 @@ import { calculateReturns } from '../api.js';
 import { t } from '../i18n.js';
 import { LedgerTable, SummaryCards } from './AssetForm.js';
 import { LedgerIo } from './LedgerIo.js';
+import { MomentumKpi } from './MomentumKpi.js';
+import { AssetChart } from './AssetChart.js';
 import { InfoTip } from './InfoTip.js';
 
 export function MutualFunds({ settings }) {
@@ -23,6 +25,16 @@ export function MutualFunds({ settings }) {
 
     async function onCalc(){
         setLoading(true); setError('');
+        if (!entries.length) {
+            setLoading(false);
+            setError(t(settings.locale, 'error.atLeastOneRow'));
+            return;
+        }
+        if (entries.some((e) => !e.date)) {
+            setLoading(false);
+            setError(t(settings.locale, 'error.everyRowDate'));
+            return;
+        }
         try{
             const payload = { entries: entries.map(e=>({ date:e.date, installment_amount: Number(e.installment_amount)||0, current_value: Number(e.current_value)||0 })) };
             const data = await calculateReturns('mutual-funds', payload);
@@ -48,6 +60,8 @@ export function MutualFunds({ settings }) {
         </div>
         <${LedgerIo} asset="mutual-funds" entries=${entries} locale=${locale} onImport=${(rows) => setEntries(rows)} />
         ${result && html`<div>
+            <${MomentumKpi} ledger=${result.ledger} summary=${result.summary} asset="mutual-funds" settings=${settings} />
+            <${AssetChart} ledger=${result.ledger} asset="mutual-funds" settings=${settings} />
             <${SummaryCards} summary=${result.summary} settings=${settings} />
             <${LedgerTable} rows=${result.ledger} settings=${settings} columns=${[
                 {key:'date', label:'Date'},

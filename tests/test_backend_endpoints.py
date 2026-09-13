@@ -429,6 +429,7 @@ async def test_stock_quote_endpoint(async_client: AsyncClient, monkeypatch) -> N
         "name": "Demo IDX",
         "price": 1234.5,
         "currency": "IDR",
+        "dividend_yield": None,
     }
 
 

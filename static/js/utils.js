@@ -27,3 +27,14 @@ export function parseLocaleNumber(str) {
     const n = parseFloat(cleaned);
     return isNaN(n) ? 0 : n;
 }
+
+/**
+ * Port of useMarket.displaySymbol: the `.JK` suffix stays in the underlying
+ * data and is only stripped for display when the IDX market is active.
+ */
+export function displaySymbol(symbol, market = 'IDX') {
+    if (typeof symbol !== 'string') return symbol;
+    const suffix = market === 'IDX' ? '.JK' : '';
+    if (!suffix) return symbol;
+    return symbol.endsWith(suffix) ? symbol.slice(0, -suffix.length) : symbol;
+}
