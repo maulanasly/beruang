@@ -56,6 +56,11 @@ async fn api_not_found() -> Response {
 pub fn create_router() -> Router {
     Router::new()
         .route("/health", axum::routing::get(health::handler))
+        // Dev-only live-reload poller (`BERUANG_DEV=1`); 404 in prod.
+        .route(
+            "/__dev_version",
+            axum::routing::get(static_handler::dev_version),
+        )
         .route(
             "/api/v1/mutual-funds/returns",
             axum::routing::post(returns::mutual_funds),

@@ -12,7 +12,48 @@ struct Assets;
 const INDEX: &str = "index.html";
 const VERSION_PLACEHOLDER: &str = "{{APP_VERSION}}";
 
-/// Asset version baked at compile time by `build.rs` (git short SHA).
+/// Dev hot-reload mode (`BERUANG_DEV=1`, set by `make dev`).
+/// Serves `static/` from disk per request (no rebuild for UI edits),
+/// disables the long-lived cache, and injects the live-reload poller.
+/// Prod (embedded `rust-embed` bytes + tiered cache) is untouched.
+fn dev_mode() -> bool {
+    matches!(
+        std::env::var("BERUANG_DEV").as_deref(),
+        Ok("1") | Ok("true") | Ok("yes")
+    )
+}
+
+fn dev_static_root() -> Option<std::path::PathBuf> {
+    if !dev_mode() {
+        return None;
+    }
+    [
+        std::path::PathBuf::from("static"),
+        std::path::PathBuf::from(concat!(env!("CARGO_MANIFEST_DIR"), "/static")),
+    ]
+    .into_iter()
+    .find(|candidate| candidate.is_dir())
+}
+
+/// Load an asset: disk first in dev (hot reload without recompile),
+/// otherwise the embedded bytes. `..` never escapes the asset root.
+fn load_bytes(path: &str) -> Option<Vec<u8>> {
+    if path.contains("..") {
+        return None;
+    }
+    if let Some(root) = dev_static_root() {
+        let disk = root.join(path);
+        if disk.is_file() {
+            if let Ok(bytes) = std::fs::read(&disk) {
+                return Some(bytes);
+            }
+        }
+    }
+    Assets::get(path).map(|f| f.data.to_vec())
+}
+
+/// Asset version baked at compile time by `build.rs` (git SHA, dirty- and
+/// content-aware so `?v=` URLs bust without requiring a commit).
 fn app_version() -> &'static str {
     option_env!("APP_VERSION").unwrap_or(env!("CARGO_PKG_VERSION"))
 }
@@ -186,6 +227,16 @@ fn cache_control(path: &str) -> &'static str {
     }
 }
 
+/// Dev serves everything `no-store`: with disk reads per request there is
+/// no benefit to caching, and stale dev bytes are the bug being fixed.
+fn effective_cache_control(path: &str, dev: bool) -> &'static str {
+    if dev {
+        "no-store"
+    } else {
+        cache_control(path)
+    }
+}
+
 fn content_type_for(path: &str) -> String {
     let mime = mime_guess::from_path(path)
         .first_or_octet_stream()
@@ -207,13 +258,14 @@ fn etag_matches(headers: &HeaderMap, etag: &str) -> bool {
         })
 }
 
-fn serve_bytes(path: &str, bytes: Vec<u8>, headers: &HeaderMap) -> Response {
+fn serve_bytes(path: &str, bytes: Vec<u8>, headers: &HeaderMap, dev: bool) -> Response {
     let etag = etag_for(&bytes);
+    let cache = effective_cache_control(path, dev);
     if etag_matches(headers, &etag) {
         return Response::builder()
             .status(StatusCode::NOT_MODIFIED)
             .header(header::ETAG, etag)
-            .header(header::CACHE_CONTROL, cache_control(path))
+            .header(header::CACHE_CONTROL, cache)
             .body(Body::empty())
             .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR.into_response());
     }
@@ -221,7 +273,7 @@ fn serve_bytes(path: &str, bytes: Vec<u8>, headers: &HeaderMap) -> Response {
     let mut builder = Response::builder()
         .status(StatusCode::OK)
         .header(header::CONTENT_TYPE, content_type)
-        .header(header::CACHE_CONTROL, cache_control(path));
+        .header(header::CACHE_CONTROL, cache);
     if let Ok(value) = HeaderValue::from_str(&etag) {
         builder = builder.header(header::ETAG, value);
     }
@@ -232,19 +284,86 @@ fn serve_bytes(path: &str, bytes: Vec<u8>, headers: &HeaderMap) -> Response {
 
 /// `{{BASE_URL}}`-injected text files (robots/sitemap need absolute URLs).
 fn serve_template(name: &str, headers: &HeaderMap) -> Response {
-    match Assets::get(name) {
-        Some(file) => {
+    match load_bytes(name) {
+        Some(data) => {
             let base = public_base_url();
-            let body = String::from_utf8_lossy(&file.data).replace("{{BASE_URL}}", &base);
-            serve_bytes(name, body.into_bytes(), headers)
+            let body = String::from_utf8_lossy(&data).replace("{{BASE_URL}}", &base);
+            serve_bytes(name, body.into_bytes(), headers, dev_mode())
         }
         None => StatusCode::NOT_FOUND.into_response(),
     }
 }
 
+/// Dev-only live-reload poller, same-origin so the strict
+/// `script-src 'self'` / `connect-src 'self'` CSP still holds.
+const DEV_RELOAD_TAG: &str = "<script type=\"module\" src=\"/js/dev-reload.js?v=dev\"></script>";
+
+fn inject_dev_script(html: &str) -> String {
+    match html.find("</body>") {
+        Some(i) => format!("{}{DEV_RELOAD_TAG}{}", &html[..i], &html[i..]),
+        None => format!("{html}{DEV_RELOAD_TAG}"),
+    }
+}
+
+/// Fingerprint of the on-disk `static/` tree for the dev poller.
+/// Falls back to the baked version when no dev tree is present.
+fn dev_tree_fingerprint() -> String {
+    let Some(root) = dev_static_root() else {
+        return app_version().to_string();
+    };
+    let mut files: Vec<std::path::PathBuf> = Vec::new();
+    collect_static_files(&root, &root, &mut files);
+    files.sort();
+    let mut hasher = Sha256::new();
+    for path in &files {
+        hasher.update(path.to_string_lossy().as_bytes());
+        hasher.update([0]);
+        // `files` holds root-relative paths; join back for content reads
+        // (a bare relative read would miss when CWD != static root parent).
+        if let Ok(bytes) = std::fs::read(root.join(path)) {
+            hasher.update(&bytes);
+        }
+        hasher.update([0]);
+    }
+    format!("{:x}", hasher.finalize())
+}
+
+fn collect_static_files(
+    root: &std::path::Path,
+    dir: &std::path::Path,
+    out: &mut Vec<std::path::PathBuf>,
+) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            collect_static_files(root, &path, out);
+        } else if path.is_file() {
+            out.push(path.strip_prefix(root).unwrap_or(&path).to_path_buf());
+        }
+    }
+}
+
+/// Dev poller endpoint: the injected script reloads the page when this
+/// value changes. 404 outside dev mode (no extra prod surface).
+pub async fn dev_version() -> Response {
+    if !dev_mode() {
+        return StatusCode::NOT_FOUND.into_response();
+    }
+    Response::builder()
+        .status(StatusCode::OK)
+        .header(header::CONTENT_TYPE, "text/plain; charset=utf-8")
+        .header(header::CACHE_CONTROL, "no-store")
+        .body(Body::from(dev_tree_fingerprint()))
+        .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR.into_response())
+}
+
 fn serve_index(route: &str, headers: &HeaderMap) -> Response {
-    match Assets::get(INDEX) {
-        Some(file) => {
+    match load_bytes(INDEX) {
+        Some(data) => {
+            let dev = dev_mode();
             let base = public_base_url();
             let meta = page_meta(route);
             // English aliases serve English copy; Indonesian paths serve
@@ -257,7 +376,7 @@ fn serve_index(route: &str, headers: &HeaderMap) -> Response {
             };
             let description = if english { meta.desc_en } else { meta.desc_id };
             let canonical = format!("{base}{}", meta.canonical);
-            let html = String::from_utf8_lossy(&file.data)
+            let html = String::from_utf8_lossy(&data)
                 .replace(VERSION_PLACEHOLDER, app_version())
                 .replace("{{TITLE}}", title)
                 .replace("{{DESCRIPTION}}", description)
@@ -269,7 +388,8 @@ fn serve_index(route: &str, headers: &HeaderMap) -> Response {
                     &json_ld_for(title, description, &meta, &canonical),
                 )
                 .replace("{{NOSCRIPT}}", meta.noscript);
-            serve_bytes(INDEX, html.into_bytes(), headers)
+            let html = if dev { inject_dev_script(&html) } else { html };
+            serve_bytes(INDEX, html.into_bytes(), headers, dev)
         }
         None => StatusCode::NOT_FOUND.into_response(),
     }
@@ -288,8 +408,8 @@ pub async fn handler(uri: OriginalUri, headers: HeaderMap) -> Result<Response, S
     if path == "robots.txt" || path == "sitemap.xml" {
         return Ok(serve_template(path, &headers));
     }
-    match Assets::get(path) {
-        Some(file) => Ok(serve_bytes(path, file.data.to_vec(), &headers)),
+    match load_bytes(path) {
+        Some(data) => Ok(serve_bytes(path, data, &headers, dev_mode())),
         // SPA fallback serves the route-aware shell, never an API route.
         None => Ok(serve_index(path, &headers)),
     }
@@ -298,8 +418,8 @@ pub async fn handler(uri: OriginalUri, headers: HeaderMap) -> Result<Response, S
 #[cfg(test)]
 mod tests {
     use super::{
-        app_version, cache_control, content_type_for, etag_for, is_immutable, page_meta,
-        public_base_url,
+        app_version, cache_control, content_type_for, effective_cache_control, etag_for,
+        inject_dev_script, is_immutable, load_bytes, page_meta, public_base_url, DEV_RELOAD_TAG,
     };
 
     #[test]
@@ -354,5 +474,57 @@ mod tests {
         );
         assert_eq!(page_meta("nope-unknown").canonical, "/");
         assert!(!public_base_url().ends_with('/'));
+    }
+
+    #[test]
+    fn dev_disables_all_caching() {
+        for path in ["index.html", "js/app.js", "css/styles.css", "robots.txt"] {
+            assert_eq!(effective_cache_control(path, true), "no-store");
+            assert_eq!(effective_cache_control(path, false), cache_control(path));
+        }
+    }
+
+    #[test]
+    fn dev_script_injected_before_body_close() {
+        let html = inject_dev_script("<html><body><div></div></body></html>");
+        assert!(html.contains(DEV_RELOAD_TAG));
+        assert!(html.find(DEV_RELOAD_TAG).unwrap() < html.find("</body>").unwrap());
+        // Prod shell carries no dev poller.
+        let embedded = load_bytes("index.html").expect("index.html is embedded");
+        assert!(!String::from_utf8_lossy(&embedded).contains(DEV_RELOAD_TAG));
+    }
+
+    #[test]
+    fn traversal_never_escapes_asset_root() {
+        assert!(load_bytes("../Cargo.toml").is_none());
+        assert!(load_bytes("js/../../Cargo.toml").is_none());
+    }
+
+    #[test]
+    fn locale_nav_keys_stay_in_parity() {
+        // Grouped nav + crumbs + footer rely on these keys in BOTH locales
+        // (missing keys silently fall back to English).
+        let en = String::from_utf8_lossy(
+            &load_bytes("js/locales/en-US.js").expect("en-US locale is embedded"),
+        )
+        .into_owned();
+        let id = String::from_utf8_lossy(
+            &load_bytes("js/locales/id-ID.js").expect("id-ID locale is embedded"),
+        )
+        .into_owned();
+        for key in ["calculators:", "breadcrumb:", "navLabel:"] {
+            assert!(en.contains(key), "en-US missing {key}");
+            assert!(id.contains(key), "id-ID missing {key}");
+        }
+        for dead in [
+            "overview: 'Overview'",
+            "overview: 'Ringkasan'",
+            "pickTicker",
+            "applyPrice",
+            "Refresh List",
+        ] {
+            assert!(!en.contains(dead), "en-US still has dead key {dead}");
+            assert!(!id.contains(dead), "id-ID still has dead key {dead}");
+        }
     }
 }

@@ -5,6 +5,7 @@ self-contained Rust binary serves the API and the embedded frontend.
 
 ```bash
 make run     # API + UI on :8000 (GATEWAY_PORT= to override)
+make dev     # hot reload: static/ from disk + browser auto-reload (BERUANG_DEV=1)
 make up      # same via Docker
 make test    # 28 Rust tests
 make verify  # clippy + fmt + tests (the gate)

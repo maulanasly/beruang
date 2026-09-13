@@ -1,9 +1,9 @@
 export default {
   nav: {
     home: 'Beranda',
+    calculators: 'Kalkulator',
     portfolio: 'Portofolio',
     ev: 'Listrik vs Bensin',
-    overview: 'Ringkasan',
     mutualFunds: 'Reksa Dana',
     stocks: 'Saham',
     termDeposits: 'Deposito Berjangka',
@@ -78,7 +78,6 @@ export default {
     seriesExpected: 'Nilai Ekspektasi',
   },
   overview: {
-    portfolio: 'Portofolio',
     totalInvested: 'Total Investasi',
     totalValue: 'Nilai Saat Ini',
     totalPnl: 'Laba / Rugi',
@@ -108,8 +107,6 @@ export default {
   },
   market: {
     liveIdxPrice: 'Harga IDX Langsung (Kompas 100 Starter)',
-    refresh: 'Segarkan Daftar',
-    refreshing: 'Menyegarkan...',
     chooseStockCode: 'Pilih kode saham terlebih dahulu.',
     fetchingQuote: 'Mengambil Kuotasi...',
     applyLatestPrice: 'Terapkan Harga Terbaru ke Nilai Saat Ini',
@@ -121,7 +118,6 @@ export default {
     dividendYield: 'Imbal Hasil Dividen',
     lastFetched: 'Terakhir Diambil',
     targetLedgerRow: 'Baris Buku Besar Target',
-    pickTicker: 'Pilih ticker',
     searchPlaceholder: 'Ketik untuk mencari kode saham IDX apa pun…',
     searching: 'Mencari…',
     row: 'Baris',
@@ -296,9 +292,9 @@ export default {
     noTarget: 'Belum ada target',
     trendEmpty: 'Tambahkan entri pada minimal dua tanggal untuk melihat tren.',
     line: 'Baris',
-    applyPrice: 'Terapkan {price}',
     latest: 'terkini',
     menu: 'Menu',
+    breadcrumb: 'Remah roti',
   },
   calc: {
     mfSubtitle: 'MoM yang disesuaikan arus kas \u00b7 XIRR memakai tanggal persis.',
@@ -422,7 +418,7 @@ export default {
   },
   footer: {
     tagline: 'Kalkulator hasil investasi gratis.',
-    navLabel: 'Footer',
+    navLabel: 'Navigasi footer',
     dataNote: 'Data pasar: Yahoo Finance (indikatif). Perhitungan berjalan di server ini; buku besar tersimpan di browser-mu.',
   },
 }

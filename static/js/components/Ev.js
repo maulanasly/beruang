@@ -4,6 +4,7 @@ import { formatCurrency } from '../utils.js';
 import { t } from '../i18n.js';
 import { readSharedState, ShareLink } from '../share.js';
 import { HowTo } from './HowTo.js';
+import { Crumbs } from './Crumbs.js';
 import { RelatedCalcs } from './RelatedCalcs.js';
 import { InfoTip } from './InfoTip.js';
 
@@ -57,6 +58,7 @@ export function Ev({ settings }) {
             data.calculatedAt = new Date().toISOString();
             setResult(data);
             if (inputsOverride) setForm({ ...DEFAULTS, ...inputsOverride });
+            requestAnimationFrame(() => document.querySelector('[data-results]')?.scrollIntoView());
         } catch (e) { setError(e.detail ? JSON.stringify(e.detail) : e.message); }
         finally { setLoading(false); }
     }
@@ -71,8 +73,9 @@ export function Ev({ settings }) {
     const maxBar = result ? Math.max(result.monthly_ice, result.monthly_ev, 1) : 1;
 
     return html`<div>
+        <${Crumbs} locale=${locale} currentKey="nav.ev" />
         <div class="page-head"><h1>${t(locale, 'nav.ev')}</h1><p class="muted">${t(locale, 'ev.subtitle')}</p></div>
-        <${HowTo} locale=${locale} steps=${[t(locale,'howto.ev1'), t(locale,'howto.ev2'), t(locale,'howto.ev3')]} />
+        <${HowTo} locale=${locale} startOpen=${!result} steps=${[t(locale,'howto.ev1'), t(locale,'howto.ev2'), t(locale,'howto.ev3')]} />
         <div class="card">
             <div class="entry-grid" style="--cols:3">
                 ${FIELDS.map(([key, labelKey]) => html`<label>${t(locale, labelKey)}
@@ -85,7 +88,7 @@ export function Ev({ settings }) {
             </div>
             ${error && html`<p style="color:var(--danger)" role="alert">${error}</p>`}
         </div>
-        ${result && html`<div>
+        ${result && html`<div data-results class="results-anchor">
             <div class="summary-cards">
                 <div class="card"><div class="smallcaps">${t(locale, 'ev.monthlyIce')}</div><div class="amount">${formatCurrency(result.monthly_ice, locale, currency)}</div></div>
                 <div class="card"><div class="smallcaps">${t(locale, 'ev.monthlyEv')}</div><div class="amount">${formatCurrency(result.monthly_ev, locale, currency)}</div></div>
@@ -101,7 +104,7 @@ export function Ev({ settings }) {
                     </div>`)}
                 </div>
             </div>
-            <${RelatedCalcs} current="ev" settings=${settings} />
         </div>`}
+        <${RelatedCalcs} current="ev" settings=${settings} />
     </div>`;
 }

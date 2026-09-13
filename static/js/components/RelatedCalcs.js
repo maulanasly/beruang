@@ -39,5 +39,6 @@ export function RelatedCalcs({ current, settings }) {
                 <div class="muted" style="font-size:12px">${t(locale, l.descKey)}</div>
             </a>`)}
         </div>
+        <p style="margin:10px 0 0; font-size:13px"><a href="/portofolio" onClick=${e => go(e, '/portofolio')}>${t(locale, 'nav.portfolio')} →</a></p>
     </section>`;
 }

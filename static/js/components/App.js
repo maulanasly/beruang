@@ -17,18 +17,33 @@ export function App() {
     const [route, setRoute] = useState(getCurrentRoute());
     const [settings, setSettings] = useState(loadSettings());
     const [menuOpen, setMenuOpen] = useState(false);
+    const [calcOpen, setCalcOpen] = useState(false);
     const locale = settings.locale;
 
     useEffect(() => {
-        const h = () => { setRoute(getCurrentRoute()); setMenuOpen(false); window.scrollTo(0, 0); };
+        const h = () => {
+            setRoute(getCurrentRoute());
+            setMenuOpen(false);
+            setCalcOpen(false);
+            window.scrollTo(0, 0);
+            // Move screen-reader/keyboard focus to the new page (main is
+            // tabindex=-1 so this never shows a focus ring on click nav).
+            requestAnimationFrame(() => document.getElementById('main')?.focus({ preventScroll: true }));
+        };
         window.addEventListener('popstate', h);
         return () => window.removeEventListener('popstate', h);
     }, []);
     useEffect(() => {
-        const onKey = (e) => { if (e.key === 'Escape') setMenuOpen(false); };
+        const onKey = (e) => { if (e.key === 'Escape') { setMenuOpen(false); setCalcOpen(false); } };
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
     }, []);
+    useEffect(() => {
+        if (!calcOpen) return;
+        const onDown = (e) => { if (!e.target.closest('.nav-drop')) setCalcOpen(false); };
+        document.addEventListener('pointerdown', onDown);
+        return () => document.removeEventListener('pointerdown', onDown);
+    }, [calcOpen]);
     useEffect(() => {
         const titles = {
             home: t(locale, 'nav.home'),
@@ -51,15 +66,16 @@ export function App() {
         ev: html`<${Ev} settings=${settings} />`,
     };
 
-    const navItems = [
-        { to: '/', key: 'home', label: t(locale, 'nav.home') },
-        { to: '/kalkulator/reksa-dana', key: 'mutual-funds', label: t(locale, 'nav.mutualFunds') },
-        { to: '/kalkulator/saham', key: 'stocks', label: t(locale, 'nav.stocks') },
-        { to: '/kalkulator/deposito', key: 'term-deposits', label: t(locale, 'nav.termDeposits') },
-        { to: '/portofolio', key: 'portofolio', label: t(locale, 'nav.portfolio') },
-        { to: '/kalkulator/mobil-listrik', key: 'ev', label: t(locale, 'nav.ev') },
+    // Canonical order everywhere (header, mobile menu, footer):
+    // home → calculators group → portfolio.
+    const calcLinks = [
+        { to: '/kalkulator/reksa-dana', key: 'mutual-funds', labelKey: 'nav.mutualFunds', descKey: 'home.calcMfDesc' },
+        { to: '/kalkulator/saham', key: 'stocks', labelKey: 'nav.stocks', descKey: 'home.calcStocksDesc' },
+        { to: '/kalkulator/deposito', key: 'term-deposits', labelKey: 'nav.termDeposits', descKey: 'home.calcTdDesc' },
+        { to: '/kalkulator/mobil-listrik', key: 'ev', labelKey: 'nav.ev', descKey: 'home.evDesc' },
     ];
-    const go = (e, to) => { e.preventDefault(); setMenuOpen(false); navigate(to); };
+    const calcActive = calcLinks.some(l => l.key === route);
+    const go = (e, to) => { e.preventDefault(); setMenuOpen(false); setCalcOpen(false); navigate(to); };
 
     return html`
         <div>
@@ -71,12 +87,6 @@ export function App() {
                             ${t(locale, 'hero.brand')} <small>${t(locale, 'hero.title')}</small>
                         </a>
                     </div>
-                    <button class="menu-toggle" aria-expanded=${menuOpen} aria-controls="primary-nav" aria-label=${t(locale, 'ui.menu')} onClick=${() => setMenuOpen(!menuOpen)}>
-                        <span class=${menuOpen ? 'menu-icon open' : 'menu-icon'} aria-hidden="true"></span>
-                    </button>
-                    <nav id="primary-nav" class=${menuOpen ? 'topnav open' : 'topnav'} aria-label=${t(locale, 'ui.navLabel')}>
-                        ${navItems.map(i => html`<a href=${i.to} class=${route===i.key?'active':''} aria-current=${route===i.key ? 'page' : null} onClick=${e=>go(e, i.to)}>${i.label}</a>`)}
-                    </nav>
                     <div class="locale-group" role="group" aria-label=${`${t(locale, 'settings.locale')} / ${t(locale, 'settings.currency')}`}>
                         <select value=${locale} title=${t(locale, 'settings.locale')} aria-label=${t(locale, 'settings.locale')} onChange=${e=>setSettings({...settings, locale:e.target.value})}>
                             ${LOCALE_OPTIONS.map(o=> html`<option value=${o.value}>${o.short || o.label}</option>`)}
@@ -88,9 +98,31 @@ export function App() {
                             ${MARKET_OPTIONS.map(o=> html`<option value=${o.value}>${o.short || o.label}</option>`)}
                         </select>
                     </div>
+                    <button class="menu-toggle" aria-expanded=${menuOpen} aria-controls="primary-nav" aria-label=${t(locale, 'ui.menu')} onClick=${() => setMenuOpen(!menuOpen)}>
+                        <span class=${menuOpen ? 'menu-icon open' : 'menu-icon'} aria-hidden="true"></span>
+                    </button>
+                    <nav id="primary-nav" class=${menuOpen ? 'topnav open' : 'topnav'} aria-label=${t(locale, 'ui.navLabel')}>
+                        <a href="/" class=${route==='home'?'active':''} aria-current=${route==='home' ? 'page' : null} onClick=${e=>go(e, '/')}>${t(locale, 'nav.home')}</a>
+                        <div class="nav-drop">
+                            <button type="button" class=${calcActive ? 'nav-drop__btn active' : 'nav-drop__btn'} aria-expanded=${calcOpen} aria-controls="calc-menu" onClick=${() => setCalcOpen(!calcOpen)}>
+                                ${t(locale, 'nav.calculators')} <span class="nav-drop__chev" aria-hidden="true">${calcOpen ? '▴' : '▾'}</span>
+                            </button>
+                            ${calcOpen && html`<div id="calc-menu" class="nav-drop__panel" role="group" aria-label=${t(locale, 'nav.calculators')}>
+                                ${calcLinks.map(l => html`<a href=${l.to} class=${route===l.key?'active':''} aria-current=${route===l.key ? 'page' : null} onClick=${e=>go(e, l.to)}>
+                                    <span class="nav-drop__title">${t(locale, l.labelKey)}</span>
+                                    <span class="nav-drop__desc">${t(locale, l.descKey)}</span>
+                                </a>`)}
+                            </div>`}
+                        </div>
+                        <div class="topnav__section" role="group" aria-label=${t(locale, 'nav.calculators')}>
+                            <span class="topnav__label" aria-hidden="true">${t(locale, 'nav.calculators')}</span>
+                            ${calcLinks.map(l => html`<a href=${l.to} class=${route===l.key?'active sub':'sub'} aria-current=${route===l.key ? 'page' : null} onClick=${e=>go(e, l.to)}>${t(locale, l.labelKey)}</a>`)}
+                        </div>
+                        <a href="/portofolio" class=${route==='portofolio'?'active':''} aria-current=${route==='portofolio' ? 'page' : null} onClick=${e=>go(e, '/portofolio')}>${t(locale, 'nav.portfolio')}</a>
+                    </nav>
                 </div>
             </header>
-            <main id="main">
+            <main id="main" tabindex="-1">
                 ${pages[route] || pages.home}
             </main>
             <${Footer} settings=${settings} />

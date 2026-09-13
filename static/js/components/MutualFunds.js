@@ -1,5 +1,5 @@
 import { html, useState, useEffect } from '../vendor/preact-htm-signals.js';
-import { loadLedgers, saveLedgers, saveEntries } from '../store.js';
+import { loadLedgers, saveLedgers, saveEntries, SAMPLE_MF } from '../store.js';
 import { calculateReturns } from '../api.js';
 import { t } from '../i18n.js';
 import { readSharedState, ShareLink, normalizeLedgerEntries, calcSnapshot } from '../share.js';
@@ -8,6 +8,7 @@ import { LedgerIo } from './LedgerIo.js';
 import { MomentumKpi } from './MomentumKpi.js';
 import { AssetChart } from './AssetChart.js';
 import { HowTo } from './HowTo.js';
+import { Crumbs } from './Crumbs.js';
 import { RelatedCalcs } from './RelatedCalcs.js';
 import { InfoTip } from './InfoTip.js';
 
@@ -38,6 +39,11 @@ export function MutualFunds({ settings }) {
         setEntries(next);
         saveEntries('mutual-funds', next);
     }
+    function loadSample(){
+        const next = SAMPLE_MF.map(e => ({ ...e }));
+        setEntries(next);
+        saveEntries('mutual-funds', next);
+    }
 
     async function onCalc(rowsOverride){
         const rows = rowsOverride || entries;
@@ -60,14 +66,16 @@ export function MutualFunds({ settings }) {
             setResult(data);
             const ledgers = loadLedgers(); ledgers['mutual-funds']=rows; ledgers.results['mutual-funds']=data; saveLedgers(ledgers);
             if (rowsOverride) setEntries(rowsOverride);
+            requestAnimationFrame(() => document.querySelector('[data-results]')?.scrollIntoView());
         }catch(e){ setError(e.detail ? JSON.stringify(e.detail) : e.message); }
         finally{ setLoading(false); }
     }
 
     const locale = settings.locale;
     return html`<div>
+        <${Crumbs} locale=${locale} currentKey="nav.mutualFunds" />
         <div class="page-head"><h1>${t(locale, 'nav.mutualFunds')}</h1><p class="muted">${t(locale, 'calc.mfSubtitle')} <${InfoTip} locale=${locale} tipKey="glossary.moM" /> <${InfoTip} locale=${locale} tipKey="glossary.xirr" /></p></div>
-        <${HowTo} locale=${locale} steps=${[t(locale,'howto.mf1'), t(locale,'howto.mf2'), t(locale,'howto.mf3')]} />
+        <${HowTo} locale=${locale} startOpen=${!result} steps=${[t(locale,'howto.mf1'), t(locale,'howto.mf2'), t(locale,'howto.mf3')]} />
         <div class="card">
             ${entries.map((e,idx)=> html`<div class="entry-grid" style="--cols:3">
                 <label>${t(locale, 'form.date')} <input type="date" value=${e.date} onInput=${ev=>updateRow(idx,'date',ev.target.value)} /></label>
@@ -76,6 +84,7 @@ export function MutualFunds({ settings }) {
                 <button class="btn-ghost btn-sm" onClick=${()=>removeRow(idx)}>${t(locale, 'common.remove')}</button>
             </div>`)}
             <button class="btn-ghost" onClick=${addRow}>${t(locale, 'common.addRow')}</button>
+            ${!entries.length && html`<button class="btn-ghost" style="margin-left:8px" onClick=${loadSample}>${t(locale, 'overview.loadDemo')}</button>`}
             <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap">
                 <button onClick=${()=>onCalc()} disabled=${loading}>${loading ? t(locale, 'common.calculating') : t(locale, 'common.calculateReturns')}</button>
                 <${ShareLink} route="mutual-funds" state=${{ entries }} locale=${locale} />
@@ -83,7 +92,7 @@ export function MutualFunds({ settings }) {
             ${error && html`<p style="color:var(--danger)" role="alert">${error}</p>`}
         </div>
         <${LedgerIo} asset="mutual-funds" entries=${entries} locale=${locale} onImport=${(rows) => setEntries(rows)} />
-        ${result && html`<div>
+        ${result && html`<div data-results class="results-anchor">
             <${MomentumKpi} ledger=${result.ledger} summary=${result.summary} asset="mutual-funds" settings=${settings} />
             <${AssetChart} ledger=${result.ledger} asset="mutual-funds" settings=${settings} />
             <${SummaryCards} summary=${result.summary} settings=${settings} />
@@ -94,7 +103,7 @@ export function MutualFunds({ settings }) {
                 {key:'month_start_value', label:t(locale, 'column.startValue'), fmt:'currency'},
                 {key:'mom_return', label:t(locale, 'column.momReturn'), fmt:'percent'},
             ]} />
-            <${RelatedCalcs} current="mutual-funds" settings=${settings} />
         </div>`}
+        <${RelatedCalcs} current="mutual-funds" settings=${settings} />
     </div>`;
 }

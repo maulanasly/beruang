@@ -1,5 +1,5 @@
 import { html, useState, useEffect } from '../vendor/preact-htm-signals.js';
-import { loadLedgers, saveLedgers, saveEntries } from '../store.js';
+import { loadLedgers, saveLedgers, saveEntries, SAMPLE_TD } from '../store.js';
 import { calculateReturns } from '../api.js';
 import { t } from '../i18n.js';
 import { readSharedState, ShareLink, normalizeLedgerEntries, calcSnapshot } from '../share.js';
@@ -9,6 +9,7 @@ import { MomentumKpi } from './MomentumKpi.js';
 import { AssetChart } from './AssetChart.js';
 import { MaturityPanel } from './MaturityPanel.js';
 import { HowTo } from './HowTo.js';
+import { Crumbs } from './Crumbs.js';
 import { RelatedCalcs } from './RelatedCalcs.js';
 import { InfoTip } from './InfoTip.js';
 
@@ -60,6 +61,12 @@ export function TermDeposits({ settings }) {
         setEntries(next);
         saveEntries('term-deposits', next, Number(apy));
     }
+    function loadSample(){
+        const next = SAMPLE_TD.entries.map(e => ({ ...e }));
+        setEntries(next);
+        setApy(SAMPLE_TD.apy);
+        saveEntries('term-deposits', next, SAMPLE_TD.apy);
+    }
 
     async function onCalc(rowsOverride, apyOverride){
         const rows = rowsOverride || entries;
@@ -84,13 +91,15 @@ export function TermDeposits({ settings }) {
             const l=loadLedgers(); l['term-deposits']={apy:Number(rate), entries:rows}; l.results['term-deposits']=data; saveLedgers(l);
             if (rowsOverride) setEntries(rowsOverride);
             if (apyOverride !== undefined) setApy(apyOverride);
+            requestAnimationFrame(() => document.querySelector('[data-results]')?.scrollIntoView());
         }catch(e){ setError(e.detail ? JSON.stringify(e.detail) : e.message); } finally{ setLoading(false); }
     }
 
     const locale = settings.locale;
     return html`<div>
+        <${Crumbs} locale=${locale} currentKey="nav.termDeposits" />
         <div class="page-head"><h1>${t(locale, 'nav.termDeposits')}</h1><p class="muted">${t(locale, 'calc.tdSubtitle')} <${InfoTip} locale=${locale} tipKey="glossary.apy" /> <${InfoTip} locale=${locale} tipKey="glossary.depositMaturity" /></p></div>
-        <${HowTo} locale=${locale} steps=${[t(locale,'howto.td1'), t(locale,'howto.td2'), t(locale,'howto.td3')]} />
+        <${HowTo} locale=${locale} startOpen=${!result} steps=${[t(locale,'howto.td1'), t(locale,'howto.td2'), t(locale,'howto.td3')]} />
         <div class="card">
             <label>${t(locale, 'form.apy')} (${t(locale, 'calc.apyHint')}) <input type="number" step="0.001" value=${apy} onInput=${e=>setApySave(e.target.value)} /></label>
         </div>
@@ -104,6 +113,7 @@ export function TermDeposits({ settings }) {
                 <button class="btn-ghost btn-sm entry-remove" onClick=${()=>rm(idx)}>${t(locale, 'common.remove')}</button>
             </div>`)}
             <button class="btn-ghost" onClick=${addRow}>${t(locale, 'common.addRow')}</button>
+            ${!entries.length && html`<button class="btn-ghost" style="margin-left:8px" onClick=${loadSample}>${t(locale, 'overview.loadDemo')}</button>`}
             <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap">
                 <button onClick=${()=>onCalc()} disabled=${loading}>${loading ? t(locale, 'common.calculating') : t(locale, 'common.calculateReturns')}</button>
                 <${ShareLink} route="term-deposits" state=${{ entries, apy: Number(apy) || 0 }} locale=${locale} />
@@ -111,7 +121,7 @@ export function TermDeposits({ settings }) {
             ${error && html`<p style="color:var(--danger)" role="alert">${error}</p>`}
         </div>
         <${LedgerIo} asset="term-deposits" entries=${entries} locale=${locale} onImport=${(rows) => setEntries(rows)} />
-        ${result && html`<div>
+        ${result && html`<div data-results class="results-anchor">
             <${MomentumKpi} ledger=${result.ledger} summary=${result.summary} asset="term-deposits" settings=${settings} />
             <${AssetChart} ledger=${result.ledger} asset="term-deposits" settings=${settings} />
             <${MaturityPanel} summary=${result.summary} ledger=${result.ledger} settings=${settings} />
@@ -126,7 +136,7 @@ export function TermDeposits({ settings }) {
                 {key:'maturity_value', label:t(locale, 'depositMaturity.maturityValue'), fmt:'currency'},
                 {key:'accrued_interest', label:t(locale, 'depositMaturity.accruedInterest'), fmt:'currency'},
             ]} />
-            <${RelatedCalcs} current="term-deposits" settings=${settings} />
         </div>`}
+        <${RelatedCalcs} current="term-deposits" settings=${settings} />
     </div>`;
 }

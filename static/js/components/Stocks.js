@@ -1,6 +1,6 @@
 import { html, useState, useEffect } from '../vendor/preact-htm-signals.js';
-import { loadLedgers, saveLedgers, saveEntries } from '../store.js';
-import { calculateReturns, fetchQuote, searchIdx, fetchKompas100 } from '../api.js';
+import { loadLedgers, saveLedgers, saveEntries, SAMPLE_STOCKS } from '../store.js';
+import { calculateReturns, fetchQuote, searchIdx } from '../api.js';
 import { formatCurrency, formatPercent, displaySymbol } from '../utils.js';
 import { LedgerTable, SummaryCards } from './AssetForm.js';
 import { DividendFocus } from './DividendFocus.js';
@@ -9,6 +9,7 @@ import { LedgerIo } from './LedgerIo.js';
 import { MomentumKpi } from './MomentumKpi.js';
 import { AssetChart } from './AssetChart.js';
 import { HowTo } from './HowTo.js';
+import { Crumbs } from './Crumbs.js';
 import { RelatedCalcs } from './RelatedCalcs.js';
 import { InfoTip } from './InfoTip.js';
 import { t } from '../i18n.js';
@@ -31,28 +32,18 @@ export function Stocks({ settings }) {
     const [suggestions, setSuggestions] = useState([]);
     const [showSugg, setShowSugg] = useState(false);
     const [searching, setSearching] = useState(false);
-    const [universe, setUniverse] = useState([]);
-    const [universeLoading, setUniverseLoading] = useState(false);
-    const [universeError, setUniverseError] = useState('');
+    // Progressive disclosure: market tools stay open until the first
+    // calculation, then collapse; the user owns the toggle afterwards.
+    const [toolsOpen, setToolsOpen] = useState(() => !loadLedgers().results.stocks);
     const [syncing, setSyncing] = useState(false);
     const [syncMsg, setSyncMsg] = useState('');
 
     useEffect(()=> {
         const l=loadLedgers(); setEntries(l.stocks); setResult(l.results.stocks);
-        loadUniverse();
         const shared = readSharedState();
         if (shared) onCalc(shared.entries);
         return () => clearTimeout(searchTimer);
     }, []);
-
-    async function loadUniverse() {
-        setUniverseLoading(true); setUniverseError('');
-        try {
-            const r = await fetchKompas100();
-            setUniverse(r.items || []);
-        } catch (e) { setUniverseError(e.message); }
-        finally { setUniverseLoading(false); }
-    }
 
     function onSymbolInput(value) {
         setQuoteSym(value);
@@ -128,6 +119,11 @@ export function Stocks({ settings }) {
         setEntries(next);
         saveEntries('stocks', next);
     }
+    function loadSample(){
+        const next = SAMPLE_STOCKS.map(e => ({ ...e }));
+        setEntries(next);
+        saveEntries('stocks', next);
+    }
     function applyDividendFocus(symbol, yieldPct) {
         const idx = targetIndex();
         if (idx >= 0) {
@@ -159,6 +155,7 @@ export function Stocks({ settings }) {
             setResult(data);
             const l=loadLedgers(); l.stocks=rows; l.results.stocks=data; saveLedgers(l);
             if (rowsOverride) setEntries(rowsOverride);
+            requestAnimationFrame(() => document.querySelector('[data-results]')?.scrollIntoView());
         }catch(e){ setError(e.detail ? JSON.stringify(e.detail) : e.message); } finally{ setLoading(false); }
     }
     async function syncAll(){
@@ -186,14 +183,11 @@ export function Stocks({ settings }) {
         : t(locale, 'stock.codesCount', { count: symbols.length });
 
     return html`<div>
+        <${Crumbs} locale=${locale} currentKey="nav.stocks" />
         <div class="page-head"><h1>${t(locale, 'nav.stocks')}</h1><p class="muted">${t(locale, 'calc.stSubtitle')} <${InfoTip} locale=${locale} tipKey="glossary.dividendYield" /></p></div>
-        <${HowTo} locale=${locale} steps=${[t(locale,'howto.st1'), t(locale,'howto.st2'), t(locale,'howto.st3')]} />
-        <div class="card">
-            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
-                <strong style="font-size:14px">${t(locale, 'market.liveIdxPrice')}</strong>
-                <span style="flex:1"></span>
-                <button class="btn-ghost btn-sm" onClick=${loadUniverse} disabled=${universeLoading}>${universeLoading ? t(locale, 'market.refreshing') : t(locale, 'market.refresh')}</button>
-            </div>
+        <${HowTo} locale=${locale} startOpen=${!result} steps=${[t(locale,'howto.st1'), t(locale,'howto.st2'), t(locale,'howto.st3')]} />
+        <details class="card market-tools" open=${toolsOpen || null} onToggle=${e => setToolsOpen(e.target.open)}>
+            <summary>${t(locale, 'market.liveIdxPrice')}</summary>
             <p class="muted" style="font-size:12px">${t(locale, 'market.helperNote')}</p>
             <div class="entry-grid" style="--cols:2">
                 <div style="position:relative">
@@ -225,16 +219,9 @@ export function Stocks({ settings }) {
                 <button class="btn-ghost btn-sm" onClick=${syncAll} disabled=${syncing}>${syncing ? t(locale, 'market.syncingPrices') : t(locale, 'market.syncAllPrices')}</button>
                 ${lastQuote && html`<span class="muted" style="font-size:13px">${t(locale, 'market.lastFetched')}: <strong>${formatCurrency(lastQuote.price, locale, lastQuote.currency)}</strong> ${show(lastQuote.symbol)}${typeof lastQuote.dividend_yield === 'number' ? ` · ${t(locale, 'market.dividendYield')} ${formatPercent(lastQuote.dividend_yield, locale)}` : ''}</span>`}
             </div>
-            ${universeError && html`<p style="color:var(--danger); font-size:13px">${universeError}</p>`}
             ${quoteStatus && html`<p class="muted" style="font-size:13px">${quoteStatus}</p>`}
             ${syncMsg && html`<p class="muted" style="font-size:13px">${syncMsg}</p>`}
-            ${universe.length>0 && html`<label style="display:block; margin-top:8px">${t(locale, 'market.pickTicker')}
-                <select onChange=${e=>{ if(e.target.value) { setQuoteSym(e.target.value); setShowSugg(false); } }} style="width:100%">
-                    <option value="">${t(locale, 'market.pickTicker')}</option>
-                    ${universe.map(s=> html`<option value=${s.symbol}>${show(s.symbol)} — ${s.name}</option>`)}
-                </select>
-            </label>`}
-        </div>
+        </details>
         <div class="card">
             ${entries.map((e,idx)=> html`<div>
                 <div class="entry-grid" style="--cols:6">
@@ -248,10 +235,10 @@ export function Stocks({ settings }) {
                 </div>
                 <div class="entry-grid" style="--cols:1">
                     <label>${t(locale, 'form.currentValue')} <input type="number" value=${e.current_value} onInput=${ev=>upd(idx,'current_value',ev.target.value)} /></label>
-                    ${lastQuote && html`<button class="btn-ghost btn-sm" onClick=${()=>upd(idx,'current_value', String(lastQuote.price))}>${t(locale, 'ui.applyPrice', { price: lastQuote.price })}</button>`}
                 </div>
             </div>`)}
             <button class="btn-ghost" onClick=${addRow}>${t(locale, 'common.addRow')}</button>
+            ${!entries.length && html`<button class="btn-ghost" style="margin-left:8px" onClick=${loadSample}>${t(locale, 'overview.loadDemo')}</button>`}
             <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap">
                 <button onClick=${()=>onCalc()} disabled=${loading}>${loading ? t(locale, 'common.calculating') : t(locale, 'common.calculateReturns')}</button>
                 <${ShareLink} route="stocks" state=${{ entries }} locale=${locale} />
@@ -259,7 +246,7 @@ export function Stocks({ settings }) {
             ${error && html`<p style="color:var(--danger)" role="alert">${error}</p>`}
         </div>
         <${LedgerIo} asset="stocks" entries=${entries} locale=${locale} onImport=${(rows) => setEntries(rows)} />
-        ${result && html`<div>
+        ${result && html`<div data-results class="results-anchor">
             <${MomentumKpi} ledger=${result.ledger} summary=${result.summary} asset="stocks" settings=${settings} />
             <${AssetChart} ledger=${result.ledger} asset="stocks" settings=${settings} />
             <div class="card"><div class="smallcaps">${t(locale, 'common.summary')}${resultSymbolLabel ? html`<span class="muted"> · ${resultSymbolLabel}</span>` : ''}</div></div>
@@ -274,9 +261,9 @@ export function Stocks({ settings }) {
                 {key:'current_value', label:t(locale, 'column.currentValue'), fmt:'currency'},
                 {key:'mom_return', label:t(locale, 'column.momReturn'), fmt:'percent'},
             ]} />
-            <${RelatedCalcs} current="stocks" settings=${settings} />
         </div>`}
         <${DividendFocus} settings=${settings} onApply=${applyDividendFocus} />
-        <${PriceHistory} symbol=${quoteSym} settings=${settings} />
+        ${(result || lastQuote) && html`<${PriceHistory} symbol=${quoteSym} settings=${settings} />`}
+        <${RelatedCalcs} current="stocks" settings=${settings} />
     </div>`;
 }
