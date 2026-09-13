@@ -280,8 +280,11 @@ struct Snapshot {
 
 async fn snapshot(client: &YahooClient, symbol: &str) -> Result<Snapshot, MarketError> {
     // Cheap leg first (price/currency, anonymous), summary second (name/yield).
-    let chart = client.chart(symbol, "5d").await;
-    let summary = client.quote_summary(symbol, "price,summaryDetail").await;
+    // Concurrent: independent legs, halves wall time under retry budgets.
+    let (chart, summary) = tokio::join!(
+        client.chart(symbol, "5d"),
+        client.quote_summary(symbol, "price,summaryDetail")
+    );
 
     let meta = chart
         .as_ref()
