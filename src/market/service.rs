@@ -285,6 +285,11 @@ async fn snapshot(client: &YahooClient, symbol: &str) -> Result<Snapshot, Market
         client.chart(symbol, "5d"),
         client.quote_summary(symbol, "price,summaryDetail")
     );
+    // A rate-limited chart leg must surface its actionable message rather
+    // than degrading into the generic "unable to fetch" error below.
+    if let Err(YahooError::RateLimited) = &chart {
+        return Err(MarketError::Upstream(YahooError::RateLimited.to_string()));
+    }
 
     let meta = chart
         .as_ref()
