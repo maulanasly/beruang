@@ -81,6 +81,6 @@ export function MaturityPanel({ summary, ledger, settings }) {
 function chipStyle(status) {
     const base = 'display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; ';
     return status === 'matured'
-        ? base + 'background:#fee2e2; color:#991b1b'
-        : base + 'background:#dcfce7; color:#166534';
+        ? base + 'background:var(--chip-danger-bg); color:var(--chip-danger-fg)'
+        : base + 'background:var(--chip-success-bg); color:var(--chip-success-fg)';
 }

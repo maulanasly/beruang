@@ -14,9 +14,9 @@ import { MonthlyReturnsTable } from './MonthlyReturnsTable.js';
 import { BenchmarkPanel } from './BenchmarkPanel.js';
 
 const ASSET_COLORS = {
-    'mutual-funds': '#2563eb',
-    stocks: '#f25f3a',
-    'term-deposits': '#10b981',
+    'mutual-funds': 'var(--chart-blue)',
+    stocks: 'var(--chart-orange)',
+    'term-deposits': 'var(--chart-green)',
 };
 
 function cumulativeByDate(entries, withPurchases) {
@@ -172,7 +172,7 @@ export function Overview({ settings }) {
             <div class="summary-cards">
                 <div class="card"><div class="smallcaps">${t(locale, 'overview.totalInvested')} <${InfoTip} locale=${locale} tipKey="glossary.capitalInvested" /></div><div class="amount">${formatCurrency(totalInv, locale, settings.currency)}</div></div>
                 <div class="card"><div class="smallcaps">${t(locale, 'overview.totalValue')}</div><div class="amount">${formatCurrency(total, locale, settings.currency)}</div></div>
-                <div class="card"><div class="smallcaps">${t(locale, 'overview.totalPnl')} <${InfoTip} locale=${locale} tipKey="glossary.pnl" /></div><div class="amount" style="color:${pnl >= 0 ? 'var(--success)' : 'var(--danger)'}">${pnl >= 0 ? '▲ ' : '▼ '}${formatCurrency(pnl, locale, settings.currency)} <span style="font-size:12px">(${totalInv ? formatPercent(pnl / totalInv, locale) : '-'})</span></div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'overview.totalPnl')} <${InfoTip} locale=${locale} tipKey="glossary.pnl" /></div><div class="amount">${formatCurrency(pnl, locale, settings.currency)}</div><div style="margin-top:6px"><span class=${pnl >= 0 ? 'pill-up' : 'pill-down'}>${pnl >= 0 ? '▲ ' : '▼ '}${totalInv ? formatPercent(pnl / totalInv, locale) : '-'}</span></div></div>
                 <div class="card"><div class="smallcaps">${t(locale, 'overview.weightedXirr')} <${InfoTip} locale=${locale} tipKey=${weightedXirr != null ? 'glossary.weightedXirr' : 'glossary.apy'} /></div><div class="amount">${weightedXirr != null ? formatPercent(weightedXirr, locale) : (tdApy != null && tdVal > 0 ? html`${formatPercent(tdApy, locale)} <span style="font-size:12px">APY</span>` : '-')}</div></div>
                 <div class="card"><div class="smallcaps">${t(locale, 'overview.twr')} <${InfoTip} locale=${locale} tipKey="glossary.twr" /></div><div class="amount">${twr.annualized != null ? formatPercent(twr.annualized, locale) : '-'}</div></div>
             </div>

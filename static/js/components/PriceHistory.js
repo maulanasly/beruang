@@ -52,7 +52,7 @@ export function PriceHistory({ symbol, settings }) {
             <p class="muted" style="font-size:12px">${name} · ${closes.length} closes</p>
             <svg viewBox="0 0 ${w} ${h}" width="100%" height="140" role="img" aria-label=${svgLabel} style="background:var(--surface);border:1px solid var(--hairline);border-radius:10px">
                 <title>${svgLabel}</title>
-                <path d=${d} fill="none" stroke="#2563eb" stroke-width="1.5" />
+                <path d=${d} fill="none" style="stroke:var(--chart-blue)" stroke-width="1.5" />
             </svg>
         </div>`}
     </div>`;

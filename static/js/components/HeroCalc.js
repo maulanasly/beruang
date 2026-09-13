@@ -1,4 +1,4 @@
-import { html, useState } from '../vendor/preact-htm-signals.js';
+import { html, useState, useEffect } from '../vendor/preact-htm-signals.js';
 import { calculateReturns } from '../api.js';
 import { formatPercent } from '../utils.js';
 import { t } from '../i18n.js';
@@ -20,6 +20,10 @@ export function HeroCalc({ settings }) {
     const [xirr, setXirr] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    // Single-job hero: run once on mount so the demo result (and the
+    // deep link carrying the same inputs) is visible without a first click.
+    useEffect(() => { onCount(); }, []);
 
     function buildEntries() {
         const p = Number(monthly) || 0;

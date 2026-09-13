@@ -11,13 +11,6 @@ const CALCS = [
     { route: 'term-deposits', path: '/kalkulator/deposito', titleKey: 'home.calcTdTitle', descKey: 'home.calcTdDesc', exKey: 'home.cardExampleTd', sample: () => ({ entries: SAMPLE_TD.entries, apy: SAMPLE_TD.apy }) },
 ];
 
-const QUESTIONS = [
-    { route: 'mutual-funds', titleKey: 'home.qMf', path: '/kalkulator/reksa-dana', sample: () => ({ entries: SAMPLE_MF }) },
-    { route: 'stocks', titleKey: 'home.qStocks', path: '/kalkulator/saham', sample: () => ({ entries: SAMPLE_STOCKS }) },
-    { route: 'term-deposits', titleKey: 'home.qTd', path: '/kalkulator/deposito', sample: () => ({ entries: SAMPLE_TD.entries, apy: SAMPLE_TD.apy }) },
-    { route: 'ev', titleKey: 'home.qEv', path: '/kalkulator/mobil-listrik', sample: null },
-];
-
 const TRUST = ['home.trustNoSignup', 'home.trustLocal', 'home.trustExact', 'home.trustAdj'];
 const FAQS = [['home.faq1q', 'home.faq1a'], ['home.faq2q', 'home.faq2a'], ['home.faq3q', 'home.faq3a']];
 
@@ -26,8 +19,8 @@ function sparkline() {
     const pts = [[8, 60], [56, 53], [104, 46], [152, 40], [200, 33], [248, 22]];
     const d = pts.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x},${y}`).join(' ');
     return html`<svg viewBox="0 0 256 72" width="100%" height="72" role="img" aria-hidden="true" style="background:var(--paper);border:1px solid var(--hairline);border-radius:8px; margin-top:10px">
-        <path d=${d} fill="none" stroke="#f25f3a" stroke-width="2.5" />
-        ${pts.map(([x, y]) => html`<circle cx=${x} cy=${y} r="3" fill="#102a43" />`)}
+        <path d=${d} fill="none" style="stroke:var(--accent)" stroke-width="2.5" />
+        ${pts.map(([x, y]) => html`<circle cx=${x} cy=${y} r="3" style="fill:var(--ledger)" />`)}
     </svg>`;
 }
 
@@ -52,7 +45,7 @@ export function Landing({ settings }) {
                 <${HeroCalc} settings=${settings} />
             </div>
             <div class="hero-cta">
-                <button onClick=${e => go(e, '/kalkulator/saham')}>${t(locale, 'home.ctaCalc')}</button>
+                <button onClick=${e => go(e, '/kalkulator/reksa-dana')}>${t(locale, 'home.ctaCalc')}</button>
                 <button class="btn-ghost" onClick=${e => go(e, '/portofolio')}>${t(locale, 'home.ctaApp')}</button>
             </div>
         </section>
@@ -80,36 +73,27 @@ export function Landing({ settings }) {
             </div>
         </section>
         <section class="card">
-            <h2 style="margin:0 0 8px; font-size:17px">${t(locale, 'home.questionsTitle')}</h2>
-            <ul class="question-list">
-                ${QUESTIONS.map(q => {
-                    const url = q.sample ? buildShareUrl(q.route, q.sample()) : q.path;
-                    return html`<li><a href=${url} onClick=${e => goUrl(e, url)}>${t(locale, q.titleKey)}</a></li>`;
-                })}
-            </ul>
-        </section>
-        <section class="card" aria-label=${t(locale, 'home.eyebrow')}>
             <div class="trust-row">
-                ${TRUST.map(k => html`<span class="trust-badge">✓ ${t(locale, k)}</span>`)}
+                ${TRUST.map(k => html`<a class="trust-badge" href="#method">✓ ${t(locale, k)}</a>`)}
             </div>
-        </section>
-        <section class="card">
-            <h2 style="margin:0 0 8px; font-size:17px">${t(locale, 'home.faqTitle')}</h2>
-            ${FAQS.map(([q, a]) => html`<details class="faq"><summary>${t(locale, q)}</summary><p class="muted" style="font-size:13px">${t(locale, a)}</p></details>`)}
-        </section>
-        <section class="card">
-            <h2 style="margin:0 0 8px; font-size:17px">${t(locale, 'home.stepsTitle')}</h2>
-            <ol class="steps">
-                <li><strong>${t(locale, 'home.step1Title')}</strong><br /><span class="muted">${t(locale, 'home.step1Desc')}</span></li>
-                <li><strong>${t(locale, 'home.step2Title')}</strong><br /><span class="muted">${t(locale, 'home.step2Desc')}</span></li>
-                <li><strong>${t(locale, 'home.step3Title')}</strong><br /><span class="muted">${t(locale, 'home.step3Desc')}</span></li>
-            </ol>
-        </section>
-        <section class="card">
-            <h2 style="margin:0 0 8px; font-size:17px">${t(locale, 'method.title')}</h2>
-            <p class="muted" style="font-size:13px; margin:0 0 6px">${t(locale, 'method.xirr')}</p>
-            <p class="muted" style="font-size:13px; margin:0 0 6px">${t(locale, 'method.adjClose')}</p>
-            <p class="muted" style="font-size:13px; margin:0">${t(locale, 'method.disclaimer')}</p>
+            <details class="faq" style="margin-top:12px">
+                <summary>${t(locale, 'home.stepsTitle')}</summary>
+                <ol class="steps">
+                    <li><strong>${t(locale, 'home.step1Title')}</strong><br /><span class="muted">${t(locale, 'home.step1Desc')}</span></li>
+                    <li><strong>${t(locale, 'home.step2Title')}</strong><br /><span class="muted">${t(locale, 'home.step2Desc')}</span></li>
+                    <li><strong>${t(locale, 'home.step3Title')}</strong><br /><span class="muted">${t(locale, 'home.step3Desc')}</span></li>
+                </ol>
+            </details>
+            <details class="faq">
+                <summary>${t(locale, 'home.faqTitle')}</summary>
+                ${FAQS.map(([q, a]) => html`<details class="faq"><summary>${t(locale, q)}</summary><p class="muted" style="font-size:13px">${t(locale, a)}</p></details>`)}
+            </details>
+            <div id="method" style="margin-top:12px">
+                <h2 style="margin:0 0 8px; font-size:17px">${t(locale, 'method.title')}</h2>
+                <p class="muted" style="font-size:13px; margin:0 0 6px">${t(locale, 'method.xirr')}</p>
+                <p class="muted" style="font-size:13px; margin:0 0 6px">${t(locale, 'method.adjClose')}</p>
+                <p class="muted" style="font-size:13px; margin:0">${t(locale, 'method.disclaimer')}</p>
+            </div>
         </section>
     </div>`;
 }
