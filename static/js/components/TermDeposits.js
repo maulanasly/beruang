@@ -67,6 +67,18 @@ export function TermDeposits({ settings }) {
         setApy(SAMPLE_TD.apy);
         saveEntries('term-deposits', next, SAMPLE_TD.apy);
     }
+    // Persist imports immediately (navigating away must not lose them)
+    // and invalidate the calculated snapshot so the dashboard flags edits.
+    // JSON snapshots may carry apy alongside entries — honor it.
+    function importRows(rows, apyOverride) {
+        const rate = Number.isFinite(Number(apyOverride)) ? Number(apyOverride) : Number(apy);
+        setEntries(rows);
+        setApy(rate);
+        saveEntries('term-deposits', rows, rate);
+        const ledgers = loadLedgers();
+        ledgers.results['term-deposits'] = null;
+        saveLedgers(ledgers);
+    }
 
     async function onCalc(rowsOverride, apyOverride){
         const rows = rowsOverride || entries;
@@ -120,7 +132,7 @@ export function TermDeposits({ settings }) {
             </div>
             ${error && html`<p style="color:var(--danger)" role="alert">${error}</p>`}
         </div>
-        <${LedgerIo} asset="term-deposits" entries=${entries} locale=${locale} onImport=${(rows) => setEntries(rows)} />
+        <${LedgerIo} asset="term-deposits" entries=${entries} locale=${locale} onImport=${importRows} />
         ${result && html`<div data-results class="results-anchor">
             <${MomentumKpi} ledger=${result.ledger} summary=${result.summary} asset="term-deposits" settings=${settings} />
             <${AssetChart} ledger=${result.ledger} asset="term-deposits" settings=${settings} />

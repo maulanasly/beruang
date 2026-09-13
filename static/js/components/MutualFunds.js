@@ -44,6 +44,15 @@ export function MutualFunds({ settings }) {
         setEntries(next);
         saveEntries('mutual-funds', next);
     }
+    // Persist imports immediately (navigating away must not lose them)
+    // and invalidate the calculated snapshot so the dashboard flags edits.
+    function importRows(rows) {
+        setEntries(rows);
+        saveEntries('mutual-funds', rows);
+        const ledgers = loadLedgers();
+        ledgers.results['mutual-funds'] = null;
+        saveLedgers(ledgers);
+    }
 
     async function onCalc(rowsOverride){
         const rows = rowsOverride || entries;
@@ -91,7 +100,7 @@ export function MutualFunds({ settings }) {
             </div>
             ${error && html`<p style="color:var(--danger)" role="alert">${error}</p>`}
         </div>
-        <${LedgerIo} asset="mutual-funds" entries=${entries} locale=${locale} onImport=${(rows) => setEntries(rows)} />
+        <${LedgerIo} asset="mutual-funds" entries=${entries} locale=${locale} onImport=${importRows} />
         ${result && html`<div data-results class="results-anchor">
             <${MomentumKpi} ledger=${result.ledger} summary=${result.summary} asset="mutual-funds" settings=${settings} />
             <${AssetChart} ledger=${result.ledger} asset="mutual-funds" settings=${settings} />

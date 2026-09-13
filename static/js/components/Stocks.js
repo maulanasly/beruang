@@ -124,6 +124,15 @@ export function Stocks({ settings }) {
         setEntries(next);
         saveEntries('stocks', next);
     }
+    // Persist imports immediately (navigating away must not lose them)
+    // and invalidate the calculated snapshot so the dashboard flags edits.
+    function importRows(rows) {
+        setEntries(rows);
+        saveEntries('stocks', rows);
+        const ledgers = loadLedgers();
+        ledgers.results.stocks = null;
+        saveLedgers(ledgers);
+    }
     function applyDividendFocus(symbol, yieldPct) {
         const idx = targetIndex();
         if (idx >= 0) {
@@ -245,7 +254,7 @@ export function Stocks({ settings }) {
             </div>
             ${error && html`<p style="color:var(--danger)" role="alert">${error}</p>`}
         </div>
-        <${LedgerIo} asset="stocks" entries=${entries} locale=${locale} onImport=${(rows) => setEntries(rows)} />
+        <${LedgerIo} asset="stocks" entries=${entries} locale=${locale} onImport=${importRows} />
         ${result && html`<div data-results class="results-anchor">
             <${MomentumKpi} ledger=${result.ledger} summary=${result.summary} asset="stocks" settings=${settings} />
             <${AssetChart} ledger=${result.ledger} asset="stocks" settings=${settings} />
