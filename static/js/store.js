@@ -27,10 +27,12 @@ function save(key, val) {
 export function loadSettings() {
     const s = load(SETTINGS_KEY);
     const nav = typeof navigator !== 'undefined' && navigator.language?.startsWith('id') ? 'id-ID' : 'en-US';
+    const prefersDark = typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches;
     return {
         locale: s?.locale || nav,
         currency: s?.currency || 'IDR',
         market: s?.market || 'IDX',
+        theme: s?.theme === 'dark' || s?.theme === 'light' ? s.theme : (prefersDark ? 'dark' : 'light'),
     };
 }
 export function saveSettings(s) { save(SETTINGS_KEY, s); }
