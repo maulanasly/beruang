@@ -3,17 +3,14 @@
 Beruang: investment tracker for mutual funds, stocks, and term deposits funded via
 monthly installments. Cash-flow adjusted MoM returns, XIRR/ROI, APY projections.
 
-Stack: **self-contained Axum binary + zero-build Preact/HTM `static/`**
-modeled on `monthly-logs`. `logic.py` is the frozen financial-math oracle
-(sole Python file; never executed at runtime). Vue 3 + Vite `frontend/`
-kept as legacy (`--profile legacy`).
+Stack: **self-contained Axum binary + zero-build Preact/HTM `static/`**.
+`logic.py` is the frozen financial-math oracle (sole Python file;
+reference only, never executed at runtime).
 
 ## Environment
 
 - **Rust**: 1.89+ (`rustc --version`) for `rust-gateway/` (the entire stack)
-- **Python**: none required (only `logic.py` remains, as a frozen reference)
-- **Node**: 22 for `frontend/` only (`npm --prefix frontend`, legacy)
-- **Docker**: Compose for `beruang` (:8000) + `frontend` nginx (:8080, legacy profile)
+- **Docker**: Compose for `beruang` (:8000)
 - **GitHub**: `gh` CLI authenticated as `maulanasly`
 
 ## Repository
@@ -24,17 +21,12 @@ kept as legacy (`--profile legacy`).
 
 ## Skill Routing (read before acting)
 
-| Request scope | Skill to adopt |
-|---|---|
-| Multi-domain or ambiguous | `app-orchestrator` (`.agents/skills/orchestrator/SKILL.md`) |
-| `logic.py` (frozen oracle, read-only) | `fastapi-backend-expert` (`.agents/skills/fastapi-backend-expert/SKILL.md`) |
-| `frontend/src/`, Vite, vitest (legacy) | `vue-frontend-expert` (`.agents/skills/vue-frontend-expert/SKILL.md`) |
-| `rust-gateway/`, Axum, calc, market | `app-orchestrator` (self-contained binary; all logic in Rust) |
-| `static/`, Preact/HTM, hash router | `app-orchestrator` (frontend now zero-build; Vue skill for legacy only) |
+Single-stack repo (Rust + zero-build JS): no sub-skills. Handle all
+requests directly.
 
-Authoritative specs: `SKILL.md` (financial formulas + execution steps),
-`.github/copilot-instructions.md` (router). This file consolidates workflow only
-and does not override formula semantics in `SKILL.md` / `logic.py`.
+Authoritative spec: `logic.py` (frozen financial-math oracle). This file
+consolidates workflow only and does not override formula semantics in
+`logic.py`.
 
 ## Feature/Bug Fix Workflow (MANDATORY)
 
@@ -61,8 +53,8 @@ Every change follows this exact flow:
 
 3. **Implement + test**:
    - Write code
-   - Write tests (`cargo test` for `rust-gateway/` unit + parity + gateway; vitest for `frontend/src/`)
-   - Run `make test` + `make test-frontend` when Vue changes
+   - Write tests (`cargo test` for `rust-gateway/` unit + parity + gateway)
+   - Run `make test`
    - Run `make lint` (clippy `--all-targets -D warnings`)
 
 4. **Commit** (conventional commits):
@@ -87,7 +79,7 @@ Every change follows this exact flow:
 - **Create**: `git fetch origin && git worktree add ../beruang-<branch-slug> <branch>` (slug: `/` → `-`, e.g. `feature/axum-proxy` → `../beruang-feature-axum-proxy`).
 - **List**: `git worktree list` before creating — reuse existing worktree if branch is already checked out.
 - **Cleanup**: after PR merge, `git worktree remove ../beruang-<branch-slug>` (use `--force` only if uncommitted work is intentionally discarded).
-- **Scope**: each worktree has its own `frontend/node_modules/`, `target/` — run `make test` inside the worktree you changed.
+- **Scope**: each worktree has its own `target/` — run `make test` inside the worktree you changed.
 
 ## Verification (run before any commit)
 
@@ -96,7 +88,6 @@ Every change follows this exact flow:
 | Rust lint | `make lint` | `cargo clippy --all-targets -- -D warnings` (`rust-gateway/`) |
 | Rust format | `make fmt-check` | `cargo fmt -- --check` (`rust-gateway/`) |
 | Rust tests | `make test` | `cargo test` calc + market + parity + gateway + static |
-| Frontend tests | `make test-frontend` | Vitest (`frontend/src/**/*.spec.js`, legacy) |
 | **Verify (gate)** | `make verify` | `lint + fmt-check + test` |
 
 ## Knowledge graph
@@ -112,9 +103,8 @@ Every change follows this exact flow:
 - **Unit tests**: pure `src/calc` (MoM, XIRR, APY, maturity fields) and `src/market` pure helpers (yield normalization, search filter, chart parsing) against oracle values
 - **Parity tests**: `rust-gateway/tests/calc_parity.rs` replays committed `tests/fixtures/*.json` (from frozen `logic.py`) at 1e-9 relative epsilon
 - **Gateway tests**: native routes + static serving + CORS + security headers + compression (Rust `cargo test`; market validation paths offline, live Yahoo validated manually)
-- **Frontend tests**: composables/components via vitest + happy-dom (Vue legacy)
 - **Coverage target**: 80% for new code
-- **Test commands**: `make test`, `make test-frontend`
+- **Test commands**: `make test`
 
 ## Branch Naming
 
@@ -137,10 +127,9 @@ Every change follows this exact flow:
 - **Validation**: bad math input → 422 `{"detail"}`, Yahoo failure → 502, market timeout (25s) → 504 with passthrough detail.
 - **Market data**: `src/market/` talks Yahoo Finance directly (`v8/chart` + `v1/search` anonymous; `quoteSummary` via cookie+crumb); adjusted close preferred (yfinance `auto_adjust=True` parity); yields fan-out cached 6h.
 
-## Frontend conventions
+## Frontend conventions (`static/`, zero-build Preact + HTM — no npm/node)
 
-- **Current (`static/`, modeled on `monthly-logs`)**: zero-build Preact + HTM — no npm/node; components in `static/js/components/`; fetch wrapper in `static/js/api.js`; hash router in `static/js/router.js` (`#/overview`, `#/mutual-funds`, `#/stocks`, `#/term-deposits`); same `localStorage` keys as Vue for migration.
-- **Legacy (Vue)**: Composition API in `frontend/src/composables/`, views in `frontend/src/views/`, shared UI in `frontend/src/components/`; hash-free history router; `fetch` wrapper in `useApiClient.js`; locale/currency/market via `useSettings` + `vue-i18n` (kept for migration via `--profile legacy`).
+- Components in `static/js/components/`; fetch wrapper in `static/js/api.js`; hash router in `static/js/router.js` (`#/overview`, `#/mutual-funds`, `#/stocks`, `#/term-deposits`); settings persist via `localStorage`.
 
 ## Rust layout (`rust-gateway/`, self-contained binary)
 
@@ -152,11 +141,10 @@ Every change follows this exact flow:
 ## Project layout
 
 ```
-logic.py            Frozen financial oracle (pandas; reference only, never executed)
+logic.py            Frozen financial oracle (reference only, never executed)
 rust-gateway/       Self-contained Axum binary: API + embedded static/ (:8000)
 rust-gateway/tests/fixtures/  Committed oracle vectors (parity harness input)
-frontend/           Vue 3 + Vite app (legacy UI; --profile legacy)
 static/             Zero-build Preact frontend, no bundler (hash router)
-docker-compose.yml  beruang (legacy frontend behind profile)
+docker-compose.yml  beruang container orchestration
 Makefile            dev/test/lint/graphify orchestration
 ```

@@ -14,15 +14,3 @@ services:
       timeout: 3s
       retries: 10
       start_period: 5s
-
-  # Legacy Vue frontend kept for migration; prefer gateway's embedded static/
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: beruang-frontend
-    depends_on:
-      - gateway
-    ports:
-      - "8080:80"
-    profiles: ["legacy"]

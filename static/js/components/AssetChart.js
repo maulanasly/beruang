@@ -2,7 +2,7 @@ import { html } from '../vendor/preact-htm-signals.js';
 import { t } from '../i18n.js';
 import { formatCurrency } from '../utils.js';
 
-// Zero-dependency SVG port of frontend/src/components/LineChart.vue:
+// Zero-dependency SVG chart (legacy Vue LineChart parity):
 // per-asset invested-vs-value (term deposits: expected vs value).
 // Reuses the TrendChart.js SVG pattern (no npm).
 export function AssetChart({ ledger, asset, settings }) {

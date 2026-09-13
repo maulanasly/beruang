@@ -2,7 +2,7 @@ import { html } from '../vendor/preact-htm-signals.js';
 import { t } from '../i18n.js';
 import { formatCurrency } from '../utils.js';
 
-// Zero-dependency SVG port of frontend/src/components/PortfolioDonut.vue
+// Zero-dependency SVG port of the legacy Vue PortfolioDonut
 // (Chart.js Doughnut → stroked-circle segments; no npm).
 export function DonutChart({ series, settings }) {
     const items = (Array.isArray(series) ? series : []).filter(s => s && s.value > 0);

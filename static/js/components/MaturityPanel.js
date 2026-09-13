@@ -3,7 +3,7 @@ import { t } from '../i18n.js';
 import { formatCellValue } from '../utils.js';
 import { InfoTip } from './InfoTip.js';
 
-// Port of frontend/src/components/DepositMaturityPanel.vue: maturity tracker
+// Port of the legacy Vue DepositMaturityPanel: maturity tracker
 // with rollover suggestions, driven by the term-deposit result.
 export function MaturityPanel({ summary, ledger, settings }) {
     const [open, setOpen] = useState(false);

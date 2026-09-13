@@ -4,7 +4,7 @@ import { formatCellValue } from '../utils.js';
 import { chainLink, annualize } from '../finance.js';
 import { InfoTip } from './InfoTip.js';
 
-// Port of frontend/src/components/LatestMomentumKpi.vue: "This Month Update"
+// Port of the legacy Vue LatestMomentumKpi: "This Month Update"
 // strip built from the latest result-ledger row + summary.
 export function MomentumKpi({ ledger, summary, asset, settings }) {
     const rows = Array.isArray(ledger) ? ledger : [];

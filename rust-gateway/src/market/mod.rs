@@ -1,9 +1,6 @@
 //! Market-data layer: Yahoo Finance REST (`yahoo`), response shapes
 //! (`types`), business logic (`service`), and the yields TTL cache.
-//!
-//! `market-data/*` routes stay proxied to the Python sidecar until this
-//! module passes the shadow-diff stability bar; the proxy serves while
-//! `shadow.rs` compares these implementations in the background.
+//! Served natively by `routes/market.rs` — no sidecar, no proxy.
 
 pub mod cache;
 pub mod service;

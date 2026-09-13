@@ -1,5 +1,5 @@
-// Pure portfolio math ported from frontend/src/composables/
-// (useMonthlyReturns.js, useTwr.js, useBenchmark.js). No framework, no I/O.
+// Pure portfolio math (legacy Vue monthly-returns/TWR/benchmark parity).
+// No framework, no I/O.
 
 export const ASSETS = ['mutual-funds', 'stocks', 'term-deposits'];
 

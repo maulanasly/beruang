@@ -1,5 +1,5 @@
-// Per-asset CSV/JSON import-export ported from
-// frontend/src/composables/useLedgerIo.js. Pure functions, no framework.
+// Per-asset CSV/JSON import-export (legacy Vue ledger-I/O parity).
+// Pure functions, no framework.
 
 export const ASSET_COLUMNS = {
     'mutual-funds': ['date', 'installment_amount', 'current_value'],
