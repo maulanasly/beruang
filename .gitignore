@@ -4,3 +4,5 @@ graphify-out/
 target/
 dist/
 build/
+__pycache__/
+*.pyc
