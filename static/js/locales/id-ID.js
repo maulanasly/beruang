@@ -295,6 +295,10 @@ export default {
     latest: 'terkini',
     menu: 'Menu',
     breadcrumb: 'Remah roti',
+    theme: 'Tema',
+    themeDark: 'Gelap',
+    themeLight: 'Terang',
+    themeToggle: 'Alihkan mode gelap',
   },
   calc: {
     mfSubtitle: 'MoM yang disesuaikan arus kas \u00b7 XIRR memakai tanggal persis.',

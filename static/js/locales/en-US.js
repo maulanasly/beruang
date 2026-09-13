@@ -296,6 +296,10 @@ export default {
     latest: 'latest',
     menu: 'Menu',
     breadcrumb: 'Breadcrumb',
+    theme: 'Theme',
+    themeDark: 'Dark',
+    themeLight: 'Light',
+    themeToggle: 'Toggle dark mode',
   },
   calc: {
     mfSubtitle: 'Cash-flow adjusted MoM \u00b7 XIRR via exact dates.',

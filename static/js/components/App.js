@@ -56,6 +56,8 @@ export function App() {
         document.title = `${titles[route] || 'Beruang'} — Beruang`;
     }, [route, locale]);
     useEffect(() => { saveSettings(settings); document.documentElement.lang = locale.split('-')[0]; }, [settings]);
+    useEffect(() => { document.documentElement.dataset.theme = settings.theme === 'dark' ? 'dark' : 'light'; }, [settings.theme]);
+    const dark = settings.theme === 'dark';
 
     const pages = {
         home: html`<${Landing} settings=${settings} />`,
@@ -97,6 +99,9 @@ export function App() {
                         <select value=${settings.market} title=${t(locale, 'settings.market')} aria-label=${t(locale, 'settings.market')} onChange=${e=>setSettings({...settings, market:e.target.value})}>
                             ${MARKET_OPTIONS.map(o=> html`<option value=${o.value}>${o.short || o.label}</option>`)}
                         </select>
+                        <button type="button" class="theme-toggle" title=${t(locale, 'ui.theme')} aria-label=${t(locale, 'ui.themeToggle')} aria-pressed=${dark} onClick=${() => setSettings({...settings, theme: dark ? 'light' : 'dark'})}>
+                            ${dark ? t(locale, 'ui.themeLight') : t(locale, 'ui.themeDark')}
+                        </button>
                     </div>
                     <button class="menu-toggle" aria-expanded=${menuOpen} aria-controls="primary-nav" aria-label=${t(locale, 'ui.menu')} onClick=${() => setMenuOpen(!menuOpen)}>
                         <span class=${menuOpen ? 'menu-icon open' : 'menu-icon'} aria-hidden="true"></span>
