@@ -1,7 +1,6 @@
-//! Business logic port of the `yfinance`-backed half of
-//! `backend/services.py`. Yahoo access goes through [`YahooClient`];
-//! pure helpers (`normalize_dividend_yield`, search filtering, chart point
-//! extraction) are unit-tested against canned payloads.
+//! Business logic for market data (Yahoo Finance direct). Pure helpers
+//! (`normalize_dividend_yield`, search filtering, chart point extraction)
+//! are unit-tested against canned payloads.
 
 use std::sync::Arc;
 use std::time::Duration;

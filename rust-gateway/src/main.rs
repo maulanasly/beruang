@@ -16,9 +16,6 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{port}"))
         .await
         .expect("Failed to bind gateway");
-    tracing::info!(
-        "beruang gateway listening on 0.0.0.0:{port} -> calc {}",
-        std::env::var("CALC_BASE_URL").unwrap_or_else(|_| "http://127.0.0.1:8001".into())
-    );
+    tracing::info!("beruang listening on 0.0.0.0:{port} (self-contained)");
     axum::serve(listener, app).await.expect("Server failed");
 }

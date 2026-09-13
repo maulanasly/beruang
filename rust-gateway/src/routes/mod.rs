@@ -1,12 +1,12 @@
 pub mod health;
-pub mod proxy;
+pub mod market;
 pub mod returns;
 pub mod static_handler;
 
 use axum::extract::Request;
-use axum::http::{HeaderValue, Method};
+use axum::http::{HeaderValue, Method, StatusCode};
 use axum::middleware::{self, Next};
-use axum::response::Response;
+use axum::response::{IntoResponse, Response};
 use axum::Router;
 use tower_http::compression::CompressionLayer;
 use tower_http::cors::{AllowHeaders, AllowMethods, AllowOrigin, Any, CorsLayer};
@@ -43,14 +43,18 @@ fn cors_layer() -> CorsLayer {
         .allow_credentials(true)
 }
 
+/// Unknown `/api/*` paths stay JSON (never the SPA fallback).
+async fn api_not_found() -> Response {
+    (
+        StatusCode::NOT_FOUND,
+        axum::Json(serde_json::json!({ "detail": "Not found." })),
+    )
+        .into_response()
+}
+
 pub fn create_router() -> Router {
     Router::new()
         .route("/health", axum::routing::get(health::handler))
-        // Native calc (parity-guarded) with proxy rollback per route group.
-        // `/api/v1/market-data/*` always proxies until the Rust market
-        // module passes the shadow-diff bar. Anything else under `/api/`
-        // falls through to the static handler's 404 guard so the SPA
-        // fallback never hijacks API routes.
         .route(
             "/api/v1/mutual-funds/returns",
             axum::routing::post(returns::mutual_funds),
@@ -63,7 +67,31 @@ pub fn create_router() -> Router {
             "/api/v1/term-deposits/returns",
             axum::routing::post(returns::term_deposits),
         )
-        .route("/api/v1/{*path}", axum::routing::any(proxy::handler))
+        .route(
+            "/api/v1/market-data/idx/kompas100",
+            axum::routing::get(market::kompas100),
+        )
+        .route(
+            "/api/v1/market-data/idx/dividend-yields",
+            axum::routing::get(market::dividend_yields),
+        )
+        .route(
+            "/api/v1/market-data/idx/search",
+            axum::routing::get(market::idx_search),
+        )
+        .route(
+            "/api/v1/market-data/quote",
+            axum::routing::get(market::quote),
+        )
+        .route(
+            "/api/v1/market-data/index/history",
+            axum::routing::get(market::index_history),
+        )
+        .route(
+            "/api/v1/market-data/price/history",
+            axum::routing::get(market::price_history),
+        )
+        .route("/api/{*path}", axum::routing::any(api_not_found))
         .fallback(static_handler::handler)
         .layer(cors_layer())
         .layer(middleware::from_fn(security_headers))

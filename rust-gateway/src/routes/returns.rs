@@ -1,10 +1,4 @@
-//! Native `*/returns` handlers with proxy fallback.
-//!
-//! Topology during migration: `CALC_RETURNS_MODE=native` (default, parity
-//! green) serves calculations in-process; `=proxy` forwards to the Python
-//! calc sidecar verbatim (rollback path, one env flip, no redeploy).
-//! `/api/v1/market-data/*` always proxies until the Rust market module
-//! passes the shadow-diff stability bar.
+//! Native `*/returns` handlers (in-process calc core, parity-guarded).
 
 use axum::extract::Request;
 use axum::http::StatusCode;
@@ -15,16 +9,6 @@ use super::super::calc::{
     mutual_fund_returns, stock_returns, term_deposit_returns, CalcError, MutualFundEntry,
     StockEntry, TermDepositEntry,
 };
-use super::proxy;
-
-/// Anything other than an explicit `proxy` value serves natively.
-pub(crate) fn returns_mode() -> String {
-    std::env::var("CALC_RETURNS_MODE").unwrap_or_else(|_| "native".to_string())
-}
-
-fn is_proxy_mode() -> bool {
-    returns_mode() == "proxy"
-}
 
 fn unprocessable(message: String) -> Response {
     (
@@ -34,7 +18,8 @@ fn unprocessable(message: String) -> Response {
         .into_response()
 }
 
-fn calc_error_response(err: CalcError) -> Response {
+fn calc_error_response(path: &str, err: CalcError) -> Response {
+    tracing::warn!(path, detail = err.detail(), "calc 422");
     let status = StatusCode::from_u16(err.status()).unwrap_or(StatusCode::UNPROCESSABLE_ENTITY);
     (
         status,
@@ -63,10 +48,6 @@ where
 }
 
 pub async fn mutual_funds(req: Request) -> Response {
-    if is_proxy_mode() {
-        return super::proxy::handler(req).await;
-    }
-    let uri = req.uri().clone();
     let body = match read_json(req).await {
         Ok(body) => body,
         Err(resp) => return resp,
@@ -77,18 +58,11 @@ pub async fn mutual_funds(req: Request) -> Response {
     };
     match mutual_fund_returns(entries) {
         Ok(returns) => axum::Json(returns).into_response(),
-        Err(err) => {
-            tracing::warn!(path = uri.path(), detail = err.detail(), "native calc 422");
-            calc_error_response(err)
-        }
+        Err(err) => calc_error_response("/api/v1/mutual-funds/returns", err),
     }
 }
 
 pub async fn stocks(req: Request) -> Response {
-    if is_proxy_mode() {
-        return proxy::handler(req).await;
-    }
-    let uri = req.uri().clone();
     let body = match read_json(req).await {
         Ok(body) => body,
         Err(resp) => return resp,
@@ -99,18 +73,11 @@ pub async fn stocks(req: Request) -> Response {
     };
     match stock_returns(entries) {
         Ok(returns) => axum::Json(returns).into_response(),
-        Err(err) => {
-            tracing::warn!(path = uri.path(), detail = err.detail(), "native calc 422");
-            calc_error_response(err)
-        }
+        Err(err) => calc_error_response("/api/v1/stocks/returns", err),
     }
 }
 
 pub async fn term_deposits(req: Request) -> Response {
-    if is_proxy_mode() {
-        return proxy::handler(req).await;
-    }
-    let uri = req.uri().clone();
     let body = match read_json(req).await {
         Ok(body) => body,
         Err(resp) => return resp,
@@ -128,9 +95,6 @@ pub async fn term_deposits(req: Request) -> Response {
     let reference = Local::now().date_naive();
     match term_deposit_returns(apy, entries, reference) {
         Ok(returns) => axum::Json(returns).into_response(),
-        Err(err) => {
-            tracing::warn!(path = uri.path(), detail = err.detail(), "native calc 422");
-            calc_error_response(err)
-        }
+        Err(err) => calc_error_response("/api/v1/term-deposits/returns", err),
     }
 }

@@ -2,12 +2,6 @@ use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use tower::ServiceExt;
 
-/// Serializes tests that mutate process env (`CALC_BASE_URL`,
-/// `CALC_RETURNS_MODE`); the harness runs tests on shared threads.
-/// The guard is held across `oneshot` awaits by design: handlers read env
-/// synchronously while the request is driven to completion.
-static ENV_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
-
 async fn response_body_json(response: axum::response::Response) -> serde_json::Value {
     let bytes = axum::body::to_bytes(response.into_body(), 1024 * 1024)
         .await
@@ -171,90 +165,9 @@ async fn static_responses_carry_security_headers_and_compression() {
     assert_eq!(response.headers()["content-encoding"], "gzip");
 }
 
-/// Spin a mock calc on an ephemeral port and assert the gateway proxies
-/// method + path + query + body + status + body verbatim.
-#[tokio::test]
-async fn proxy_passes_through_verbatim() {
-    let mock = axum::Router::new()
-        .route(
-            "/api/v1/market-data/idx/kompas100",
-            axum::routing::get(|| async {
-                axum::Json(serde_json::json!({
-                    "index_name": "Kompas 100 (Starter)",
-                    "items": [{"symbol": "BBCA.JK", "name": "Bank Central Asia Tbk"}],
-                }))
-            }),
-        )
-        .route(
-            "/api/v1/mutual-funds/returns",
-            axum::routing::post(|body: axum::body::Bytes| async move {
-                // Echo a 422 with the received body size so the test can
-                // verify the request body was forwarded.
-                (
-                    StatusCode::UNPROCESSABLE_ENTITY,
-                    [(axum::http::header::CONTENT_TYPE, "application/json")],
-                    serde_json::json!({"detail": format!("mock saw {} bytes", body.len())})
-                        .to_string(),
-                )
-            }),
-        );
-
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
-    let addr = listener.local_addr().unwrap();
-    tokio::spawn(async move { axum::serve(listener, mock).await.unwrap() });
-
-    // SAFETY: only this test writes CALC_BASE_URL; health/static tests never read it.
-    let _env = ENV_LOCK.lock().await;
-    std::env::set_var("CALC_BASE_URL", format!("http://{addr}"));
-    // Pin proxy mode: the returns POST below must reach the mock calc even
-    // though native is the default.
-    std::env::set_var("CALC_RETURNS_MODE", "proxy");
-    let app = beruang_gateway::routes::create_router();
-
-    // GET with query passthrough.
-    let response = app
-        .clone()
-        .oneshot(
-            Request::builder()
-                .uri("/api/v1/market-data/idx/kompas100")
-                .body(Body::empty())
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-    assert_eq!(response.status(), StatusCode::OK);
-    assert!(response.headers()["content-type"]
-        .to_str()
-        .unwrap()
-        .contains("application/json"));
-    let body = response_body_json(response).await;
-    assert_eq!(body["index_name"], "Kompas 100 (Starter)");
-    assert_eq!(body["items"][0]["symbol"], "BBCA.JK");
-
-    // POST forwards body; mock 422 passes through verbatim.
-    let payload = serde_json::json!({"entries": []}).to_string();
-    let expected = format!("mock saw {} bytes", payload.len());
-    let response = app
-        .oneshot(
-            Request::builder()
-                .method("POST")
-                .uri("/api/v1/mutual-funds/returns")
-                .header("content-type", "application/json")
-                .body(Body::from(payload))
-                .unwrap(),
-        )
-        .await
-        .unwrap();
-    assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
-    assert_eq!(response_body_json(response).await["detail"], expected);
-}
-
-/// Native `*/returns` (default mode): oracle vectors served in-process,
-/// 422 shape preserved, mode env respected.
+/// Native `*/returns`: oracle vectors served in-process, 422 shape preserved.
 #[tokio::test]
 async fn native_returns_match_oracle() {
-    let _env = ENV_LOCK.lock().await;
-    std::env::set_var("CALC_RETURNS_MODE", "native");
     let app = beruang_gateway::routes::create_router();
 
     // Mutual funds: oracle xirr for the static-defaults vector.
@@ -352,4 +265,60 @@ async fn native_returns_match_oracle() {
         .as_str()
         .unwrap()
         .contains("At least one ledger row"));
+}
+
+/// Unknown API paths stay JSON 404 (never the SPA fallback, no proxy).
+#[tokio::test]
+async fn unknown_api_routes_return_json_404() {
+    let app = beruang_gateway::routes::create_router();
+    for uri in ["/api/v9/nope", "/api/v1/market-data/nope"] {
+        let response = app
+            .clone()
+            .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::NOT_FOUND, "{uri}");
+        assert_eq!(response_body_json(response).await["detail"], "Not found.");
+    }
+}
+
+/// Market validation rejects shape without touching the network.
+#[tokio::test]
+async fn market_validation_rejects_without_network() {
+    let app = beruang_gateway::routes::create_router();
+    // Missing symbol.
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/api/v1/market-data/quote")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+    // Bad period (no Yahoo call: validation runs first).
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/api/v1/market-data/index/history?symbol=%5EJKSE&period=9y")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+    // Out-of-range limit.
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/api/v1/market-data/idx/dividend-yields?limit=99")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
 }
