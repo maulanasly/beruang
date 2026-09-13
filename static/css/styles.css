@@ -45,6 +45,16 @@ button:hover{background:var(--ledger-hover)}button:disabled{opacity:.5;cursor:no
 .btn-ghost{background:var(--surface);color:var(--ink);border-color:var(--hairline-strong)}
 .btn-ghost:hover{background:var(--paper)}.btn-sm{padding:6px 12px;font-size:12px}
 .muted{color:var(--muted)}
+.btn-danger{background:var(--danger);border-color:var(--danger)}
+.btn-danger:hover{background:var(--danger);filter:brightness(.92)}
+.btn-danger:disabled{filter:none}
+.ledger-io{margin:14px 0}
+.rows-head{margin:0 0 8px;font-size:14px}
+.io-actions{display:flex;gap:8px;align-items:center}
+.io-textarea{width:100%;min-height:96px;font-family:ui-monospace,monospace;font-size:12px;margin-top:8px}
+.io-preview{margin-top:10px;padding:10px 12px;border:1px dashed var(--hairline-strong);border-radius:8px;background:var(--paper)}
+.io-errors{margin:6px 0 0;padding-left:20px;font-size:13px;color:var(--danger)}
+.io-status{font-size:13px;color:var(--success)}
 .menu-icon{display:block;width:20px;height:14px;position:relative}
 .menu-icon::before,.menu-icon::after{content:'';position:absolute;left:0;width:100%;height:2px;background:currentColor;box-shadow:0 6px 0 currentColor}
 .menu-icon::before{top:0}

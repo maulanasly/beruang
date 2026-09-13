@@ -512,7 +512,13 @@ mod tests {
             &load_bytes("js/locales/id-ID.js").expect("id-ID locale is embedded"),
         )
         .into_owned();
-        for key in ["calculators:", "breadcrumb:", "navLabel:"] {
+        for key in [
+            "calculators:",
+            "breadcrumb:",
+            "navLabel:",
+            "storageFull:",
+            "reviewRestore:",
+        ] {
             assert!(en.contains(key), "en-US missing {key}");
             assert!(id.contains(key), "id-ID missing {key}");
         }
