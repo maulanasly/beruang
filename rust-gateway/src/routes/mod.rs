@@ -1,5 +1,6 @@
 pub mod health;
 pub mod proxy;
+pub mod returns;
 pub mod static_handler;
 
 use axum::extract::Request;
@@ -45,9 +46,23 @@ fn cors_layer() -> CorsLayer {
 pub fn create_router() -> Router {
     Router::new()
         .route("/health", axum::routing::get(health::handler))
-        // Proxy `/api/v1/*` verbatim (status + body) to the Python calc service.
-        // Anything else under `/api/` falls through to the static handler's
-        // 404 guard so the SPA fallback never hijacks API routes.
+        // Native calc (parity-guarded) with proxy rollback per route group.
+        // `/api/v1/market-data/*` always proxies until the Rust market
+        // module passes the shadow-diff bar. Anything else under `/api/`
+        // falls through to the static handler's 404 guard so the SPA
+        // fallback never hijacks API routes.
+        .route(
+            "/api/v1/mutual-funds/returns",
+            axum::routing::post(returns::mutual_funds),
+        )
+        .route(
+            "/api/v1/stocks/returns",
+            axum::routing::post(returns::stocks),
+        )
+        .route(
+            "/api/v1/term-deposits/returns",
+            axum::routing::post(returns::term_deposits),
+        )
         .route("/api/v1/{*path}", axum::routing::any(proxy::handler))
         .fallback(static_handler::handler)
         .layer(cors_layer())
