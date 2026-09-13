@@ -33,7 +33,7 @@ export function DonutChart({ series, settings }) {
             </svg>
             <div style="display:flex; flex-direction:column; gap:6px; font-size:13px">
                 ${segs.map(s => html`<div style="display:flex; align-items:center; gap:8px">
-                    <span style="display:inline-block; width:12px; height:12px; border-radius:3px; background:${s.color}"></span>
+                    <span aria-hidden="true" style="display:inline-block; width:12px; height:12px; border-radius:3px; background:${s.color}"></span>
                     <span>${s.label}</span>
                     <span class="muted">${formatCurrency(s.value, locale, settings.currency)} (${(s.frac * 100).toFixed(1)}%)</span>
                 </div>`)}

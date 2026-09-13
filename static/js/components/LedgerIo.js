@@ -53,7 +53,7 @@ export function LedgerIo({ asset, entries, onImport, locale }) {
         ${preview && html`<div class="io-preview">
             <p class="muted" style="font-size:13px">${t(locale, 'io.validRows', { valid: preview.entries.length, errors: preview.errors.length })}</p>
             ${preview.errors.length > 0 && html`<ul class="io-errors">
-                ${preview.errors.slice(0, 8).map(e => html`<li>Line ${e.line}: ${e.field || e.type}</li>`)}
+                ${preview.errors.slice(0, 8).map(e => html`<li>${t(locale, 'ui.line')} ${e.line}: ${e.field || e.type}</li>`)}
             </ul>`}
             ${!preview.errors.length && preview.entries.length > 0 && html`<button class="btn-sm" onClick=${doConfirm}>${t(locale, 'io.confirmImport')} (${preview.entries.length})</button>`}
         </div>`}

@@ -1,14 +1,17 @@
 import { html, useState } from '../vendor/preact-htm-signals.js';
+import { t } from '../i18n.js';
 import { fetchIndexHistory } from '../api.js';
 import { buildComparison } from '../finance.js';
 
-const INDEXES = [
-    { value: '^JKSE', label: 'IDX Composite (IHSG)' },
-    { value: '^JKLQ45', label: 'LQ45' },
-];
+const PERIOD_KEYS = { '1mo': 'benchmark.period1mo', '3mo': 'benchmark.period3mo', '6mo': 'benchmark.period6mo', '1y': 'benchmark.period1y', '5y': 'benchmark.period5y' };
 const PERIODS = ['1mo', '3mo', '6mo', '1y', '5y'];
 
-export function BenchmarkPanel({ labels, values }) {
+export function BenchmarkPanel({ labels, values, settings }) {
+    const locale = settings?.locale || 'en-US';
+    const INDEXES = [
+        { value: '^JKSE', label: t(locale, 'benchmark.idxComposite') },
+        { value: '^JKLQ45', label: t(locale, 'benchmark.lq45') },
+    ];
     const [symbol, setSymbol] = useState('^JKSE');
     const [period, setPeriod] = useState('1y');
     const [comp, setComp] = useState(null);
@@ -16,14 +19,14 @@ export function BenchmarkPanel({ labels, values }) {
     const [error, setError] = useState('');
 
     async function load() {
-        if (!labels || labels.length < 2) { setError('Add entries across at least two dates to compare with the index.'); return; }
+        if (!labels || labels.length < 2) { setError(t(locale, 'benchmark.tooFewPoints')); return; }
         setLoading(true); setError('');
         try {
             const data = await fetchIndexHistory(symbol, period);
             const c = buildComparison(labels, values, data.points || []);
-            if (!c) setError('The index history does not overlap your entry dates. Try a longer period.');
+            if (!c) setError(t(locale, 'benchmark.noOverlap'));
             setComp(c);
-        } catch (e) { setError('Unable to load index data.'); setComp(null); }
+        } catch (e) { setError(t(locale, 'benchmark.fetchFailed')); setComp(null); }
         finally { setLoading(false); }
     }
 
@@ -43,22 +46,23 @@ export function BenchmarkPanel({ labels, values }) {
                 ? html`<text x=${x(i)} y=${h - 8} font-size="9" text-anchor="middle" fill="#777067">${String(l).slice(2)}</text>` : '')}
         </svg>
         <div class="muted" style="font-size:12px; margin-top:4px">
-            <span style="color:#2563eb">— Portfolio</span> · <span style="color:#8b5cf6">— Index</span> ·
-            both start at 100 on your first entry date.
+            <span style="color:#2563eb">— ${t(locale, 'benchmark.portfolioSeries')}</span> · <span style="color:#8b5cf6">— ${t(locale, 'benchmark.indexSeries')}</span>
         </div>`;
     }
 
     return html`<div class="card">
         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
-            <h2 style="margin:0">Portfolio vs Index</h2>
+            <h2 style="margin:0">${t(locale, 'benchmark.title')}</h2>
             <span style="flex:1"></span>
-            <select value=${symbol} onChange=${e => setSymbol(e.target.value)} style="width:auto">
-                ${INDEXES.map(o => html`<option value=${o.value}>${o.label}</option>`)}
+            <label class="muted" style="font-size:12px">${t(locale, 'benchmark.indexSelect')}
+                <select value=${symbol} onChange=${e => setSymbol(e.target.value)} style="width:auto">
+                    ${INDEXES.map(o => html`<option value=${o.value}>${o.label}</option>`)}
+                </select>
+            </label>
+            <select value=${period} onChange=${e => setPeriod(e.target.value)} style="width:auto" aria-label=${t(locale, 'benchmark.indexSelect')}>
+                ${PERIODS.map(p => html`<option value=${p}>${t(locale, PERIOD_KEYS[p])}</option>`)}
             </select>
-            <select value=${period} onChange=${e => setPeriod(e.target.value)} style="width:auto">
-                ${PERIODS.map(p => html`<option value=${p}>${p}</option>`)}
-            </select>
-            <button class="btn-ghost btn-sm" onClick=${load} disabled=${loading}>${loading ? 'Loading…' : 'Compare'}</button>
+            <button class="btn-ghost btn-sm" onClick=${load} disabled=${loading}>${loading ? t(locale, 'benchmark.loading') : t(locale, 'ui.compare')}</button>
         </div>
         ${error && html`<p style="color:var(--danger); font-size:13px">${error}</p>`}
         ${chart}
