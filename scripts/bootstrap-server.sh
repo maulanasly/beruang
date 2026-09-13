@@ -27,7 +27,7 @@ chmod 750 /var/lib/beruang
 
 echo "==> Sudoers for deploy (least privilege)"
 cat > /etc/sudoers.d/deploy-beruang <<'EOF'
-deploy ALL=(root) NOPASSWD: /bin/bash /tmp/install-release.sh *, /usr/bin/bash /tmp/install-release.sh *, /bin/bash /opt/beruang/scripts/install-release.sh *, /usr/bin/bash /opt/beruang/scripts/install-release.sh *, /bin/systemctl * beruang*, /usr/bin/systemctl * beruang*, /bin/systemctl daemon-reload, /usr/bin/systemctl daemon-reload, /usr/bin/install * /usr/local/bin/beruang-gateway*, /bin/install * /usr/local/bin/beruang-gateway*
+deploy ALL=(root) NOPASSWD: /bin/bash /tmp/install-release*.sh *, /usr/bin/bash /tmp/install-release*.sh *, /bin/bash /opt/beruang/scripts/install-release.sh *, /usr/bin/bash /opt/beruang/scripts/install-release.sh *, /bin/systemctl * beruang*, /usr/bin/systemctl * beruang*, /bin/systemctl daemon-reload, /usr/bin/systemctl daemon-reload, /usr/bin/install * /usr/local/bin/beruang-gateway*, /bin/install * /usr/local/bin/beruang-gateway*
 EOF
 chmod 440 /etc/sudoers.d/deploy-beruang
 visudo -c

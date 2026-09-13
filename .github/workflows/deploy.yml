@@ -81,12 +81,16 @@ jobs:
         run: |
           set -euo pipefail
           chmod +x dist/beruang-gateway scripts/install-release.sh
+          # Unique staging names per run: /tmp is sticky and a previous
+          # root-owned upload would otherwise block the deploy user's scp.
+          SUFFIX="${GITHUB_SHA::8}-${GITHUB_RUN_ID}"
+          echo "STAGE_SUFFIX=$SUFFIX" >> "$GITHUB_ENV"
           scp -P "${DEPLOY_PORT}" -o BatchMode=yes \
-            dist/beruang-gateway "${DEPLOY_USER}@${DEPLOY_HOST}:/tmp/beruang-new"
+            dist/beruang-gateway "${DEPLOY_USER}@${DEPLOY_HOST}:/tmp/beruang-new-$SUFFIX"
           scp -P "${DEPLOY_PORT}" -o BatchMode=yes \
-            scripts/install-release.sh "${DEPLOY_USER}@${DEPLOY_HOST}:/tmp/install-release.sh"
+            scripts/install-release.sh "${DEPLOY_USER}@${DEPLOY_HOST}:/tmp/install-release-$SUFFIX.sh"
           scp -P "${DEPLOY_PORT}" -o BatchMode=yes \
-            deploy/beruang.service "${DEPLOY_USER}@${DEPLOY_HOST}:/tmp/beruang.service"
+            deploy/beruang.service "${DEPLOY_USER}@${DEPLOY_HOST}:/tmp/beruang-$SUFFIX.service"
 
       - name: Install + restart + healthcheck
         env:
@@ -96,4 +100,4 @@ jobs:
           set -euo pipefail
           ssh -p "${DEPLOY_PORT}" -o BatchMode=yes \
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
-            "sudo bash /tmp/install-release.sh /tmp/beruang-new && rm -f /tmp/beruang-new /tmp/install-release.sh /tmp/beruang.service"
+            "sudo bash /tmp/install-release-${STAGE_SUFFIX}.sh /tmp/beruang-new-${STAGE_SUFFIX} /tmp/beruang-${STAGE_SUFFIX}.service && rm -f /tmp/beruang-new-${STAGE_SUFFIX} /tmp/install-release-${STAGE_SUFFIX}.sh /tmp/beruang-${STAGE_SUFFIX}.service"

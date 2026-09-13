@@ -28,9 +28,10 @@ nginx -t
 systemctl enable nginx >/dev/null 2>&1 || true
 systemctl restart nginx
 
-echo "==> Healthcheck via nginx (port 80)"
+DOMAIN="${DOMAIN:-kalkulator.rayakala.ink}"
+echo "==> Healthcheck via nginx (Host: $DOMAIN)"
 for i in $(seq 1 10); do
-  if curl -fsS --max-time 5 http://127.0.0.1/health >/dev/null 2>&1; then
+  if curl -fsS --max-time 5 -H "Host: $DOMAIN" http://127.0.0.1/health >/dev/null 2>&1; then
     echo "nginx proxy healthy."
     break
   fi
@@ -41,7 +42,6 @@ for i in $(seq 1 10); do
   sleep 2
 done
 
-DOMAIN="${DOMAIN:-kalkulator.rayakala.ink}"
 echo "==> Domain check for $DOMAIN (warning-only before DNS/TLS is live)"
 if getent hosts "$DOMAIN" >/dev/null 2>&1; then
   curl -fsS --max-time 5 -H "Host: $DOMAIN" http://127.0.0.1/health >/dev/null 2>&1 \
