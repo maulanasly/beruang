@@ -1,24 +1,52 @@
+// History-API router: clean shareable paths (fragments never reach
+// servers or link-preview scrapers, so calculator state lives in the
+// pathname + real query string). Indonesian-first canonicals; the app
+// also answers its legacy English paths.
 const routes = {
-    '/': 'overview',
+    '/': 'home',
     '/overview': 'overview',
     '/mutual-funds': 'mutual-funds',
+    '/kalkulator/reksa-dana': 'mutual-funds',
+    '/calculators/mutual-funds': 'mutual-funds',
     '/stocks': 'stocks',
+    '/kalkulator/saham': 'stocks',
+    '/calculators/stocks': 'stocks',
     '/term-deposits': 'term-deposits',
+    '/kalkulator/deposito': 'term-deposits',
+    '/calculators/term-deposits': 'term-deposits',
 };
 
-function hashPath() {
-    return window.location.hash.slice(1) || '/';
+// Canonical (shareable, Indonesian-first) path per route.
+export const canonicalPath = {
+    home: '/',
+    overview: '/overview',
+    'mutual-funds': '/kalkulator/reksa-dana',
+    stocks: '/kalkulator/saham',
+    'term-deposits': '/kalkulator/deposito',
+};
+
+// One-time upgrade: old `#/path` links become real paths without reload.
+function upgradeLegacyHash() {
+    const h = window.location.hash;
+    if (h && h.startsWith('#/')) {
+        history.replaceState(null, '', h.slice(1) + window.location.search);
+    }
 }
-function basePath() {
-    return hashPath().split('?')[0];
+
+function cleanPath() {
+    upgradeLegacyHash();
+    const p = window.location.pathname.replace(/\/+$/, '') || '/';
+    return p;
 }
+
 export function getCurrentRoute() {
-    return routes[basePath()] || 'overview';
+    return routes[cleanPath()] || 'home';
 }
 export function getRouteQuery() {
-    const q = hashPath().split('?')[1] || '';
-    return new URLSearchParams(q);
+    return new URLSearchParams(window.location.search);
 }
 export function navigate(path) {
-    window.location.hash = path;
+    if (window.location.pathname + window.location.search === path) return;
+    history.pushState(null, '', path);
+    window.dispatchEvent(new PopStateEvent('popstate'));
 }

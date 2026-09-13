@@ -31,9 +31,9 @@ export function Overview({ settings }) {
     useEffect(() => {
         const h = () => setLedgers(loadLedgers());
         window.addEventListener('storage', h);
-        window.addEventListener('hashchange', h);
+        window.addEventListener('popstate', h);
         const id = setInterval(h, 1000);
-        return () => { window.removeEventListener('storage', h); clearInterval(id); };
+        return () => { window.removeEventListener('storage', h); window.removeEventListener('popstate', h); clearInterval(id); };
     }, []);
 
     const mfEntries = ledgers['mutual-funds'] || [];
@@ -87,27 +87,27 @@ export function Overview({ settings }) {
     const hasData = total > 0 || totalInv > 0;
     if (!hasData) {
         return html`<div class="card">
-            <h2>${t(locale, 'nav.overview')}</h2>
+            <h1 style="font-size:22px; margin:0 0 4px">${t(locale, 'nav.overview')}</h1>
             <p class="muted">${t(locale, 'overview.noData')}</p>
-            <p><a href="#/mutual-funds">${t(locale, 'nav.mutualFunds')}</a> · <a href="#/stocks">${t(locale, 'nav.stocks')}</a> · <a href="#/term-deposits">${t(locale, 'nav.termDeposits')}</a></p>
+            <p><a href="/mutual-funds">${t(locale, 'nav.mutualFunds')}</a> · <a href="/stocks">${t(locale, 'nav.stocks')}</a> · <a href="/term-deposits">${t(locale, 'nav.termDeposits')}</a></p>
         </div>`;
     }
 
     return html`<div>
         <div class="card">
-            <h2>${t(locale, 'overview.portfolio')}</h2>
+            <h1 style="font-size:22px; margin:0 0 4px">${t(locale, 'overview.portfolio')}</h1>
             <p class="muted">${t(locale, 'overview.subtitle')}</p>
             <div class="summary-cards">
                 <div class="card"><div class="smallcaps">${t(locale, 'overview.totalInvested')} <${InfoTip} locale=${locale} tipKey="glossary.capitalInvested" /></div><div class="amount">${formatCurrency(totalInv, locale, settings.currency)}</div></div>
                 <div class="card"><div class="smallcaps">${t(locale, 'overview.totalValue')}</div><div class="amount">${formatCurrency(total, locale, settings.currency)}</div></div>
-                <div class="card"><div class="smallcaps">${t(locale, 'overview.totalPnl')} <${InfoTip} locale=${locale} tipKey="glossary.pnl" /></div><div class="amount" style="color:${pnl >= 0 ? 'var(--success)' : 'var(--danger)'}">${formatCurrency(pnl, locale, settings.currency)} <span style="font-size:12px">(${totalInv ? formatPercent(pnl / totalInv, locale) : '-'})</span></div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'overview.totalPnl')} <${InfoTip} locale=${locale} tipKey="glossary.pnl" /></div><div class="amount" style="color:${pnl >= 0 ? 'var(--success)' : 'var(--danger)'}">${pnl >= 0 ? '▲ ' : '▼ '}${formatCurrency(pnl, locale, settings.currency)} <span style="font-size:12px">(${totalInv ? formatPercent(pnl / totalInv, locale) : '-'})</span></div></div>
                 <div class="card"><div class="smallcaps">${t(locale, 'overview.weightedXirr')} <${InfoTip} locale=${locale} tipKey="glossary.weightedXirr" /></div><div class="amount">${weightedXirr != null ? formatPercent(weightedXirr, locale) : '-'}</div></div>
                 <div class="card"><div class="smallcaps">${t(locale, 'overview.twr')} <${InfoTip} locale=${locale} tipKey="glossary.twr" /></div><div class="amount">${twr.annualized != null ? formatPercent(twr.annualized, locale) : '-'}</div></div>
             </div>
         </div>
         <${TrendChart} labels=${dates} invested=${investedSeries} values=${valueSeries} settings=${settings} />
         <${MonthlyReturnsTable} monthly=${monthly} settings=${settings} />
-        <${BenchmarkPanel} labels=${dates} values=${valueSeries} />
+        <${BenchmarkPanel} labels=${dates} values=${valueSeries} settings=${settings} />
         <div class="card"><div class="smallcaps">${t(locale, 'overview.perAsset')} <${InfoTip} locale=${locale} tipKey="glossary.roi" /></div></div>
         <${DonutChart} settings=${settings} series=${[
             { label: t(locale, 'nav.mutualFunds'), value: mfVal, color: ASSET_COLORS['mutual-funds'] },
@@ -125,6 +125,6 @@ export function Overview({ settings }) {
             })}
         </div>
         <${GoalsPanel} settings=${settings} totalValue=${total} monthlyAvg=${monthlyAvg} />
-        <${PortfolioIo} />
+        <${PortfolioIo} settings=${settings} />
     </div>`;
 }

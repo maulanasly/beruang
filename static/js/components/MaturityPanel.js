@@ -6,7 +6,7 @@ import { InfoTip } from './InfoTip.js';
 // Port of the legacy Vue DepositMaturityPanel: maturity tracker
 // with rollover suggestions, driven by the term-deposit result.
 export function MaturityPanel({ summary, ledger, settings }) {
-    const [open, setOpen] = useState(false);
+    const [open, setOpen] = useState(true);
     const locale = settings.locale;
     const currency = settings.currency;
     const fmt = (key, value) => formatCellValue(key, value, locale, currency);
@@ -54,13 +54,13 @@ export function MaturityPanel({ summary, ledger, settings }) {
                 </div>
                 <div class="ledger-table-wrap"><table>
                     <thead><tr>
-                        <th class="num">${t(locale, 'column.date')}</th>
-                        <th class="num">${t(locale, 'depositMaturity.maturityDate')}</th>
-                        <th class="num">${t(locale, 'depositMaturity.daysToMaturity')}</th>
-                        <th>${t(locale, 'depositMaturity.status')}</th>
-                        <th class="num">${t(locale, 'depositMaturity.maturityValue')}</th>
-                        <th class="num">${t(locale, 'depositMaturity.accruedInterest')}</th>
-                        <th>${t(locale, 'depositMaturity.rollover')}</th>
+                        <th scope="col" class="num">${t(locale, 'column.date')}</th>
+                        <th scope="col" class="num">${t(locale, 'depositMaturity.maturityDate')}</th>
+                        <th scope="col" class="num">${t(locale, 'depositMaturity.daysToMaturity')}</th>
+                        <th scope="col">${t(locale, 'depositMaturity.status')}</th>
+                        <th scope="col" class="num">${t(locale, 'depositMaturity.maturityValue')}</th>
+                        <th scope="col" class="num">${t(locale, 'depositMaturity.accruedInterest')}</th>
+                        <th scope="col">${t(locale, 'depositMaturity.rollover')}</th>
                     </tr></thead>
                     <tbody>
                         ${rows.map(row => html`<tr>

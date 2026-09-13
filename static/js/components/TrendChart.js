@@ -1,11 +1,13 @@
 import { html } from '../vendor/preact-htm-signals.js';
+import { t } from '../i18n.js';
 import { formatCurrency } from '../utils.js';
 
 // Zero-dependency SVG line chart: cumulative invested vs portfolio value.
 // Mirrors monthly-logs Chart.js canvas pattern (no npm).
 export function TrendChart({ labels, invested, values, settings }) {
+    const locale = settings.locale;
     if (!labels || labels.length < 2) {
-        return html`<div class="card"><div class="smallcaps">Capital Invested vs Current Value</div><p class="muted" style="font-size:13px">Add entries across at least two dates to see the trend.</p></div>`;
+        return html`<div class="card"><div class="smallcaps">${t(locale, 'chart.title')}</div><p class="muted" style="font-size:13px">${t(locale, 'ui.trendEmpty')}</p></div>`;
     }
     const w = 640, h = 220, padL = 56, padR = 12, padT = 12, padB = 28;
     const plotW = w - padL - padR, plotH = h - padT - padB;
@@ -17,9 +19,11 @@ export function TrendChart({ labels, invested, values, settings }) {
     const ticks = 4;
     const yTicks = Array.from({ length: ticks + 1 }, (_, i) => Math.round((max * i) / ticks));
 
+    const svgLabel = `${t(locale, 'chart.title')}: ${t(locale, 'chart.seriesInvested')} vs ${t(locale, 'chart.seriesValue')}`;
     return html`<div class="card">
-        <div class="smallcaps">Capital Invested vs Current Value</div>
-        <svg viewBox="0 0 ${w} ${h}" width="100%" height="220" style="background:var(--surface);border:1px solid var(--hairline);border-radius:10px; margin-top:8px">
+        <div class="smallcaps">${t(locale, 'chart.title')}</div>
+        <svg viewBox="0 0 ${w} ${h}" width="100%" height="220" role="img" aria-label=${svgLabel} style="background:var(--surface);border:1px solid var(--hairline);border-radius:10px; margin-top:8px">
+            <title>${svgLabel}</title>
             ${yTicks.map(v => html`<g>
                 <line x1=${padL} y1=${y(v)} x2=${w - padR} y2=${y(v)} stroke="#e7e0d3" stroke-width="1" stroke-dasharray="3 4" />
                 <text x=${padL - 6} y=${y(v) + 3} font-size="9" text-anchor="end" fill="#777067" font-family="monospace">${v >= 1000 ? `${Math.round(v / 1000)}k` : v}</text>
@@ -31,9 +35,9 @@ export function TrendChart({ labels, invested, values, settings }) {
                 : '')}
         </svg>
         <div class="muted" style="font-size:12px; margin-top:4px">
-            <span style="color:#2563eb">— Total Contribution</span> ·
-            <span style="color:#f25f3a">— Current Value</span> ·
-            latest ${formatCurrency(values[values.length - 1], settings.locale, settings.currency)}
+            <span style="color:#2563eb">— ${t(locale, 'chart.seriesInvested')}</span> ·
+            <span style="color:#f25f3a">— ${t(locale, 'chart.seriesValue')}</span> ·
+            ${t(locale, 'ui.latest')} ${formatCurrency(values[values.length - 1], settings.locale, settings.currency)}
         </div>
     </div>`;
 }

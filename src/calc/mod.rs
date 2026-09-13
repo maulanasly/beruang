@@ -5,12 +5,14 @@
 
 pub mod deposits;
 pub mod error;
+pub mod ev;
 pub mod mutual;
 pub mod stock;
 pub mod xirr;
 
 pub use deposits::{term_deposit_returns, TermDepositEntry};
 pub use error::CalcError;
+pub use ev::{ev_comparison, EvComparison, EvComparisonInput};
 pub use mutual::{mutual_fund_returns, MutualFundEntry};
 pub use stock::{stock_returns, StockEntry};
 pub use xirr::calculate_xirr;

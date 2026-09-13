@@ -46,9 +46,11 @@ export function AssetChart({ ledger, asset, settings }) {
     const ticks = 4;
     const yTicks = Array.from({ length: ticks + 1 }, (_, i) => Math.round((max * i) / ticks));
 
+    const svgLabel = `${t(locale, 'chart.title')}: ${investedLabel} vs ${valueLabel}`;
     return html`<div class="card">
         <div class="smallcaps">${t(locale, 'chart.title')}</div>
-        <svg viewBox="0 0 ${w} ${h}" width="100%" height="220" style="background:var(--surface);border:1px solid var(--hairline);border-radius:10px; margin-top:8px">
+        <svg viewBox="0 0 ${w} ${h}" width="100%" height="220" role="img" aria-label=${svgLabel} style="background:var(--surface);border:1px solid var(--hairline);border-radius:10px; margin-top:8px">
+            <title>${svgLabel}</title>
             ${yTicks.map(v => html`<g>
                 <line x1=${padL} y1=${y(v)} x2=${w - padR} y2=${y(v)} stroke="#e7e0d3" stroke-width="1" stroke-dasharray="3 4" />
                 <text x=${padL - 6} y=${y(v) + 3} font-size="9" text-anchor="end" fill="#777067" font-family="monospace">${v >= 1000 ? `${Math.round(v / 1000)}k` : v}</text>
@@ -62,7 +64,7 @@ export function AssetChart({ ledger, asset, settings }) {
         <div class="muted" style="font-size:12px; margin-top:4px">
             <span style="color:#2563eb">— ${investedLabel}</span> ·
             <span style="color:#f25f3a">— ${valueLabel}</span> ·
-            latest ${formatCurrency(values[values.length - 1], locale, settings.currency)}
+            ${t(locale, 'ui.latest')} ${formatCurrency(values[values.length - 1], locale, settings.currency)}
         </div>
     </div>`;
 }

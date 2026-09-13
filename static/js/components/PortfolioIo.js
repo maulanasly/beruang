@@ -1,7 +1,9 @@
 import { html, useState } from '../vendor/preact-htm-signals.js';
+import { t } from '../i18n.js';
 import { loadLedgers, saveLedgers, loadSettings, saveSettings, loadGoals, saveGoals } from '../store.js';
 
-export function PortfolioIo() {
+export function PortfolioIo({ settings }) {
+    const locale = settings?.locale || 'en-US';
     const [text, setText] = useState('');
     const [status, setStatus] = useState('');
     const [error, setError] = useState('');
@@ -21,7 +23,7 @@ export function PortfolioIo() {
         a.download = `beruang-backup-${new Date().toISOString().slice(0, 10)}.json`;
         a.click();
         URL.revokeObjectURL(a.href);
-        setStatus('Backup downloaded.');
+        setStatus(t(locale, 'backup.downloaded'));
         setError('');
     }
 
@@ -29,9 +31,9 @@ export function PortfolioIo() {
         setStatus(''); setError('');
         let data;
         try { data = JSON.parse(text); }
-        catch { setError('Invalid JSON.'); return; }
+        catch { setError(t(locale, 'io.invalidJson')); return; }
         if (!data || (data.app !== 'beruang' && !data.ledgers && !data['mutual-funds'])) {
-            setError('Not a Beruang backup file.');
+            setError(t(locale, 'io.invalidApp'));
             return;
         }
         try {
@@ -44,18 +46,18 @@ export function PortfolioIo() {
             saveLedgers(next);
             if (data.settings) saveSettings({ ...loadSettings(), ...data.settings });
             if (data.goals) saveGoals(data.goals);
-            setStatus('Portfolio restored. Recalculate returns to refresh the dashboard.');
+            setStatus(t(locale, 'backup.restored'));
             setText('');
-        } catch (e) { setError('Unrecognized backup format.'); }
+        } catch (e) { setError(t(locale, 'io.invalidStructure')); }
     }
 
     return html`<div class="card">
-        <h2 style="margin:0 0 4px">Full Portfolio Backup</h2>
+        <h2 style="margin:0 0 4px">${t(locale, 'backup.title')}</h2>
         <div style="display:flex; gap:8px; flex-wrap:wrap; margin:8px 0">
-            <button class="btn-ghost btn-sm" onClick=${exportAll}>Backup All Data</button>
+            <button class="btn-ghost btn-sm" onClick=${exportAll}>${t(locale, 'backup.exportAll')}</button>
         </div>
-        <textarea value=${text} onInput=${e=>setText(e.target.value)} placeholder="Paste backup JSON here, or pick a file above" style="width:100%; min-height:64px; font-family:monospace; font-size:12px"></textarea>
-        <div style="margin-top:8px"><button class="btn-sm" onClick=${restore} disabled=${!text.trim()}>Confirm Restore</button></div>
+        <textarea value=${text} onInput=${e=>setText(e.target.value)} placeholder=${t(locale, 'backup.pasteHint')} aria-label=${t(locale, 'backup.title')} style="width:100%; min-height:64px; font-family:monospace; font-size:12px"></textarea>
+        <div style="margin-top:8px"><button class="btn-sm" onClick=${restore} disabled=${!text.trim()}>${t(locale, 'backup.confirmRestore')}</button></div>
         ${status && html`<p style="color:var(--success); font-size:13px">${status}</p>`}
         ${error && html`<p style="color:var(--danger); font-size:13px">${error}</p>`}
     </div>`;

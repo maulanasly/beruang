@@ -322,3 +322,134 @@ async fn market_validation_rejects_without_network() {
         .unwrap();
     assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
 }
+
+async fn response_body_text(response: axum::response::Response) -> String {
+    String::from_utf8(response_body_bytes(response).await).unwrap()
+}
+
+/// Calculator routes carry Indonesian-first share metadata.
+#[tokio::test]
+async fn seo_meta_per_route() {
+    let app = beruang_gateway::routes::create_router();
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/kalkulator/saham")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_text(response).await;
+    assert!(
+        body.contains("<title>Kalkulator Saham dan Dividen — Beruang</title>"),
+        "title"
+    );
+    assert!(
+        body.contains("<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/saham\">"),
+        "canonical"
+    );
+    assert!(
+        body.contains("hreflang=\"en\" href=\"http://localhost:8000/calculators/stocks\""),
+        "hreflang"
+    );
+    assert!(
+        body.contains("property=\"og:image\" content=\"http://localhost:8000/og-image.png\""),
+        "og:image"
+    );
+    assert!(
+        body.contains("name=\"twitter:card\" content=\"summary_large_image\""),
+        "twitter card"
+    );
+    assert!(body.contains("application/ld+json"), "json-ld");
+    assert!(body.contains("<noscript>"), "noscript");
+    for leftover in [
+        "{{TITLE}}",
+        "{{DESCRIPTION}}",
+        "{{CANONICAL}}",
+        "{{OG_IMAGE}}",
+        "{{JSON_LD}}",
+        "{{NOSCRIPT}}",
+        "{{HREFLANG}}",
+        "{{BASE_URL}}",
+        "{{APP_VERSION}}",
+    ] {
+        assert!(!body.contains(leftover), "unreplaced {leftover}");
+    }
+}
+
+/// English aliases share the Indonesian canonical; unknown paths fall back generic.
+#[tokio::test]
+async fn seo_alias_and_fallback() {
+    let app = beruang_gateway::routes::create_router();
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/calculators/stocks")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_text(response).await;
+    assert!(
+        body.contains("<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/saham\">")
+    );
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/some-unknown-page")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert!(response_body_text(response)
+        .await
+        .contains("<title>Beruang — Kalkulator Investasi</title>"));
+}
+
+/// Crawl infrastructure is served, never the SPA shell.
+#[tokio::test]
+async fn robots_and_sitemap_served() {
+    let app = beruang_gateway::routes::create_router();
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/robots.txt")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert!(response.headers()["content-type"]
+        .to_str()
+        .unwrap()
+        .contains("text/plain"));
+    let body = response_body_text(response).await;
+    assert!(body.contains("Sitemap: http://localhost:8000/sitemap.xml"));
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/sitemap.xml")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_text(response).await;
+    assert!(body.contains("<urlset"));
+    assert!(
+        body.contains("http://localhost:8000/kalkulator/saham"),
+        "sitemap lists ID canonical"
+    );
+}

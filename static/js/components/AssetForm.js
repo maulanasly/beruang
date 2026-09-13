@@ -1,10 +1,12 @@
 import { html } from '../vendor/preact-htm-signals.js';
 import { formatCurrency, formatPercent } from '../utils.js';
+import { t } from '../i18n.js';
 
 export function LedgerTable({ rows, settings, columns }) {
-    if (!rows || !rows.length) return html`<p class="muted">Fill rows and Calculate Returns to see ledger.</p>`;
+    const locale = settings.locale;
+    if (!rows || !rows.length) return html`<p class="muted">${t(locale, 'ledger.empty')}</p>`;
     return html`<div class="ledger-table-wrap"><table>
-        <thead><tr>${columns.map(c=> html`<th>${c.label}</th>`)}</tr></thead>
+        <thead><tr>${columns.map(c=> html`<th scope="col">${c.label}</th>`)}</tr></thead>
         <tbody>
             ${rows.map(r=> html`<tr>
                 ${columns.map(c=>{

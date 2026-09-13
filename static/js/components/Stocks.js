@@ -8,8 +8,10 @@ import { PriceHistory } from './PriceHistory.js';
 import { LedgerIo } from './LedgerIo.js';
 import { MomentumKpi } from './MomentumKpi.js';
 import { AssetChart } from './AssetChart.js';
+import { HowTo } from './HowTo.js';
 import { InfoTip } from './InfoTip.js';
 import { t } from '../i18n.js';
+import { readSharedState, ShareLink } from '../share.js';
 
 let searchTimer = null;
 
@@ -37,6 +39,8 @@ export function Stocks({ settings }) {
     useEffect(()=> {
         const l=loadLedgers(); setEntries(l.stocks); setResult(l.results.stocks);
         loadUniverse();
+        const shared = readSharedState();
+        if (shared) onCalc(shared.entries);
         return () => clearTimeout(searchTimer);
     }, []);
 
@@ -110,23 +114,25 @@ export function Stocks({ settings }) {
     function addRow(){ setEntries([...entries, { symbol:'BBCA.JK', date:new Date().toISOString().slice(0,10), installment_amount:700, new_share_purchases:200, dividends:0, dividend_yield:null, current_value:1000 }]); }
     function rm(idx){ setEntries(entries.filter((_,i)=>i!==idx)); }
 
-    async function onCalc(){
+    async function onCalc(rowsOverride){
+        const rows = rowsOverride || entries;
         setLoading(true); setError('');
-        if (!entries.length) {
+        if (!rows.length) {
             setLoading(false);
             setError(t(locale, 'error.atLeastOneRow'));
             return;
         }
-        if (entries.some((e) => !e.date)) {
+        if (rows.some((e) => !e.date)) {
             setLoading(false);
             setError(t(locale, 'error.everyRowDate'));
             return;
         }
         try{
-            const payload = { entries: entries.map(e=>({ date:e.date, installment_amount:Number(e.installment_amount)||0, new_share_purchases:Number(e.new_share_purchases)||0, dividends:Number(e.dividends)||0, current_value:Number(e.current_value)||0, dividend_yield:e.dividend_yield?Number(e.dividend_yield)/100:null })) };
+            const payload = { entries: rows.map(e=>({ date:e.date, installment_amount:Number(e.installment_amount)||0, new_share_purchases:Number(e.new_share_purchases)||0, dividends:Number(e.dividends)||0, current_value:Number(e.current_value)||0, dividend_yield:e.dividend_yield?Number(e.dividend_yield)/100:null })) };
             const data = await calculateReturns('stocks', payload);
             setResult(data);
-            const l=loadLedgers(); l.stocks=entries; l.results.stocks=data; saveLedgers(l);
+            const l=loadLedgers(); l.stocks=rows; l.results.stocks=data; saveLedgers(l);
+            if (rowsOverride) setEntries(rowsOverride);
         }catch(e){ setError(e.detail ? JSON.stringify(e.detail) : e.message); } finally{ setLoading(false); }
     }
     async function syncAll(){
@@ -153,7 +159,8 @@ export function Stocks({ settings }) {
         : t(locale, 'stock.codesCount', { count: symbols.length });
 
     return html`<div>
-        <div class="page-head"><h1>${t(locale, 'nav.stocks')}</h1><p class="muted">MoM + ROI + XIRR · optional dividend yield (%). <${InfoTip} locale=${locale} tipKey="glossary.dividendYield" /></p></div>
+        <div class="page-head"><h1>${t(locale, 'nav.stocks')}</h1><p class="muted">${t(locale, 'calc.stSubtitle')} <${InfoTip} locale=${locale} tipKey="glossary.dividendYield" /></p></div>
+        <${HowTo} locale=${locale} steps=${[t(locale,'howto.st1'), t(locale,'howto.st2'), t(locale,'howto.st3')]} />
         <div class="card">
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap">
                 <strong style="font-size:14px">${t(locale, 'market.liveIdxPrice')}</strong>
@@ -161,7 +168,7 @@ export function Stocks({ settings }) {
                 <button class="btn-ghost btn-sm" onClick=${loadUniverse} disabled=${universeLoading}>${universeLoading ? t(locale, 'market.refreshing') : t(locale, 'market.refresh')}</button>
             </div>
             <p class="muted" style="font-size:12px">${t(locale, 'market.helperNote')}</p>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; align-items:end">
+            <div class="entry-grid" style="--cols:2">
                 <div style="position:relative">
                     <label>${t(locale, 'form.stockCode')}
                         <input value=${quoteSym}
@@ -171,8 +178,8 @@ export function Stocks({ settings }) {
                             placeholder=${t(locale, 'market.searchPlaceholder')}
                             autocomplete="off" style="width:100%" />
                     </label>
-                    ${showSugg && suggestions.length > 0 && html`<ul style="position:absolute; z-index:10; left:0; right:0; margin:2px 0 0; padding:0; list-style:none; background:var(--surface, #fff); border:1px solid var(--hairline, #ddd); border-radius:8px; max-height:180px; overflow:auto">
-                        ${suggestions.map(s => html`<li style="padding:6px 10px; cursor:pointer; font-size:13px" onMouseDown=${e=>{e.preventDefault(); pickSuggestion(s);}}>
+                    ${showSugg && suggestions.length > 0 && html`<ul class="suggest-list">
+                        ${suggestions.map(s => html`<li onMouseDown=${e=>{e.preventDefault(); pickSuggestion(s);}}>
                             <span style="font-family:monospace; font-weight:600">${show(s.symbol)}</span>
                             <span class="muted"> ${s.name}</span>
                         </li>`)}
@@ -186,7 +193,7 @@ export function Stocks({ settings }) {
                 </label>
             </div>
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px">
-                <button class="btn-ghost btn-sm" onClick=${doQuote} disabled=${quoteLoading || !quoteSym.trim()}>${quoteLoading ? t(locale, 'market.fetchingQuote') : 'Fetch Quote'}</button>
+                <button class="btn-ghost btn-sm" onClick=${doQuote} disabled=${quoteLoading || !quoteSym.trim()}>${quoteLoading ? t(locale, 'market.fetchingQuote') : t(locale, 'ui.fetchQuote')}</button>
                 <button class="btn-ghost btn-sm" onClick=${applyLatest} disabled=${quoteLoading || !quoteSym.trim()}>${t(locale, 'market.applyLatestPrice')}</button>
                 <button class="btn-ghost btn-sm" onClick=${syncAll} disabled=${syncing}>${syncing ? t(locale, 'market.syncingPrices') : t(locale, 'market.syncAllPrices')}</button>
                 ${lastQuote && html`<span class="muted" style="font-size:13px">${t(locale, 'market.lastFetched')}: <strong>${formatCurrency(lastQuote.price, locale, lastQuote.currency)}</strong> ${show(lastQuote.symbol)}${typeof lastQuote.dividend_yield === 'number' ? ` · ${t(locale, 'market.dividendYield')} ${formatPercent(lastQuote.dividend_yield, locale)}` : ''}</span>`}
@@ -202,22 +209,27 @@ export function Stocks({ settings }) {
             </label>`}
         </div>
         <div class="card">
-            ${entries.map((e,idx)=> html`<div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr auto; gap:8px; margin-bottom:8px; align-items:end">
-                <label>Symbol <input value=${e.symbol||''} onInput=${ev=>upd(idx,'symbol',ev.target.value)} placeholder="BBCA.JK" /></label>
-                <label>Date <input type="date" value=${e.date} onInput=${ev=>upd(idx,'date',ev.target.value)} /></label>
-                <label>Installment <input type="number" value=${e.installment_amount} onInput=${ev=>upd(idx,'installment_amount',ev.target.value)} /></label>
-                <label>New Purchases <input type="number" value=${e.new_share_purchases} onInput=${ev=>upd(idx,'new_share_purchases',ev.target.value)} /></label>
-                <label>Dividends <input type="number" value=${e.dividends} onInput=${ev=>upd(idx,'dividends',ev.target.value)} /></label>
-                <label>Yield % <input type="number" step="0.01" value=${e.dividend_yield??''} onInput=${ev=>upd(idx,'dividend_yield',ev.target.value?ev.target.value:null)} /></label>
-                <button class="btn-ghost btn-sm" onClick=${()=>rm(idx)}>Remove</button>
-            </div>
-            <div style="display:grid; grid-template-columns:1fr auto; gap:8px; margin-bottom:8px">
-                <label>Current Value <input type="number" value=${e.current_value} onInput=${ev=>upd(idx,'current_value',ev.target.value)} /></label>
-                ${lastQuote && html`<button class="btn-ghost btn-sm" onClick=${()=>upd(idx,'current_value', String(lastQuote.price))}>Apply ${lastQuote.price}</button>`}
+            ${entries.map((e,idx)=> html`<div>
+                <div class="entry-grid" style="--cols:6">
+                    <label>${t(locale, 'form.stockCode')} <input value=${e.symbol||''} onInput=${ev=>upd(idx,'symbol',ev.target.value)} placeholder="BBCA.JK" /></label>
+                    <label>${t(locale, 'form.date')} <input type="date" value=${e.date} onInput=${ev=>upd(idx,'date',ev.target.value)} /></label>
+                    <label>${t(locale, 'form.installmentAmount')} <input type="number" value=${e.installment_amount} onInput=${ev=>upd(idx,'installment_amount',ev.target.value)} /></label>
+                    <label>${t(locale, 'form.newSharePurchases')} <input type="number" value=${e.new_share_purchases} onInput=${ev=>upd(idx,'new_share_purchases',ev.target.value)} /></label>
+                    <label>${t(locale, 'form.dividends')} <input type="number" value=${e.dividends} onInput=${ev=>upd(idx,'dividends',ev.target.value)} /></label>
+                    <label>${t(locale, 'column.dividendYield')} <input type="number" step="0.01" value=${e.dividend_yield??''} onInput=${ev=>upd(idx,'dividend_yield',ev.target.value?ev.target.value:null)} /></label>
+                    <button class="btn-ghost btn-sm entry-remove" onClick=${()=>rm(idx)}>${t(locale, 'common.remove')}</button>
+                </div>
+                <div class="entry-grid" style="--cols:1">
+                    <label>${t(locale, 'form.currentValue')} <input type="number" value=${e.current_value} onInput=${ev=>upd(idx,'current_value',ev.target.value)} /></label>
+                    ${lastQuote && html`<button class="btn-ghost btn-sm" onClick=${()=>upd(idx,'current_value', String(lastQuote.price))}>${t(locale, 'ui.applyPrice', { price: lastQuote.price })}</button>`}
+                </div>
             </div>`)}
             <button class="btn-ghost" onClick=${addRow}>${t(locale, 'common.addRow')}</button>
-            <div style="margin-top:12px"><button onClick=${onCalc} disabled=${loading}>${loading ? t(locale, 'common.calculating') : t(locale, 'common.calculateReturns')}</button></div>
-            ${error && html`<p style="color:var(--danger)">${error}</p>`}
+            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap">
+                <button onClick=${()=>onCalc()} disabled=${loading}>${loading ? t(locale, 'common.calculating') : t(locale, 'common.calculateReturns')}</button>
+                <${ShareLink} route="stocks" state=${{ entries }} locale=${locale} />
+            </div>
+            ${error && html`<p style="color:var(--danger)" role="alert">${error}</p>`}
         </div>
         <${LedgerIo} asset="stocks" entries=${entries} locale=${locale} onImport=${(rows) => setEntries(rows)} />
         ${result && html`<div>
@@ -226,14 +238,14 @@ export function Stocks({ settings }) {
             <div class="card"><div class="smallcaps">${t(locale, 'common.summary')}${resultSymbolLabel ? html`<span class="muted"> · ${resultSymbolLabel}</span>` : ''}</div></div>
             <${SummaryCards} summary=${result.summary} settings=${settings} />
             <${LedgerTable} rows=${result.ledger} settings=${settings} columns=${[
-                {key:'date', label:'Date'},
-                {key:'installment_amount', label:'Installment', fmt:'currency'},
-                {key:'new_share_purchases', label:'New Purchases', fmt:'currency'},
-                {key:'dividends', label:'Dividends', fmt:'currency'},
-                {key:'dividend_yield', label:'Yield', fmt:'percent'},
-                {key:'estimated_dividend', label:'Est Div', fmt:'currency'},
-                {key:'current_value', label:'Value', fmt:'currency'},
-                {key:'mom_return', label:'MoM', fmt:'percent'},
+                {key:'date', label:t(locale, 'column.date')},
+                {key:'installment_amount', label:t(locale, 'column.installment'), fmt:'currency'},
+                {key:'new_share_purchases', label:t(locale, 'column.newPurchases'), fmt:'currency'},
+                {key:'dividends', label:t(locale, 'column.dividends'), fmt:'currency'},
+                {key:'dividend_yield', label:t(locale, 'column.dividendYield'), fmt:'percent'},
+                {key:'estimated_dividend', label:t(locale, 'column.estimatedDividend'), fmt:'currency'},
+                {key:'current_value', label:t(locale, 'column.currentValue'), fmt:'currency'},
+                {key:'mom_return', label:t(locale, 'column.momReturn'), fmt:'percent'},
             ]} />
         </div>`}
         <${DividendFocus} settings=${settings} onApply=${(symbol, yieldPct) => {
@@ -241,6 +253,6 @@ export function Stocks({ settings }) {
             if (idx >= 0) setEntries(entries.map((e, i) => i === idx ? { ...e, symbol, dividend_yield: yieldPct } : e));
             setQuoteSym(symbol);
         }} />
-        <${PriceHistory} symbol=${quoteSym} />
+        <${PriceHistory} symbol=${quoteSym} settings=${settings} />
     </div>`;
 }
