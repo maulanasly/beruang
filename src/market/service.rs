@@ -343,11 +343,15 @@ async fn snapshot(client: &YahooClient, symbol: &str) -> Result<Snapshot, Market
 
 pub async fn latest_quote(
     client: &YahooClient,
+    cache: &QuoteCache,
     symbol: &str,
 ) -> Result<StockQuoteResponse, MarketError> {
     let normalized = symbol.trim().to_uppercase();
     if normalized.is_empty() {
         return Err(MarketError::Validation("Symbol is required.".to_string()));
+    }
+    if let Some(cached) = cache.get(&normalized) {
+        return Ok(cached);
     }
     let snap = snapshot(client, &normalized).await?;
     let Some(price) = snap.price else {
@@ -355,13 +359,15 @@ pub async fn latest_quote(
             "Unable to fetch latest market price for symbol '{normalized}'."
         )));
     };
-    Ok(StockQuoteResponse {
-        symbol: normalized,
+    let quote = StockQuoteResponse {
+        symbol: normalized.clone(),
         name: snap.name,
         price,
         currency: snap.currency,
         dividend_yield: snap.dividend_yield,
-    })
+    };
+    cache.put(normalized, quote.clone());
+    Ok(quote)
 }
 
 fn check_period(period: &str) -> Result<(), MarketError> {
@@ -463,6 +469,15 @@ pub type YieldsCache = Arc<TtlCache<DividendYieldsResponse>>;
 
 pub fn yields_cache() -> YieldsCache {
     Arc::new(TtlCache::new(Duration::from_secs(6 * 3600)))
+}
+
+/// Short quote cache (90s): collapses repeat fetches, double-clicks and
+/// "sync all" bursts into one Yahoo round-trip per symbol. Prices move
+/// intraday, so the TTL stays short on purpose.
+pub type QuoteCache = Arc<TtlCache<StockQuoteResponse>>;
+
+pub fn quote_cache() -> QuoteCache {
+    Arc::new(TtlCache::new(Duration::from_secs(90)))
 }
 
 async fn yield_snapshot(client: &YahooClient, symbol: &str) -> Option<DividendYieldItem> {

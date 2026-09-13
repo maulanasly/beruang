@@ -12,7 +12,7 @@ use std::future::Future;
 use std::sync::OnceLock;
 use std::time::Duration;
 
-use super::super::market::{self, MarketError, YahooClient, YieldsCache};
+use super::super::market::{self, MarketError, QuoteCache, YahooClient, YieldsCache};
 
 /// 25s budget per market call — matches the old proxy timeout for
 /// `/market-data/*`.
@@ -20,6 +20,7 @@ const MARKET_TIMEOUT: Duration = Duration::from_secs(25);
 
 static CLIENT: OnceLock<YahooClient> = OnceLock::new();
 static YIELDS: OnceLock<YieldsCache> = OnceLock::new();
+static QUOTES: OnceLock<QuoteCache> = OnceLock::new();
 
 fn client() -> YahooClient {
     CLIENT
@@ -29,6 +30,10 @@ fn client() -> YahooClient {
 
 fn yields_cache() -> YieldsCache {
     YIELDS.get_or_init(market::yields_cache).clone()
+}
+
+fn quote_cache() -> QuoteCache {
+    QUOTES.get_or_init(market::quote_cache).clone()
 }
 
 fn market_error(path: &str, err: MarketError) -> Response {
@@ -113,8 +118,9 @@ pub struct SymbolQuery {
 pub async fn quote(Query(params): Query<SymbolQuery>) -> Response {
     const PATH: &str = "/api/v1/market-data/quote";
     let client = client();
+    let cache = quote_cache();
     let symbol = params.symbol.unwrap_or_default();
-    run_with_timeout(PATH, market::latest_quote(&client, &symbol)).await
+    run_with_timeout(PATH, market::latest_quote(&client, &cache, &symbol)).await
 }
 
 #[derive(Debug, Deserialize)]
