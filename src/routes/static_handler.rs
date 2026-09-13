@@ -6,7 +6,7 @@ use rust_embed::Embed;
 use sha2::{Digest, Sha256};
 
 #[derive(Embed)]
-#[folder = "../static/"]
+#[folder = "static/"]
 struct Assets;
 
 const INDEX: &str = "index.html";
