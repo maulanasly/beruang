@@ -41,13 +41,13 @@ export function BenchmarkPanel({ labels, values, settings }) {
         const y = v => padT + (1 - (v - min) / Math.max(max - min, 1e-9)) * plotH;
         const line = arr => arr.map((v, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
         chart = html`<svg viewBox="0 0 ${w} ${h}" width="100%" height="220" style="background:var(--surface);border:1px solid var(--hairline);border-radius:10px; margin-top:8px">
-            <path d=${line(comp.portfolio)} fill="none" stroke="#2563eb" stroke-width="2" />
-            <path d=${line(comp.index)} fill="none" stroke="#8b5cf6" stroke-width="2" stroke-dasharray="5 3" />
+            <path d=${line(comp.portfolio)} fill="none" style="stroke:var(--chart-blue)" stroke-width="2" />
+            <path d=${line(comp.index)} fill="none" style="stroke:var(--chart-purple)" stroke-width="2" stroke-dasharray="5 3" />
             ${comp.labels.map((l, i) => i % Math.ceil(comp.labels.length / 6) === 0
-                ? html`<text x=${x(i)} y=${h - 8} font-size="9" text-anchor="middle" fill="#777067">${String(l).slice(2)}</text>` : '')}
+                ? html`<text x=${x(i)} y=${h - 8} font-size="9" text-anchor="middle" style="fill:var(--chart-tick)">${String(l).slice(2)}</text>` : '')}
         </svg>
         <div class="muted" style="font-size:12px; margin-top:4px">
-            <span style="color:#2563eb">— ${t(locale, 'benchmark.portfolioSeries')}</span> · <span style="color:#8b5cf6">— ${t(locale, 'benchmark.indexSeries')}</span>
+            <span style="color:var(--chart-blue)">— ${t(locale, 'benchmark.portfolioSeries')}</span> · <span style="color:var(--chart-purple)">— ${t(locale, 'benchmark.indexSeries')}</span>
         </div>`;
     }
 

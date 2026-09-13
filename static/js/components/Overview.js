@@ -14,9 +14,9 @@ import { MonthlyReturnsTable } from './MonthlyReturnsTable.js';
 import { BenchmarkPanel } from './BenchmarkPanel.js';
 
 const ASSET_COLORS = {
-    'mutual-funds': '#2563eb',
-    stocks: '#f25f3a',
-    'term-deposits': '#10b981',
+    'mutual-funds': 'var(--chart-blue)',
+    stocks: 'var(--chart-orange)',
+    'term-deposits': 'var(--chart-green)',
 };
 
 function cumulativeByDate(entries, withPurchases) {
@@ -44,6 +44,7 @@ export function Overview({ settings }) {
         return () => { window.removeEventListener('storage', h); window.removeEventListener('popstate', h); };
     }, []);
 
+    const locale = settings.locale;
     const mfEntries = ledgers['mutual-funds'] || [];
     const stEntries = ledgers.stocks || [];
     const tdEntries = ledgers['term-deposits']?.entries || [];
@@ -135,7 +136,6 @@ export function Overview({ settings }) {
     });
     const twr = portfolioTwr(monthly);
 
-    const locale = settings.locale;
     const go = (e, to) => { e.preventDefault(); navigate(to); };
     function loadDemo() {
         try { localStorage.removeItem('beruang.ledgers'); } catch {}

@@ -56,7 +56,7 @@ export function GoalsPanel({ settings, totalValue, monthlyAvg }) {
                     <div class="smallcaps">${t(locale, 'goals.overall')} ${goals.overall.targetDate ? `· ${goals.overall.targetDate}` : ''}</div>
                     ${goals.overall.target
                         ? html`<div class="amount" style="font-size:15px">${formatCurrency(totalValue, settings.locale, settings.currency)} / ${formatCurrency(goals.overall.target, settings.locale, settings.currency)} (${progress(totalValue, goals.overall.target).toFixed(0)}%)</div>
-                            <div style="height:8px; border-radius:999px; background:#e2e8f0; overflow:hidden; margin-top:4px"><div style="height:100%; width:${progress(totalValue, goals.overall.target)}%; background:linear-gradient(90deg,#2563eb,#3b82f6)"></div></div>
+                            <div style="height:8px; border-radius:999px; background:var(--goals-track); overflow:hidden; margin-top:4px"><div style="height:100%; width:${progress(totalValue, goals.overall.target)}%; background:var(--goals-grad)"></div></div>
                             ${overallPace != null
                                 ? html`<p class="muted" style="font-size:12px">${t(locale, 'goals.paceMonths', { months: overallPace })}</p>`
                                 : goals.overall.target <= totalValue ? html`<p style="color:var(--success); font-weight:700; font-size:13px">▲ ${t(locale, 'goals.reached')}</p>` : ''}`

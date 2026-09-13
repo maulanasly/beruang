@@ -98,9 +98,9 @@ export function Ev({ settings }) {
             </div>
             <div class="card">
                 <div style="display:grid; gap:8px">
-                    ${[[t(locale, 'ev.monthlyIce'), result.monthly_ice, '#f25f3a'], [t(locale, 'ev.monthlyEv'), result.monthly_ev, '#10b981']].map(([label, value, color]) => html`<div>
+                    ${[[t(locale, 'ev.monthlyIce'), result.monthly_ice, 'var(--chart-orange)'], [t(locale, 'ev.monthlyEv'), result.monthly_ev, 'var(--chart-green)']].map(([label, value, color]) => html`<div>
                         <div style="display:flex; justify-content:space-between; font-size:13px"><span>${label}</span><span class="num">${formatCurrency(value, locale, currency)}</span></div>
-                        <div style="height:10px; border-radius:999px; background:#eee7d8; overflow:hidden"><div style="height:100%; width:${(100 * value / maxBar).toFixed(1)}%; background:${color}"></div></div>
+                        <div style="height:10px; border-radius:999px; background:var(--chart-track); overflow:hidden"><div style="height:100%; width:${(100 * value / maxBar).toFixed(1)}%; background:${color}"></div></div>
                     </div>`)}
                 </div>
             </div>

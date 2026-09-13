@@ -26,8 +26,8 @@ function sparkline() {
     const pts = [[8, 60], [56, 53], [104, 46], [152, 40], [200, 33], [248, 22]];
     const d = pts.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x},${y}`).join(' ');
     return html`<svg viewBox="0 0 256 72" width="100%" height="72" role="img" aria-hidden="true" style="background:var(--paper);border:1px solid var(--hairline);border-radius:8px; margin-top:10px">
-        <path d=${d} fill="none" stroke="#f25f3a" stroke-width="2.5" />
-        ${pts.map(([x, y]) => html`<circle cx=${x} cy=${y} r="3" fill="#102a43" />`)}
+        <path d=${d} fill="none" style="stroke:var(--accent)" stroke-width="2.5" />
+        ${pts.map(([x, y]) => html`<circle cx=${x} cy=${y} r="3" style="fill:var(--ledger)" />`)}
     </svg>`;
 }
 

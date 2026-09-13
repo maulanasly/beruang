@@ -52,18 +52,18 @@ export function AssetChart({ ledger, asset, settings }) {
         <svg viewBox="0 0 ${w} ${h}" width="100%" height="220" role="img" aria-label=${svgLabel} style="background:var(--surface);border:1px solid var(--hairline);border-radius:10px; margin-top:8px">
             <title>${svgLabel}</title>
             ${yTicks.map(v => html`<g>
-                <line x1=${padL} y1=${y(v)} x2=${w - padR} y2=${y(v)} stroke="#e7e0d3" stroke-width="1" stroke-dasharray="3 4" />
-                <text x=${padL - 6} y=${y(v) + 3} font-size="9" text-anchor="end" fill="#777067" font-family="monospace">${v >= 1000 ? `${Math.round(v / 1000)}k` : v}</text>
+                <line x1=${padL} y1=${y(v)} x2=${w - padR} y2=${y(v)} style="stroke:var(--chart-grid)" stroke-width="1" stroke-dasharray="3 4" />
+                <text x=${padL - 6} y=${y(v) + 3} font-size="9" text-anchor="end" style="fill:var(--chart-tick)" font-family="monospace">${v >= 1000 ? `${Math.round(v / 1000)}k` : v}</text>
             </g>`)}
-            <path d=${line(invested)} fill="none" stroke="#2563eb" stroke-width="2" />
-            <path d=${line(values)} fill="none" stroke="#f25f3a" stroke-width="2" />
+            <path d=${line(invested)} fill="none" style="stroke:var(--chart-blue)" stroke-width="2" />
+            <path d=${line(values)} fill="none" style="stroke:var(--chart-orange)" stroke-width="2" />
             ${labels.map((l, i) => i % Math.ceil(labels.length / 6) === 0
-                ? html`<text x=${x(i)} y=${h - 8} font-size="9" text-anchor="middle" fill="#777067">${String(l).slice(2)}</text>`
+                ? html`<text x=${x(i)} y=${h - 8} font-size="9" text-anchor="middle" style="fill:var(--chart-tick)">${String(l).slice(2)}</text>`
                 : '')}
         </svg>
         <div class="muted" style="font-size:12px; margin-top:4px">
-            <span style="color:#2563eb">— ${investedLabel}</span> ·
-            <span style="color:#f25f3a">— ${valueLabel}</span> ·
+            <span style="color:var(--chart-blue)">— ${investedLabel}</span> ·
+            <span style="color:var(--chart-orange)">— ${valueLabel}</span> ·
             ${t(locale, 'ui.latest')} ${formatCurrency(values[values.length - 1], locale, settings.currency)}
         </div>
     </div>`;
