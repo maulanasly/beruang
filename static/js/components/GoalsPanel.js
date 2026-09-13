@@ -59,7 +59,7 @@ export function GoalsPanel({ settings, totalValue, monthlyAvg }) {
                             <div style="height:8px; border-radius:999px; background:var(--goals-track); overflow:hidden; margin-top:4px"><div style="height:100%; width:${progress(totalValue, goals.overall.target)}%; background:var(--goals-grad)"></div></div>
                             ${overallPace != null
                                 ? html`<p class="muted" style="font-size:12px">${t(locale, 'goals.paceMonths', { months: overallPace })}</p>`
-                                : goals.overall.target <= totalValue ? html`<p style="color:var(--success); font-weight:700; font-size:13px">▲ ${t(locale, 'goals.reached')}</p>` : ''}`
+                                : goals.overall.target <= totalValue ? html`<p style="font-size:13px"><span class="pill-up">▲ ${t(locale, 'goals.reached')}</span></p>` : ''}`
                         : html`<span class="muted" style="font-size:13px">${t(locale, 'ui.noTarget')}</span>`}
                 </div>
                 <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:8px; margin-top:8px">
