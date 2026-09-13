@@ -2,14 +2,16 @@ import { html } from '../vendor/preact-htm-signals.js';
 import { t } from '../i18n.js';
 import { navigate } from '../router.js';
 
+// Compact modern footer: one flex band (brand · inline nav) plus a
+// single-line data note. Canonical order matches the header.
 export function Footer({ settings }) {
     const locale = settings.locale;
     const go = (e, path) => { e.preventDefault(); navigate(path); };
     return html`<footer class="site-footer">
-        <div class="site-footer__grid">
-            <div>
+        <div class="site-footer__bar">
+            <div class="site-footer__brand">
                 <strong>Beruang</strong>
-                <p class="muted" style="font-size:12px; margin:4px 0 0">${t(locale, 'footer.tagline')}</p>
+                <span class="muted">${t(locale, 'footer.tagline')}</span>
             </div>
             <nav aria-label=${t(locale, 'footer.navLabel')}>
                 <a href="/" onClick=${e => go(e, '/')}>${t(locale, 'nav.home')}</a>
@@ -20,7 +22,7 @@ export function Footer({ settings }) {
                 <a href="/kalkulator/deposito" onClick=${e => go(e, '/kalkulator/deposito')}>${t(locale, 'nav.termDeposits')}</a>
                 <a href="/kalkulator/mobil-listrik" onClick=${e => go(e, '/kalkulator/mobil-listrik')}>${t(locale, 'nav.ev')}</a>
             </nav>
-            <p class="muted" style="font-size:12px; margin:0">${t(locale, 'footer.dataNote')}</p>
         </div>
+        <p class="site-footer__note">${t(locale, 'footer.dataNote')}</p>
     </footer>`;
 }
