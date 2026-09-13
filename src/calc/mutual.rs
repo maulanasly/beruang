@@ -55,7 +55,7 @@ pub fn mutual_fund_returns(entries: Vec<MutualFundEntry>) -> Result<MutualFundRe
     }
     let mut sorted = entries;
     // `_prepare_ledger` sorts by date; stable to match pandas + Python sorted().
-    sorted.sort_by(|a, b| a.date.cmp(&b.date));
+    sorted.sort_by_key(|a| a.date);
 
     let mut ledger: Vec<MutualFundLedgerRow> = Vec::with_capacity(sorted.len());
     let mut cash_flows = Vec::with_capacity(sorted.len());

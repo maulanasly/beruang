@@ -15,8 +15,8 @@ pub fn calculate_xirr(dates: &[NaiveDate], cash_flows: &[f64]) -> Result<f64, Ca
         .copied()
         .zip(cash_flows.iter().copied())
         .collect();
-    // Python `sorted()` is stable; `sort_by` is stable too.
-    dated.sort_by(|a, b| a.0.cmp(&b.0));
+    // Python `sorted()` is stable; `sort_by_key` is stable too.
+    dated.sort_by_key(|a| a.0);
     if dated.len() < 2 {
         return Err(CalcError::math(
             "XIRR requires at least two cash flow points.",

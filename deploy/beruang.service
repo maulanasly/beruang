@@ -1,0 +1,24 @@
+[Unit]
+Description=Beruang investment calculators (API + embedded UI)
+After=network.target
+
+[Service]
+Type=simple
+User=beruang
+Group=beruang
+WorkingDirectory=/var/lib/beruang
+# Self-contained binary: no secrets, no writable state (ledgers live in
+# each visitor's browser). PUBLIC_BASE_URL feeds absolute share URLs
+# (og:url, canonical, sitemap).
+Environment=PORT=8000
+Environment=RUST_LOG=info
+Environment=PUBLIC_BASE_URL=https://kalkulator.rayakala.ink
+ExecStart=/usr/local/bin/beruang-gateway
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+
+[Install]
+WantedBy=multi-user.target

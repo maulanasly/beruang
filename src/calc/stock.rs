@@ -65,7 +65,7 @@ pub fn stock_returns(entries: Vec<StockEntry>) -> Result<StockReturns, CalcError
         ));
     }
     let mut sorted = entries;
-    sorted.sort_by(|a, b| a.date.cmp(&b.date));
+    sorted.sort_by_key(|a| a.date);
 
     let mut ledger: Vec<StockLedgerRow> = Vec::with_capacity(sorted.len());
     let mut per_row = Vec::with_capacity(sorted.len());

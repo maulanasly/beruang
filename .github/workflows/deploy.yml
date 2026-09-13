@@ -1,0 +1,99 @@
+name: Build + Deploy
+
+# Release-triggered deployment (stable releases only) + manual dispatch.
+# Cut a GitHub Release (non-prerelease) to ship kalkulator.rayakala.ink.
+on:
+  release:
+    types: [published]
+  workflow_dispatch: {}
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: release binary (x86_64)
+    # Drafts never fire `published`; skip prereleases explicitly.
+    if: github.event_name == 'workflow_dispatch' || github.event.release.prerelease == false
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build release
+        run: cargo build --release
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: beruang-gateway-${{ github.sha }}
+          path: target/release/beruang-gateway
+          retention-days: 14
+
+  deploy:
+    name: copy to VPS + restart
+    needs: build
+    if: github.event_name == 'workflow_dispatch' || github.event.release.prerelease == false
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download binary
+        uses: actions/download-artifact@v4
+        with:
+          name: beruang-gateway-${{ github.sha }}
+          path: dist
+
+      - name: Setup SSH
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+          KNOWN_HOSTS: ${{ secrets.KNOWN_HOSTS }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          # Fail early on a garbage key instead of a cryptic server-side deny.
+          ssh-keygen -y -f ~/.ssh/deploy_key >/dev/null \
+            || { echo "DEPLOY_KEY is not a valid private key" >&2; exit 1; }
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          # Point every scp/ssh below at the deploy key (ssh never guesses it).
+          printf 'Host %s\n  IdentityFile ~/.ssh/deploy_key\n  IdentitiesOnly yes\n' "$DEPLOY_HOST" >> ~/.ssh/config
+          chmod 600 ~/.ssh/config
+          PORT="${DEPLOY_PORT:-22}"
+          echo "DEPLOY_PORT=$PORT" >> "$GITHUB_ENV"
+          ssh-keygen -F "$DEPLOY_HOST" -f ~/.ssh/known_hosts >/dev/null \
+            || { echo "KNOWN_HOSTS does not contain $DEPLOY_HOST" >&2; exit 1; }
+
+      - name: Copy binary + installer to server
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          set -euo pipefail
+          chmod +x dist/beruang-gateway scripts/install-release.sh
+          scp -P "${DEPLOY_PORT}" -o BatchMode=yes \
+            dist/beruang-gateway "${DEPLOY_USER}@${DEPLOY_HOST}:/tmp/beruang-new"
+          scp -P "${DEPLOY_PORT}" -o BatchMode=yes \
+            scripts/install-release.sh "${DEPLOY_USER}@${DEPLOY_HOST}:/tmp/install-release.sh"
+          scp -P "${DEPLOY_PORT}" -o BatchMode=yes \
+            deploy/beruang.service "${DEPLOY_USER}@${DEPLOY_HOST}:/tmp/beruang.service"
+
+      - name: Install + restart + healthcheck
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          set -euo pipefail
+          ssh -p "${DEPLOY_PORT}" -o BatchMode=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "sudo bash /tmp/install-release.sh /tmp/beruang-new && rm -f /tmp/beruang-new /tmp/install-release.sh /tmp/beruang.service"
