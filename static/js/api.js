@@ -45,3 +45,7 @@ export async function fetchPriceHistory(symbol, period = '1y') {
 export async function fetchDividendYields(limit = 10) {
     return fetchJSON(`${BASE}/market-data/idx/dividend-yields?limit=${limit}`);
 }
+
+export async function evComparison(payload) {
+    return fetchJSON(`${BASE}/ev/comparison`, { method: 'POST', body: JSON.stringify(payload) });
+}

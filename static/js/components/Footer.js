@@ -17,6 +17,7 @@ export function Footer({ settings }) {
                 <a href="/kalkulator/reksa-dana" onClick=${e => go(e, '/kalkulator/reksa-dana')}>${t(locale, 'nav.mutualFunds')}</a>
                 <a href="/kalkulator/saham" onClick=${e => go(e, '/kalkulator/saham')}>${t(locale, 'nav.stocks')}</a>
                 <a href="/kalkulator/deposito" onClick=${e => go(e, '/kalkulator/deposito')}>${t(locale, 'nav.termDeposits')}</a>
+                <a href="/kalkulator/mobil-listrik" onClick=${e => go(e, '/kalkulator/mobil-listrik')}>${t(locale, 'nav.ev')}</a>
             </nav>
             <p class="muted" style="font-size:12px; margin:0">${t(locale, 'footer.dataNote')}</p>
         </div>

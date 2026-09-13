@@ -7,6 +7,7 @@ import { Overview } from './Overview.js';
 import { MutualFunds } from './MutualFunds.js';
 import { Stocks } from './Stocks.js';
 import { TermDeposits } from './TermDeposits.js';
+import { Ev } from './Ev.js';
 import { Footer } from './Footer.js';
 
 export function App() {
@@ -26,6 +27,7 @@ export function App() {
             'mutual-funds': t(locale, 'nav.mutualFunds'),
             stocks: t(locale, 'nav.stocks'),
             'term-deposits': t(locale, 'nav.termDeposits'),
+            ev: t(locale, 'nav.ev'),
         };
         document.title = `${titles[route] || 'Beruang'} — Beruang`;
     }, [route, locale]);
@@ -37,6 +39,7 @@ export function App() {
         'mutual-funds': html`<${MutualFunds} settings=${settings} />`,
         stocks: html`<${Stocks} settings=${settings} />`,
         'term-deposits': html`<${TermDeposits} settings=${settings} />`,
+        ev: html`<${Ev} settings=${settings} />`,
     };
 
     const navItems = [
@@ -45,6 +48,7 @@ export function App() {
         { to: '/kalkulator/saham', key: 'stocks', label: t(locale, 'nav.stocks') },
         { to: '/kalkulator/deposito', key: 'term-deposits', label: t(locale, 'nav.termDeposits') },
         { to: '/portofolio', key: 'portofolio', label: t(locale, 'nav.portfolio') },
+        { to: '/kalkulator/mobil-listrik', key: 'ev', label: t(locale, 'nav.ev') },
     ];
     const go = (e, to) => { e.preventDefault(); navigate(to); };
 

@@ -8,6 +8,7 @@ import { LedgerIo } from './LedgerIo.js';
 import { MomentumKpi } from './MomentumKpi.js';
 import { AssetChart } from './AssetChart.js';
 import { HowTo } from './HowTo.js';
+import { RelatedCalcs } from './RelatedCalcs.js';
 import { InfoTip } from './InfoTip.js';
 
 export function MutualFunds({ settings }) {
@@ -83,6 +84,7 @@ export function MutualFunds({ settings }) {
                 {key:'month_start_value', label:t(locale, 'column.startValue'), fmt:'currency'},
                 {key:'mom_return', label:t(locale, 'column.momReturn'), fmt:'percent'},
             ]} />
+            <${RelatedCalcs} current="mutual-funds" settings=${settings} />
         </div>`}
     </div>`;
 }

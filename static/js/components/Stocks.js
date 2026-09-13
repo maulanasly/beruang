@@ -9,6 +9,7 @@ import { LedgerIo } from './LedgerIo.js';
 import { MomentumKpi } from './MomentumKpi.js';
 import { AssetChart } from './AssetChart.js';
 import { HowTo } from './HowTo.js';
+import { RelatedCalcs } from './RelatedCalcs.js';
 import { InfoTip } from './InfoTip.js';
 import { t } from '../i18n.js';
 import { readSharedState, ShareLink } from '../share.js';
@@ -248,6 +249,7 @@ export function Stocks({ settings }) {
                 {key:'current_value', label:t(locale, 'column.currentValue'), fmt:'currency'},
                 {key:'mom_return', label:t(locale, 'column.momReturn'), fmt:'percent'},
             ]} />
+            <${RelatedCalcs} current="stocks" settings=${settings} />
         </div>`}
         <${DividendFocus} settings=${settings} onApply=${(symbol, yieldPct) => {
             const idx = targetIndex();
