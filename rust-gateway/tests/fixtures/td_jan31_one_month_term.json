@@ -1,0 +1,28 @@
+{
+  "name": "td_jan31_one_month_term",
+  "request": {
+    "asset": "term-deposits",
+    "payload": {
+      "apy": 0.06,
+      "entries": [
+        {
+          "date": "2026-01-31",
+          "installment_amount": 1000,
+          "current_value": 1000,
+          "term_months": 1
+        },
+        {
+          "date": "2026-02-28",
+          "installment_amount": 1000,
+          "current_value": 2005,
+          "term_months": 1
+        }
+      ]
+    }
+  },
+  "expect": {
+    "ok": false,
+    "status": 422,
+    "detail_contains": "day is out of range for month"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "td_apy_below_floor",
+  "request": {
+    "asset": "term-deposits",
+    "payload": {
+      "apy": -1.5,
+      "entries": [
+        {
+          "date": "2026-05-31",
+          "installment_amount": 1000,
+          "current_value": 1000,
+          "term_months": 12,
+          "maturity_date": "2027-05-31"
+        },
+        {
+          "date": "2026-06-30",
+          "installment_amount": 1000,
+          "current_value": 2005,
+          "term_months": 12,
+          "maturity_date": "2027-06-30"
+        }
+      ]
+    }
+  },
+  "expect": {
+    "ok": false,
+    "status": 422,
+    "detail_contains": "greater than -100%"
+  }
+}

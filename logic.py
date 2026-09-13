@@ -165,7 +165,11 @@ def stock_metrics(ledger: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, float]]
         else np.nan
     )
 
-    last_yield = float(df["dividend_yield"].iloc[-1]) if pd.notna(df["dividend_yield"].iloc[-1]) else 0.0
+    last_yield = (
+        float(df["dividend_yield"].iloc[-1])
+        if pd.notna(df["dividend_yield"].iloc[-1])
+        else 0.0
+    )
 
     summary = {
         "total_contribution": total_contribution,

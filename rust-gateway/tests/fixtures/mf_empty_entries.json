@@ -1,0 +1,14 @@
+{
+  "name": "mf_empty_entries",
+  "request": {
+    "asset": "mutual-funds",
+    "payload": {
+      "entries": []
+    }
+  },
+  "expect": {
+    "ok": false,
+    "status": 422,
+    "detail_contains": "At least one ledger row"
+  }
+}

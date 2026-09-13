@@ -1,55 +1,57 @@
 # beruang
 
 Investment App MVP — track mutual funds, stocks, and term deposits with monthly installments.
+Single self-contained Rust binary serves the API and the embedded zero-build frontend.
 
 ## Quick Start
 
 ```bash
 make          # show available commands
-make install  # install dependencies
-make run      # start the FastAPI backend
-make dev      # start backend with auto-reload
-make dev-all  # start backend + frontend dev servers together
-make install-frontend  # install Vue frontend dependencies
-make dev-frontend      # start Vue dev server (port 5173)
-make up       # build and run backend + frontend in Docker
-make up-backend  # build and run only backend in Docker (for pairing with dev frontend)
+make run      # start the self-contained binary (API + UI on :8000)
+make up       # build and run in Docker
 make down     # stop Docker services
-make test     # run backend tests
+make test     # run Rust gateway tests
+make verify   # clippy + fmt check + tests
+make clean    # remove build artifacts
+```
+
+Legacy Vue frontend (optional):
+
+```bash
+make install-frontend  # install Vue frontend dependencies
+make dev-frontend      # start Vue dev server (port 5173, proxied to :8000)
+make up-legacy         # build and run binary + Vue frontend in Docker
 make test-frontend     # run Vue frontend tests (vitest)
-make clean    # remove cache files
 ```
 
 If ports are already occupied, you can override them:
 
 ```bash
-make dev-all BACKEND_PORT=8001 FRONTEND_PORT=5174
+make run GATEWAY_PORT=8001
 ```
 
 ## Local URLs
 
-- Backend API: http://localhost:8000
-- Backend docs: http://localhost:8000/docs
-- Frontend dev (Vite): http://localhost:5173
-- Frontend via Docker (Nginx): http://localhost:8080
+- App (API + UI): http://localhost:8000
+- Frontend dev (Vite, legacy): http://localhost:5173
+- Frontend via Docker (Nginx, legacy): http://localhost:8080
 
 ## Frontend-Backend Pairing
 
-- In `make dev-frontend`, Vite proxies `/api/*` to `http://localhost:${BACKEND_PORT}` (default `8000`).
+- In `make dev-frontend`, Vite proxies `/api/*` to `http://localhost:${GATEWAY_PORT}` (default `8000`).
 - Default frontend requests use relative paths such as `/api/v1/...`.
-- To override API host, set `VITE_API_BASE_URL` in the frontend environment.
-- Stock mode includes a live quote helper sourced from yfinance, using an IDX Kompas 100 starter ticker list.
+- Stock mode includes a live quote helper sourced from Yahoo Finance, using an IDX Kompas 100 starter ticker list.
 
 Examples:
 
 ```bash
-# Backend on default 8000
-make dev-backend
+# Binary on default 8000
+make run
 make dev-frontend
 
-# Backend on custom 8001, frontend proxy follows automatically
-make dev-backend BACKEND_PORT=8001
-make dev-frontend BACKEND_PORT=8001 FRONTEND_PORT=5174
+# Binary on custom 8001, frontend proxy follows automatically
+make run GATEWAY_PORT=8001
+make dev-frontend GATEWAY_PORT=8001 FRONTEND_PORT=5174
 ```
 
 ## Features
@@ -57,39 +59,38 @@ make dev-frontend BACKEND_PORT=8001 FRONTEND_PORT=5174
 - **Cash-flow adjusted MoM returns** — mutual funds and stocks
 - **APY-based term deposit projections** — with prorated interest and future value
 - **XIRR / ROI** — annualized returns using exact-date cash flows
-- **Live stock quote helper** — fetch latest market value for IDX symbols from yfinance and apply to stock ledger rows
+- **Live stock quote helper** — fetch latest market value for IDX symbols from Yahoo Finance and apply to stock ledger rows
 - **Locale-aware formatting** — one locale/currency selector drives every page (table, chart axes, KPI cards) and persists across reloads
 
 ## Market Data Endpoints
 
 - `GET /api/v1/market-data/idx/kompas100` — returns starter IDX symbols list (Kompas 100 seed set)
-- `GET /api/v1/market-data/quote?symbol=BBCA.JK` — returns latest quote from yfinance
+- `GET /api/v1/market-data/quote?symbol=BBCA.JK` — returns latest quote from Yahoo Finance
 
 ## Project Structure
 
 | File | Purpose |
 |------|---------|
-| `backend/main.py` | FastAPI backend routes |
-| `backend/services.py` | Backend financial service adapters |
-| `backend/schemas.py` | Pydantic request/response models |
-| `frontend/` | Vue 3 + Vite frontend |
+| `rust-gateway/src/routes/` | Axum API handlers (`*/returns`, `market-data/*`) |
+| `rust-gateway/src/calc/` | Financial engine port (MoM, XIRR, APY, maturity) |
+| `rust-gateway/src/market/` | Yahoo Finance client + response shapes |
+| `rust-gateway/tests/fixtures/` | Committed oracle vectors (parity harness input) |
+| `frontend/` | Vue 3 + Vite frontend (legacy) |
 | `frontend/src/composables/` | Reactive state, formatters, API client |
 | `frontend/src/components/` | Calculator, ledger table, charts, KPI cards |
-| `docker-compose.yml` | Backend + frontend container orchestration |
-| `backend/Dockerfile` | Backend container image |
+| `static/` | Zero-build Preact frontend, no bundler (hash router) |
+| `docker-compose.yml` | Binary (+ legacy frontend) container orchestration |
+| `rust-gateway/Dockerfile` | Binary container image |
 | `frontend/Dockerfile` | Frontend container image |
-| `logic.py` | Financial calculation engine |
-| `requirements.txt` | Python dependencies |
+| `logic.py` | Frozen financial oracle (reference only) |
 | `Makefile` | Common development commands |
 
 ## Tech Stack
 
-- **Python 3.12+**
-- **FastAPI** — backend API
-- **Pandas** — data manipulation
-- **numpy-financial** — XIRR and time-value calculations
-- **Vue 3 + Vite** — frontend
-- **chart.js** — capital-invested vs current-value line charts
+- **Rust (Axum)** — self-contained API + embedded UI binary
+- **Yahoo Finance REST** — market data (no `yfinance`)
+- **Preact + HTM** — zero-build frontend (`static/`, no bundler)
+- **Vue 3 + Vite** — frontend (legacy)
 
 ## Graphify
 

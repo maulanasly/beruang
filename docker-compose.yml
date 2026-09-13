@@ -1,18 +1,28 @@
 services:
-  backend:
+  gateway:
     build:
       context: .
-      dockerfile: backend/Dockerfile
-    container_name: beruang-backend
+      dockerfile: rust-gateway/Dockerfile
+    container_name: beruang
     ports:
       - "8000:8000"
+    environment:
+      RUST_LOG: info
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget -qO- http://127.0.0.1:8000/health | grep -q ok || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
 
+  # Legacy Vue frontend kept for migration; prefer gateway's embedded static/
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: beruang-frontend
     depends_on:
-      - backend
+      - gateway
     ports:
       - "8080:80"
+    profiles: ["legacy"]

@@ -1,0 +1,94 @@
+{
+  "name": "mf_six_rows",
+  "request": {
+    "asset": "mutual-funds",
+    "payload": {
+      "entries": [
+        {
+          "date": "2026-01-31",
+          "installment_amount": 1000,
+          "current_value": 1000
+        },
+        {
+          "date": "2026-02-28",
+          "installment_amount": 1000,
+          "current_value": 2050
+        },
+        {
+          "date": "2026-03-31",
+          "installment_amount": 1000,
+          "current_value": 3120
+        },
+        {
+          "date": "2026-04-30",
+          "installment_amount": 1000,
+          "current_value": 4200
+        },
+        {
+          "date": "2026-05-31",
+          "installment_amount": 1000,
+          "current_value": 5300
+        },
+        {
+          "date": "2026-06-30",
+          "installment_amount": 1000,
+          "current_value": 6450
+        }
+      ]
+    }
+  },
+  "expect": {
+    "ok": true,
+    "response": {
+      "summary": {
+        "total_installments": 6000.0,
+        "ending_value": 6450.0,
+        "xirr": 0.40945103924876136
+      },
+      "ledger": [
+        {
+          "date": "2026-01-31",
+          "installment_amount": 1000.0,
+          "current_value": 1000.0,
+          "month_start_value": null,
+          "mom_return": null
+        },
+        {
+          "date": "2026-02-28",
+          "installment_amount": 1000.0,
+          "current_value": 2050.0,
+          "month_start_value": 1000.0,
+          "mom_return": 0.05
+        },
+        {
+          "date": "2026-03-31",
+          "installment_amount": 1000.0,
+          "current_value": 3120.0,
+          "month_start_value": 2050.0,
+          "mom_return": 0.03414634146341464
+        },
+        {
+          "date": "2026-04-30",
+          "installment_amount": 1000.0,
+          "current_value": 4200.0,
+          "month_start_value": 3120.0,
+          "mom_return": 0.02564102564102564
+        },
+        {
+          "date": "2026-05-31",
+          "installment_amount": 1000.0,
+          "current_value": 5300.0,
+          "month_start_value": 4200.0,
+          "mom_return": 0.023809523809523808
+        },
+        {
+          "date": "2026-06-30",
+          "installment_amount": 1000.0,
+          "current_value": 6450.0,
+          "month_start_value": 5300.0,
+          "mom_return": 0.02830188679245283
+        }
+      ]
+    }
+  }
+}
