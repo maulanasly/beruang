@@ -15,8 +15,8 @@ a{color:var(--link)}
 .nav-drop__btn:hover{color:var(--ink);background:var(--hover-wash)}
 .nav-drop__btn.active{color:var(--ink);font-weight:700;background:var(--surface);box-shadow:inset 0 0 0 1px var(--hairline-strong)}
 .nav-drop__chev{font-size:11px;line-height:1}
-.nav-drop__panel{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);min-width:280px;max-width:320px;background:var(--surface);border:1px solid var(--hairline);border-radius:12px;padding:6px;box-shadow:var(--shadow);z-index:30}
-.nav-drop__panel a{display:block;padding:10px 12px;min-height:44px;border-radius:8px;text-decoration:none;color:inherit}
+.nav-drop__panel{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);min-width:280px;max-width:min(320px,calc(100vw - 32px));max-height:calc(100dvh - 120px);overflow:auto;background:var(--surface);border:1px solid var(--hairline);border-radius:12px;padding:6px;box-shadow:var(--shadow);z-index:30}
+.nav-drop__panel a{display:block;padding:10px 12px;min-height:44px;border-radius:8px;text-decoration:none;color:inherit;white-space:normal}
 .nav-drop__panel a:hover{background:var(--hover-wash)}
 .nav-drop__panel a.active{background:var(--paper);box-shadow:inset 0 0 0 1px var(--hairline-strong)}
 .nav-drop__title{display:block;font-weight:700;font-size:14px;color:var(--ink)}
