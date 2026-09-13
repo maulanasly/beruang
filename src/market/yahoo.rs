@@ -28,8 +28,11 @@ const SUMMARY_PATH: &str = "/v10/finance/quoteSummary";
 
 /// Max simultaneous Yahoo requests process-wide (shared semaphore).
 const MAX_CONCURRENT: usize = 2;
-/// Retries after the first attempt on 429/transport errors.
-const MAX_RETRIES: u32 = 3;
+/// Retries after the first attempt on 429/transport errors. Kept small on
+/// purpose: retries catch transient blips, while a sustained edge ban must
+/// surface fast as [`YahooError::RateLimited`] instead of burning the 25s
+/// route budget in backoff sleeps.
+const MAX_RETRIES: u32 = 2;
 /// Per-request ceiling; retries must fit the 25s route budget.
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(8);
 
@@ -71,9 +74,11 @@ fn host_for_attempt(attempt: u32) -> &'static str {
     HOSTS[(attempt as usize) % HOSTS.len()]
 }
 
-/// Backoff before retry `attempt` (1-based): 1s, 2s, 4s … capped at 8s.
+/// Backoff before retry `attempt` (1-based): 2s, then 4s (capped).
+/// A single send-chain sleeps at most 6s, so even the cold quote path
+/// (cookie + crumb + chart + summary chains) stays under the 25s budget.
 fn backoff_for_attempt(attempt: u32) -> Duration {
-    Duration::from_secs(1_u64.saturating_mul(1 << attempt.min(3)).min(8))
+    Duration::from_secs(1_u64.saturating_mul(1 << attempt.min(2)).min(4))
 }
 
 /// `Retry-After: <seconds>` value, if the header carries a plain delay.
@@ -312,8 +317,7 @@ mod tests {
     fn backoff_grows_and_caps() {
         assert_eq!(backoff_for_attempt(1), Duration::from_secs(2));
         assert_eq!(backoff_for_attempt(2), Duration::from_secs(4));
-        assert_eq!(backoff_for_attempt(3), Duration::from_secs(8));
-        assert_eq!(backoff_for_attempt(99), Duration::from_secs(8));
+        assert_eq!(backoff_for_attempt(99), Duration::from_secs(4));
     }
 
     #[test]
@@ -336,9 +340,10 @@ mod tests {
 
     #[test]
     fn retry_budget_fits_route_timeout() {
-        // Worst case: initial + MAX_RETRIES backoffs must stay well under
-        // the 25s route budget (8s request timeouts bound the rest).
+        // Worst case per send-chain: initial + MAX_RETRIES backoffs must
+        // stay small — even the cold quote path (cookie + crumb + chart +
+        // summary chains, chart/summary joined) stays under the 25s budget.
         let worst: Duration = (1..=MAX_RETRIES).map(backoff_for_attempt).sum();
-        assert!(worst <= Duration::from_secs(15));
+        assert!(worst <= Duration::from_secs(10));
     }
 }
