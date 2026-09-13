@@ -45,4 +45,4 @@ Use Python's `pandas` to manage temporal data ledgers of monthly cash flows. Sin
 7. Containerize the application using `Dockerfile`s for frontend and backend, and a `docker-compose.yml` triggered via `make up`.
 8. Validate code quality using `make lint` (`pre-commit run --files <changed_files>`).
 9. Verify all system dependencies and update the knowledge graph using `$ graphify query` or `make graphify`.
-10. **New Feature Workflow:** If a new feature is requested, strictly create a new Git branch or `git worktree` off the `master` branch. Develop, test, and validate in this isolated environment. The code must be reviewed and pass all checks before merging into the `master` branch.
+10. **New Feature Workflow:** If a new feature is requested, strictly create a new Git branch or `git worktree` off the `main` branch. Develop, test, and validate in this isolated environment. The code must be reviewed and pass all checks before merging into the `main` branch.

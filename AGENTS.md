@@ -19,7 +19,7 @@ kept as legacy (`--profile legacy`).
 ## Repository
 
 - **URL**: github.com/maulanasly/beruang
-- **Main branch**: `master`
+- **Main branch**: `main`
 - **Dev workflow**: feature branches → PR → merge → graph update
 
 ## Skill Routing (read before acting)
@@ -46,10 +46,10 @@ Every change follows this exact flow:
    make graphify-query QUERY="What modules are in [area]?"
    ```
 
-2. **Create branch / worktree** (always off `master`):
+2. **Create branch / worktree** (always off `main`):
    - Single active branch:
    ```bash
-   git fetch origin && git switch master
+   git fetch origin && git switch main
    git switch -c feature/<name>  # or fix/<name>, chore/<name>
    ```
    - Multiple active branches → use one worktree per branch (MANDATORY to avoid conflicting checkouts):
@@ -73,7 +73,7 @@ Every change follows this exact flow:
 5. **Push + PR**:
    ```bash
    git push -u origin feature/<name>
-   gh pr create --base master --title "feat: ..." --body "..."
+   gh pr create --base main --title "feat: ..." --body "..."
    ```
 
 6. **Update memory context**:
