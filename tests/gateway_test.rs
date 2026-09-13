@@ -452,4 +452,31 @@ async fn robots_and_sitemap_served() {
         body.contains("http://localhost:8000/kalkulator/saham"),
         "sitemap lists ID canonical"
     );
+    assert!(
+        body.contains("http://localhost:8000/portofolio"),
+        "sitemap lists portfolio"
+    );
+}
+
+/// Portfolio dashboard: canonical ID path, /overview alias shares it.
+#[tokio::test]
+async fn portfolio_canonical_and_alias() {
+    let app = beruang_gateway::routes::create_router();
+    for uri in ["/portofolio", "/overview"] {
+        let response = app
+            .clone()
+            .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK, "{uri}");
+        let body = response_body_text(response).await;
+        assert!(
+            body.contains("<title>Portofolio Saya — Beruang</title>"),
+            "{uri}"
+        );
+        assert!(
+            body.contains("<link rel=\"canonical\" href=\"http://localhost:8000/portofolio\">"),
+            "{uri}"
+        );
+    }
 }

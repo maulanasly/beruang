@@ -45,6 +45,7 @@ export function MutualFunds({ settings }) {
         try{
             const payload = { entries: rows.map(e=>({ date:e.date, installment_amount:Number(e.installment_amount)||0, current_value:Number(e.current_value)||0 })) };
             const data = await calculateReturns('mutual-funds', payload);
+            data.calculatedAt = new Date().toISOString();
             setResult(data);
             const ledgers = loadLedgers(); ledgers['mutual-funds']=rows; ledgers.results['mutual-funds']=data; saveLedgers(ledgers);
             if (rowsOverride) setEntries(rowsOverride);

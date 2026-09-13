@@ -13,7 +13,7 @@ export function Footer({ settings }) {
             </div>
             <nav aria-label=${t(locale, 'footer.navLabel')}>
                 <a href="/" onClick=${e => go(e, '/')}>${t(locale, 'nav.home')}</a>
-                <a href="/overview" onClick=${e => go(e, '/overview')}>${t(locale, 'nav.overview')}</a>
+                <a href="/portofolio" onClick=${e => go(e, '/portofolio')}>${t(locale, 'nav.portfolio')}</a>
                 <a href="/kalkulator/reksa-dana" onClick=${e => go(e, '/kalkulator/reksa-dana')}>${t(locale, 'nav.mutualFunds')}</a>
                 <a href="/kalkulator/saham" onClick=${e => go(e, '/kalkulator/saham')}>${t(locale, 'nav.stocks')}</a>
                 <a href="/kalkulator/deposito" onClick=${e => go(e, '/kalkulator/deposito')}>${t(locale, 'nav.termDeposits')}</a>

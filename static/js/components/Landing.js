@@ -17,7 +17,7 @@ export function Landing({ settings }) {
             <h1>${t(locale, 'home.title')}</h1>
             <p class="muted hero-sub">${t(locale, 'home.subtitle')}</p>
             <div class="hero-cta">
-                <button onClick=${e => go(e, '/overview')}>${t(locale, 'home.ctaApp')}</button>
+                <button onClick=${e => go(e, '/portofolio')}>${t(locale, 'home.ctaApp')}</button>
                 <button class="btn-ghost" onClick=${e => go(e, '/kalkulator/saham')}>${t(locale, 'home.ctaCalc')}</button>
             </div>
         </section>
@@ -27,6 +27,16 @@ export function Landing({ settings }) {
                     <h2 style="margin:0 0 4px; font-size:17px"><a href=${c.path} onClick=${e => go(e, c.path)}>${t(locale, c.titleKey)}</a></h2>
                     <p class="muted" style="font-size:13px; margin:0">${t(locale, c.descKey)}</p>
                 </article>`)}
+            </div>
+            <div class="summary-cards">
+                <article class="card">
+                    <h2 style="margin:0 0 4px; font-size:17px"><a href="/portofolio" onClick=${e => go(e, '/portofolio')}>${t(locale, 'nav.portfolio')}</a></h2>
+                    <p class="muted" style="font-size:13px; margin:0">${t(locale, 'overview.subtitle')}</p>
+                </article>
+                <article class="card" aria-label=${t(locale, 'home.evTitle')}>
+                    <h2 style="margin:0 0 4px; font-size:17px">${t(locale, 'home.evTitle')} <span class="badge-soon">${t(locale, 'home.soonBadge')}</span></h2>
+                    <p class="muted" style="font-size:13px; margin:0">${t(locale, 'home.evDesc')}</p>
+                </article>
             </div>
         </section>
         <section class="card">

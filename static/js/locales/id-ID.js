@@ -1,6 +1,7 @@
 export default {
   nav: {
     home: 'Beranda',
+    portfolio: 'Portofolio',
     overview: 'Ringkasan',
     mutualFunds: 'Reksa Dana',
     stocks: 'Saham',
@@ -89,6 +90,10 @@ export default {
     subtitle:
       'Portofolio Anda sekilas: berapa yang telah Anda masukkan, berapa nilainya kini, dan bagaimana dana terbagi lintas kelas aset.',
     noData: 'Tambahkan entri ke halaman aset Anda dan hitung hasil untuk mengisi ringkasan ini.',
+    loadDemo: 'Muat data contoh',
+    estimated: 'Estimasi — belum dihitung',
+    dataWindow: 'Data {from} – {to}',
+    calculatedAt: 'Dihitung {time}',
   },
   ledger: {
     empty: 'Isi baris di atas dan klik Hitung Hasil untuk melihat buku besar bulanan Anda di sini.',
@@ -310,6 +315,9 @@ export default {
     calcStocksDesc: 'ROI, XIRR, dan estimasi dividen dengan harga live IDX.',
     calcTdTitle: 'Deposito Berjangka',
     calcTdDesc: 'Bunga prorata APY, tanggal jatuh tempo, dan saran rollover.',
+    evTitle: 'Biaya Mobil Listrik vs Bensin',
+    evDesc: 'Bandingkan biaya operasional dan temukan bulan impas.',
+    soonBadge: 'Segera hadir',
     stepsTitle: 'Cara kerja',
     step1Title: '1. Isi baris',
     step1Desc: 'Satu baris per bulan: tanggal, setoran, nilai saat ini.',

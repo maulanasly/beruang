@@ -1,4 +1,4 @@
-import { html, useState } from '../vendor/preact-htm-signals.js';
+import { html, useState, useEffect } from '../vendor/preact-htm-signals.js';
 import { t } from '../i18n.js';
 import { fetchIndexHistory } from '../api.js';
 import { buildComparison } from '../finance.js';
@@ -8,6 +8,7 @@ const PERIODS = ['1mo', '3mo', '6mo', '1y', '5y'];
 
 export function BenchmarkPanel({ labels, values, settings }) {
     const locale = settings?.locale || 'en-US';
+    useEffect(() => { if (labels && labels.length >= 2) load(); }, []);
     const INDEXES = [
         { value: '^JKSE', label: t(locale, 'benchmark.idxComposite') },
         { value: '^JKLQ45', label: t(locale, 'benchmark.lq45') },
