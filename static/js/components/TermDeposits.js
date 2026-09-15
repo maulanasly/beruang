@@ -3,11 +3,12 @@ import { loadLedgers, saveLedgers, saveEntries, SAMPLE_TD } from '../store.js';
 import { calculateReturns } from '../api.js';
 import { t } from '../i18n.js';
 import { readSharedState, ShareLink, normalizeLedgerEntries, calcSnapshot } from '../share.js';
-import { LedgerTable, SummaryCards } from './AssetForm.js';
+import { LedgerTable } from './AssetForm.js';
 import { LedgerIo } from './LedgerIo.js';
 import { MomentumKpi } from './MomentumKpi.js';
 import { AssetChart } from './AssetChart.js';
 import { MaturityPanel } from './MaturityPanel.js';
+import { formatCurrency, formatPercent } from '../utils.js';
 import { HowTo } from './HowTo.js';
 import { Crumbs } from './Crumbs.js';
 import { RelatedCalcs } from './RelatedCalcs.js';
@@ -17,8 +18,11 @@ function addMonths(dateString, months) {
     if (!dateString) return '';
     const [year, month, day] = String(dateString).split('-').map(Number);
     const total = year * 12 + (month - 1) + Number(months);
+    const y = Math.floor(total / 12), m = (total % 12) + 1;
+    // Clamp to month-end (Jan 31 + 1mo → Feb 28/29, never Feb 31).
+    const lastDay = new Date(y, m, 0).getDate();
     const pad = (n) => String(n).padStart(2, '0');
-    return `${Math.floor(total / 12)}-${pad((total % 12) + 1)}-${pad(day)}`;
+    return `${y}-${pad(m)}-${pad(Math.min(day, lastDay))}`;
 }
 
 export function TermDeposits({ settings }) {
@@ -28,6 +32,23 @@ export function TermDeposits({ settings }) {
     const [result, setResult] = useState(()=> loadLedgers().results['term-deposits']);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [notice, setNotice] = useState('');
+
+    // One-tap rollover: a matured row becomes a fresh 12-month deposit
+    // starting at its maturity value, ready to review and recalculate.
+    function rollover(row) {
+        const next = [...entries, {
+            date: row.maturity_date,
+            installment_amount: row.maturity_value,
+            current_value: row.maturity_value,
+            term_months: 12,
+            maturity_date: addMonths(row.maturity_date, 12),
+        }];
+        setEntries(next);
+        saveEntries('term-deposits', next, Number(apy));
+        setNotice(t(settings.locale, 'depositMaturity.rolledOver'));
+        requestAnimationFrame(() => window.scrollTo(0, 0));
+    }
 
     useEffect(()=> {
         const l=loadLedgers(); setEntries(l['term-deposits'].entries); setApy(l['term-deposits'].apy); setResult(l.results['term-deposits']);
@@ -37,10 +58,11 @@ export function TermDeposits({ settings }) {
 
     function upd(idx, f, v){
         const next = entries.map((e,i)=> i===idx ? {...e,[f]:v}:e);
-        // Port of AssetCalculator.onTermDepositFieldInput: keep maturity in
-        // sync when the date is set or the term changes.
+        // Port of AssetCalculator.onTermDepositFieldInput: derive maturity
+        // from start + term — but only into an EMPTY field, never over a
+        // hand-entered date (clear the field to re-derive).
         const row = next[idx] || {};
-        if (f === 'term_months' || (f === 'date' && !row.maturity_date)) {
+        if (!row.maturity_date) {
             const base = f === 'date' ? v : row.date;
             if (base) next[idx] = { ...row, maturity_date: addMonths(base, Number(row.term_months) || 12) };
         }
@@ -83,7 +105,7 @@ export function TermDeposits({ settings }) {
     async function onCalc(rowsOverride, apyOverride){
         const rows = rowsOverride || entries;
         const rate = apyOverride ?? apy;
-        setLoading(true); setError('');
+        setLoading(true); setError(''); setNotice('');
         if (!rows.length) {
             setLoading(false);
             setError(t(settings.locale, 'error.atLeastOneRow'));
@@ -92,6 +114,21 @@ export function TermDeposits({ settings }) {
         if (rows.some((e) => !e.date)) {
             setLoading(false);
             setError(t(settings.locale, 'error.everyRowDate'));
+            return;
+        }
+        if (!(Number(rate) > 0 && Number(rate) <= 1)) {
+            setLoading(false);
+            setError(t(settings.locale, 'error.badApy'));
+            return;
+        }
+        if (rows.some((e) => Number(e.installment_amount) < 0 || Number(e.current_value) < 0)) {
+            setLoading(false);
+            setError(t(settings.locale, 'error.badAmount'));
+            return;
+        }
+        if (rows.some((e) => e.maturity_date && e.maturity_date < e.date)) {
+            setLoading(false);
+            setError(t(settings.locale, 'error.badMaturity'));
             return;
         }
         try{
@@ -104,7 +141,7 @@ export function TermDeposits({ settings }) {
             if (rowsOverride) setEntries(rowsOverride);
             if (apyOverride !== undefined) setApy(apyOverride);
             requestAnimationFrame(() => document.querySelector('[data-results]')?.scrollIntoView());
-        }catch(e){ setError(e.detail ? JSON.stringify(e.detail) : e.message); } finally{ setLoading(false); }
+        }catch(e){ setError(String(e.detail ?? e.message)); } finally{ setLoading(false); }
     }
 
     const locale = settings.locale;
@@ -113,40 +150,50 @@ export function TermDeposits({ settings }) {
         <div class="page-head"><h1>${t(locale, 'nav.termDeposits')}</h1><p class="muted">${t(locale, 'calc.tdSubtitle')} <${InfoTip} locale=${locale} tipKey="glossary.apy" /> <${InfoTip} locale=${locale} tipKey="glossary.depositMaturity" /></p></div>
         <${HowTo} locale=${locale} startOpen=${!result} steps=${[t(locale,'howto.td1'), t(locale,'howto.td2'), t(locale,'howto.td3')]} />
         <div class="card">
-            <label>${t(locale, 'form.apy')} (${t(locale, 'calc.apyHint')}) <input type="number" step="0.001" value=${apy} onInput=${e=>setApySave(e.target.value)} /></label>
+            <label>${t(locale, 'form.apy')} (${t(locale, 'calc.apyHint')}) <${InfoTip} locale=${locale} tipKey="glossary.apy" /> <input type="number" step="0.001" value=${apy} onInput=${e=>setApySave(e.target.value)} /></label>
+            <p class="muted" style="font-size:12px; margin:6px 0 0">${t(locale, 'calc.apyAppliesAll')}</p>
         </div>
         <div class="card">
-            ${entries.map((e,idx)=> html`<div class="entry-grid" style="--cols:5">
+            ${entries.map((e,idx)=> html`<div class="deposit-row">
+                <div class="deposit-row__head"><span class="smallcaps">${t(locale, 'market.row')} ${idx + 1}</span><button class="btn-ghost btn-sm" onClick=${()=>rm(idx)}>${t(locale, 'common.remove')}</button></div>
+                <div class="entry-grid" style="--cols:4">
                 <label>${t(locale, 'form.date')} <input type="date" value=${e.date} onInput=${ev=>upd(idx,'date',ev.target.value)} /></label>
-                <label>${t(locale, 'form.installmentAmount')} <input type="number" value=${e.installment_amount} onInput=${ev=>upd(idx,'installment_amount',ev.target.value)} /></label>
-                <label>${t(locale, 'form.currentValue')} <input type="number" value=${e.current_value} onInput=${ev=>upd(idx,'current_value',ev.target.value)} /></label>
-                <label>${t(locale, 'form.termMonths')} <input type="number" value=${e.term_months} onInput=${ev=>upd(idx,'term_months',ev.target.value)} /></label>
-                <label>${t(locale, 'form.maturityDate')} <input type="date" value=${e.maturity_date||''} onInput=${ev=>upd(idx,'maturity_date',ev.target.value)} /></label>
-                <button class="btn-ghost btn-sm entry-remove" onClick=${()=>rm(idx)}>${t(locale, 'common.remove')}</button>
+                <label>${t(locale, 'form.installmentAmount')} <input type="number" min="0" value=${e.installment_amount} onInput=${ev=>upd(idx,'installment_amount',ev.target.value)} /></label>
+                <label>${t(locale, 'form.currentValue')} <input type="number" min="0" value=${e.current_value} onInput=${ev=>upd(idx,'current_value',ev.target.value)} /></label>
+                <label>${t(locale, 'form.termMonths')} <${InfoTip} locale=${locale} tipKey="glossary.termMonths" /> <input type="number" min="1" value=${e.term_months} onInput=${ev=>upd(idx,'term_months',ev.target.value)} /></label>
+                </div>
+                <details class="maturity-details">
+                    <summary>${t(locale, 'form.maturityDate')} <${InfoTip} locale=${locale} tipKey="glossary.maturityDate" />${e.maturity_date ? ` · ${e.maturity_date}` : ''}</summary>
+                    <label>${t(locale, 'form.maturityDate')} <input type="date" value=${e.maturity_date||''} placeholder=${t(locale, 'form.maturityAuto')} onInput=${ev=>upd(idx,'maturity_date',ev.target.value)} /></label>
+                </details>
             </div>`)}
-            <button class="btn-ghost" onClick=${addRow}>${t(locale, 'common.addRow')}</button>
-            ${!entries.length && html`<button class="btn-ghost" style="margin-left:8px" onClick=${loadSample}>${t(locale, 'overview.loadDemo')}</button>`}
-            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap">
+            <div style="display:flex; gap:8px; flex-wrap:wrap">
+                <button class="btn-ghost" onClick=${addRow}>${t(locale, 'common.addRow')}</button>
+                <button class="btn-ghost" onClick=${loadSample}>${t(locale, 'overview.loadDemo')}</button>
+            </div>
+            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center">
                 <button onClick=${()=>onCalc()} disabled=${loading}>${loading ? t(locale, 'common.calculating') : t(locale, 'common.calculateReturns')}</button>
                 <${ShareLink} route="term-deposits" state=${{ entries, apy: Number(apy) || 0 }} locale=${locale} />
+                <span class="muted" style="font-size:12px" title=${t(locale, 'share.autoCalc')}>${t(locale, 'share.rowCount', { count: entries.length })}</span>
             </div>
             ${error && html`<p style="color:var(--danger)" role="alert">${error}</p>`}
+            ${notice && html`<p style="color:var(--success); font-size:13px" role="status">${notice}</p>`}
         </div>
         <${LedgerIo} asset="term-deposits" entries=${entries} locale=${locale} onImport=${importRows} />
         ${result && html`<div data-results class="results-anchor">
             <${MomentumKpi} ledger=${result.ledger} summary=${result.summary} asset="term-deposits" settings=${settings} />
             <${AssetChart} ledger=${result.ledger} asset="term-deposits" settings=${settings} />
-            <${MaturityPanel} summary=${result.summary} ledger=${result.ledger} settings=${settings} />
-            <${SummaryCards} summary=${result.summary} settings=${settings} />
+            <${MaturityPanel} summary=${result.summary} ledger=${result.ledger} settings=${settings} onRollover=${rollover} />
+            <div class="summary-cards">
+                <div class="card"><div class="smallcaps">${t(locale, 'depositMaturity.projectedFv')}</div><div class="amount" style="font-size:15px">${formatCurrency(result.summary.projected_fv_constant_installment, locale, settings.currency)}</div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'depositMaturity.endingValue')}</div><div class="amount" style="font-size:15px">${formatCurrency(result.summary.ending_value, locale, settings.currency)}</div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'depositMaturity.monthlyRate')}</div><div class="amount" style="font-size:15px">${formatPercent(result.summary.monthly_rate, locale)}</div></div>
+            </div>
             <${LedgerTable} rows=${result.ledger} settings=${settings} columns=${[
                 {key:'date', label:t(locale, 'column.date')},
                 {key:'installment_amount', label:t(locale, 'column.installment'), fmt:'currency'},
                 {key:'current_value', label:t(locale, 'column.currentValue'), fmt:'currency'},
-                {key:'maturity_date', label:t(locale, 'depositMaturity.maturityDate')},
-                {key:'days_to_maturity', label:t(locale, 'depositMaturity.daysToMaturity')},
                 {key:'maturity_status', label:t(locale, 'depositMaturity.status')},
-                {key:'maturity_value', label:t(locale, 'depositMaturity.maturityValue'), fmt:'currency'},
-                {key:'accrued_interest', label:t(locale, 'depositMaturity.accruedInterest'), fmt:'currency'},
             ]} />
         </div>`}
         <${RelatedCalcs} current="term-deposits" settings=${settings} />

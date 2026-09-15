@@ -5,7 +5,7 @@ import { InfoTip } from './InfoTip.js';
 
 // Port of the legacy Vue DepositMaturityPanel: maturity tracker
 // with rollover suggestions, driven by the term-deposit result.
-export function MaturityPanel({ summary, ledger, settings }) {
+export function MaturityPanel({ summary, ledger, settings, onRollover }) {
     const [open, setOpen] = useState(true);
     const locale = settings.locale;
     const currency = settings.currency;
@@ -70,7 +70,9 @@ export function MaturityPanel({ summary, ledger, settings }) {
                             <td><span style=${chipStyle(row.maturity_status)}>${statusLabel(row.maturity_status)}</span></td>
                             <td class="num">${fmt('value', row.maturity_value)}</td>
                             <td class="num">${fmt('interest', row.accrued_interest)}</td>
-                            <td style="font-size:12px">${rolloverSuggestion(row)}</td>
+                            <td style="font-size:12px">${rolloverSuggestion(row)}
+                                ${row.maturity_status === 'matured' && onRollover && html`<div style="margin-top:6px"><button class="btn-sm" onClick=${() => onRollover(row)} aria-label=${`${t(locale, 'depositMaturity.rolloverAction')} ${row.maturity_date || ''}`}>${t(locale, 'depositMaturity.rolloverAction')}</button></div>`}
+                            </td>
                         </tr>`)}
                     </tbody>
                 </table></div>

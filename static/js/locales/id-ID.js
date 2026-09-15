@@ -42,6 +42,7 @@ export default {
     apy: 'APY',
     termMonths: 'Jangka Waktu (bulan)',
     maturityDate: 'Tanggal Jatuh Tempo',
+    maturityAuto: 'Otomatis: mulai + tenor',
   },
   column: {
     date: 'Tanggal',
@@ -102,6 +103,9 @@ export default {
   error: {
     atLeastOneRow: 'Setidaknya satu baris buku besar diperlukan.',
     everyRowDate: 'Setiap baris harus menyertakan tanggal.',
+    badApy: 'APY harus di antara 0 dan 1 (mis. 0,06 = 6%).',
+    badAmount: 'Nominal tidak boleh negatif.',
+    badMaturity: 'Tanggal jatuh tempo harus pada atau setelah tanggal mulai.',
     validationFailed: 'Validasi gagal. Mohon perbaiki bidang berikut.',
     requestFailed: 'Permintaan gagal. Tinjau input Anda dan coba lagi.',
   },
@@ -245,7 +249,12 @@ export default {
     maturesToday: 'Jatuh tempo hari ini',
     daysLeft: '{days} hari tersisa',
     rolloverMatured: 'Jatuh tempo \u2014 perpanjang pokok + bunga atau tarik.',
+    rolloverAction: 'Rollover \u2192',
+    rolledOver: 'Di-rollover ke baris baru di bawah \u2014 periksa, lalu hitung ulang.',
     rolloverSoon: 'Segera jatuh tempo \u2014 \u2248 {value} tersedia untuk diperpanjang.',
+    projectedFv: 'Nilai proyeksi',
+    endingValue: 'Nilai akhir',
+    monthlyRate: 'Bunga bulanan',
     holding: 'Ditahan hingga jatuh tempo.',
     nextMaturity: 'Jatuh Tempo Berikutnya',
     totalAccruedInterest: 'Total Bunga Terkumpul',
@@ -314,6 +323,7 @@ export default {
     stSubtitle: 'MoM + ROI + XIRR \u00b7 dividend yield opsional (%).',
     tdSubtitle: 'Bunga prorata APY \u00b7 pelacak jatuh tempo & rollover.',
     apyHint: 'mis. 0,06 = 6%',
+    apyAppliesAll: 'Berlaku untuk semua baris di bawah',
   },
   home: {
     eyebrow: 'Kalkulator keuangan gratis',
@@ -371,6 +381,8 @@ export default {
   share: {
     copyLink: 'Salin Tautan',
     copied: 'Tautan disalin!',
+    rowCount: '{count}/120 baris',
+    autoCalc: 'Membuka dengan input ini dan menghitung otomatis',
   },
   howto: {
     title: 'Apa yang diisi?',
@@ -380,7 +392,7 @@ export default {
     st1: 'Satu baris per akhir bulan: kode saham, setoran, pembelian tambahan, dividen diterima, dan nilai saat ini.',
     st2: 'Gunakan Ambil Kuotasi atau sinkronkan semua harga dari data live IDX.',
     st3: 'Isi dividend yield tahunan (%) agar estimasi dividen ikut terhitung.',
-    td1: 'Isi APY sekali, lalu satu baris per deposito: tanggal, nominal, nilai kini, tenor, dan tanggal jatuh tempo.',
+    td1: 'Satu baris per deposito: tanggal mulai, dana baru bulan itu, dan total saldo di rekening koran — bukan hanya setoran ini.',
     td2: 'Kosongkan jatuh tempo agar dihitung otomatis dari tanggal mulai plus tenor.',
 
     ev1: 'Isi kedua harga, jarak bulanan, harga bensin dan listrik, serta biaya servis.',

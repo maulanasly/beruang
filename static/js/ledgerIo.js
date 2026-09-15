@@ -42,6 +42,18 @@ export function exportLedgerCsvTemplate(asset) {
         return '1000';
     }).join(',');
     const header = columns.map(c => (c === 'symbol' ? 'stock code' : c)).join(',');
+    // Deposits read best as a cumulative pair: second row adds fresh money
+    // on top of the running balance, mirroring the bundled sample data.
+    if (asset === 'term-deposits') {
+        const second = columns.map(c => {
+            if (c === 'date') return '2026-08-31';
+            if (c === 'maturity_date') return '2027-08-31';
+            if (c === 'term_months') return '12';
+            if (c === 'current_value') return '2005';
+            return '1000';
+        }).join(',');
+        return `${header}\n${sample}\n${second}\n`;
+    }
     return `${header}\n${sample}\n`;
 }
 
