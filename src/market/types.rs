@@ -2,7 +2,7 @@
 //! `backend/schemas.py` so the embedded `static/js` client needs no changes.
 
 use chrono::NaiveDate;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct IdxStockItem {
@@ -22,7 +22,7 @@ pub struct IdxStockSearchResponse {
     pub items: Vec<IdxStockItem>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct StockQuoteResponse {
     pub symbol: String,
     pub name: String,
@@ -31,7 +31,7 @@ pub struct StockQuoteResponse {
     pub dividend_yield: Option<f64>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct HistoryPoint {
     pub date: NaiveDate,
     pub close: f64,
