@@ -401,7 +401,19 @@ pub async fn latest_quote(
     if let Some(cached) = cache.get(&normalized) {
         return Ok(cached);
     }
-    let snap = snapshot(client, &normalized).await?;
+    let snap = match snapshot(client, &normalized).await {
+        Ok(snap) => snap,
+        Err(_) => {
+            // Degraded tier first: the snapshot row beats any live error.
+            if let Some(quote) = snapshot_quote(&normalized) {
+                cache.put(normalized, quote.clone());
+                return Ok(quote);
+            }
+            return Err(MarketError::Upstream(format!(
+                "Unable to fetch latest market price for symbol '{normalized}'."
+            )));
+        }
+    };
     let Some(price) = snap.price else {
         // Degraded tier: yesterday's (or older) snapshot row beats an error.
         if let Some(quote) = snapshot_quote(&normalized) {
