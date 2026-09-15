@@ -103,6 +103,9 @@ export default {
   error: {
     atLeastOneRow: 'Setidaknya satu baris buku besar diperlukan.',
     everyRowDate: 'Setiap baris harus menyertakan tanggal.',
+    badApy: 'APY harus di antara 0 dan 1 (mis. 0,06 = 6%).',
+    badAmount: 'Nominal tidak boleh negatif.',
+    badMaturity: 'Tanggal jatuh tempo harus pada atau setelah tanggal mulai.',
     validationFailed: 'Validasi gagal. Mohon perbaiki bidang berikut.',
     requestFailed: 'Permintaan gagal. Tinjau input Anda dan coba lagi.',
   },

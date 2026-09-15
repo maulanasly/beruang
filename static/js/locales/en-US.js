@@ -104,6 +104,9 @@ export default {
   error: {
     atLeastOneRow: 'At least one ledger row is required.',
     everyRowDate: 'Every row must include a date.',
+    badApy: 'APY must be between 0 and 1 (e.g. 0.06 = 6%).',
+    badAmount: 'Amounts must not be negative.',
+    badMaturity: 'Maturity date must be on or after the start date.',
     validationFailed: 'Validation failed. Please fix the following fields.',
     requestFailed: 'Request failed. Please review your input and try again.',
   },
