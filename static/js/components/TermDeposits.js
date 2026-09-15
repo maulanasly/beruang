@@ -17,8 +17,11 @@ function addMonths(dateString, months) {
     if (!dateString) return '';
     const [year, month, day] = String(dateString).split('-').map(Number);
     const total = year * 12 + (month - 1) + Number(months);
+    const y = Math.floor(total / 12), m = (total % 12) + 1;
+    // Clamp to month-end (Jan 31 + 1mo → Feb 28/29, never Feb 31).
+    const lastDay = new Date(y, m, 0).getDate();
     const pad = (n) => String(n).padStart(2, '0');
-    return `${Math.floor(total / 12)}-${pad((total % 12) + 1)}-${pad(day)}`;
+    return `${y}-${pad(m)}-${pad(Math.min(day, lastDay))}`;
 }
 
 export function TermDeposits({ settings }) {
@@ -37,10 +40,11 @@ export function TermDeposits({ settings }) {
 
     function upd(idx, f, v){
         const next = entries.map((e,i)=> i===idx ? {...e,[f]:v}:e);
-        // Port of AssetCalculator.onTermDepositFieldInput: keep maturity in
-        // sync when the date is set or the term changes.
+        // Port of AssetCalculator.onTermDepositFieldInput: derive maturity
+        // from start + term — but only into an EMPTY field, never over a
+        // hand-entered date (clear the field to re-derive).
         const row = next[idx] || {};
-        if (f === 'term_months' || (f === 'date' && !row.maturity_date)) {
+        if (!row.maturity_date) {
             const base = f === 'date' ? v : row.date;
             if (base) next[idx] = { ...row, maturity_date: addMonths(base, Number(row.term_months) || 12) };
         }
@@ -113,15 +117,16 @@ export function TermDeposits({ settings }) {
         <div class="page-head"><h1>${t(locale, 'nav.termDeposits')}</h1><p class="muted">${t(locale, 'calc.tdSubtitle')} <${InfoTip} locale=${locale} tipKey="glossary.apy" /> <${InfoTip} locale=${locale} tipKey="glossary.depositMaturity" /></p></div>
         <${HowTo} locale=${locale} startOpen=${!result} steps=${[t(locale,'howto.td1'), t(locale,'howto.td2'), t(locale,'howto.td3')]} />
         <div class="card">
-            <label>${t(locale, 'form.apy')} (${t(locale, 'calc.apyHint')}) <input type="number" step="0.001" value=${apy} onInput=${e=>setApySave(e.target.value)} /></label>
+            <label>${t(locale, 'form.apy')} (${t(locale, 'calc.apyHint')}) <${InfoTip} locale=${locale} tipKey="glossary.apy" /> <input type="number" step="0.001" value=${apy} onInput=${e=>setApySave(e.target.value)} /></label>
+            <p class="muted" style="font-size:12px; margin:6px 0 0">${t(locale, 'calc.apyAppliesAll')}</p>
         </div>
         <div class="card">
             ${entries.map((e,idx)=> html`<div class="entry-grid" style="--cols:5">
                 <label>${t(locale, 'form.date')} <input type="date" value=${e.date} onInput=${ev=>upd(idx,'date',ev.target.value)} /></label>
                 <label>${t(locale, 'form.installmentAmount')} <input type="number" value=${e.installment_amount} onInput=${ev=>upd(idx,'installment_amount',ev.target.value)} /></label>
                 <label>${t(locale, 'form.currentValue')} <input type="number" value=${e.current_value} onInput=${ev=>upd(idx,'current_value',ev.target.value)} /></label>
-                <label>${t(locale, 'form.termMonths')} <input type="number" value=${e.term_months} onInput=${ev=>upd(idx,'term_months',ev.target.value)} /></label>
-                <label>${t(locale, 'form.maturityDate')} <input type="date" value=${e.maturity_date||''} onInput=${ev=>upd(idx,'maturity_date',ev.target.value)} /></label>
+                <label>${t(locale, 'form.termMonths')} <${InfoTip} locale=${locale} tipKey="glossary.termMonths" /> <input type="number" value=${e.term_months} onInput=${ev=>upd(idx,'term_months',ev.target.value)} /></label>
+                <label>${t(locale, 'form.maturityDate')} <${InfoTip} locale=${locale} tipKey="glossary.maturityDate" /> <input type="date" value=${e.maturity_date||''} placeholder=${t(locale, 'form.maturityAuto')} onInput=${ev=>upd(idx,'maturity_date',ev.target.value)} /></label>
                 <button class="btn-ghost btn-sm entry-remove" onClick=${()=>rm(idx)}>${t(locale, 'common.remove')}</button>
             </div>`)}
             <button class="btn-ghost" onClick=${addRow}>${t(locale, 'common.addRow')}</button>

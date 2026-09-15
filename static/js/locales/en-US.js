@@ -42,6 +42,7 @@ export default {
     apy: 'APY',
     termMonths: 'Term (months)',
     maturityDate: 'Maturity Date',
+    maturityAuto: 'Auto: start + term',
   },
   column: {
     date: 'Date',
@@ -246,6 +247,8 @@ export default {
     maturesToday: 'Matures today',
     daysLeft: '{days} days left',
     rolloverMatured: 'Matured \u2014 roll over principal + interest or withdraw.',
+    rolloverAction: 'Rollover \u2192',
+    rolledOver: 'Rolled over into a new row below \u2014 review it, then recalculate.',
     rolloverSoon: 'Maturing soon \u2014 \u2248 {value} available to roll over.',
     holding: 'Holding until maturity.',
     nextMaturity: 'Next Maturity',
@@ -315,6 +318,7 @@ export default {
     stSubtitle: 'MoM + ROI + XIRR \u00b7 optional dividend yield (%).',
     tdSubtitle: 'APY prorated interest \u00b7 maturity & rollover tracker.',
     apyHint: 'e.g. 0.06 = 6%',
+    apyAppliesAll: 'Applies to every row below',
   },
   home: {
     eyebrow: 'Free finance calculators',
@@ -381,7 +385,7 @@ export default {
     st1: 'One row per month-end per holding: code, deposits, extra purchases, dividends received, and current value.',
     st2: 'Use Fetch Quote or Sync All Prices to fill current values from live IDX data.',
     st3: 'Add the annual dividend yield (%) to include estimated dividend income in returns.',
-    td1: 'Set the APY once, then one row per deposit: date, amount, current value, term, and maturity date.',
+    td1: 'One row per deposit: the start date, new money added that month, and the total balance on your statement — not just this deposit.',
     td2: 'Leave maturity empty to derive it from start date plus term.',
 
     ev1: 'Enter both prices, your monthly distance, fuel and electricity prices, and service costs.',
