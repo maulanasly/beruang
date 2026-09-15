@@ -75,3 +75,14 @@ sudo bash /opt/beruang/scripts/rollback.sh   # .prev binary + restart + healthch
 - Status: `systemctl status beruang nginx --no-pager`
 - TLS renewals: `systemctl list-timers | grep -i certbot`
 - Keep tcp/8000 off the public firewall; app stays on localhost behind nginx.
+
+## 7. Market-data snapshot (degraded tier)
+
+`static/data/snapshot.json` is refreshed every weekday by the `Market
+snapshot` workflow (cron 11:00 UTC, after the IDX close) and auto-deployed
+via `Build + Deploy`, since the file is baked into the binary. When Yahoo
+edge rate-limits the VPS IP, quote/history/yields endpoints serve the
+snapshot flagged `delayed: true` with its `as_of` date instead of erroring.
+Search stays Yahoo-only. Regenerate manually with `make snapshot`; the
+producer refuses to overwrite on a bad Yahoo day (exit 1, workflow skips
+the commit).

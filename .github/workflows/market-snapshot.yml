@@ -1,0 +1,53 @@
+name: Market snapshot
+
+# Daily IDX snapshot (weekdays after close): refreshes
+# static/data/snapshot.json — the degraded tier served when Yahoo
+# edge rate-limits the production IP. Commits only on full success;
+# a bad Yahoo day changes nothing.
+on:
+  schedule:
+    # 11:00 UTC = 18:00 WIB, after the 09:00 UTC IDX close + buffer.
+    - cron: '0 11 * * 1-5'
+  workflow_dispatch: {}
+
+env:
+  CARGO_TERM_COLOR: always
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Refresh snapshot
+        run: cargo run --release --bin snapshot
+
+      - name: Commit if changed
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- static/data/snapshot.json; then
+            echo "Snapshot unchanged — nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add static/data/snapshot.json
+          git commit -m "chore: refresh market snapshot ($(date -u +%F))"
+          git push
+
+      # The snapshot is baked into the binary, so fresh data only goes live
+      # with a deploy. Reuse the release pipeline via manual dispatch.
+      - name: Deploy fresh snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run "Build + Deploy" --ref main
