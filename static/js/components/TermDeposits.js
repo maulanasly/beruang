@@ -3,11 +3,12 @@ import { loadLedgers, saveLedgers, saveEntries, SAMPLE_TD } from '../store.js';
 import { calculateReturns } from '../api.js';
 import { t } from '../i18n.js';
 import { readSharedState, ShareLink, normalizeLedgerEntries, calcSnapshot } from '../share.js';
-import { LedgerTable, SummaryCards } from './AssetForm.js';
+import { LedgerTable } from './AssetForm.js';
 import { LedgerIo } from './LedgerIo.js';
 import { MomentumKpi } from './MomentumKpi.js';
 import { AssetChart } from './AssetChart.js';
 import { MaturityPanel } from './MaturityPanel.js';
+import { formatCurrency, formatPercent } from '../utils.js';
 import { HowTo } from './HowTo.js';
 import { Crumbs } from './Crumbs.js';
 import { RelatedCalcs } from './RelatedCalcs.js';
@@ -142,16 +143,16 @@ export function TermDeposits({ settings }) {
             <${MomentumKpi} ledger=${result.ledger} summary=${result.summary} asset="term-deposits" settings=${settings} />
             <${AssetChart} ledger=${result.ledger} asset="term-deposits" settings=${settings} />
             <${MaturityPanel} summary=${result.summary} ledger=${result.ledger} settings=${settings} />
-            <${SummaryCards} summary=${result.summary} settings=${settings} />
+            <div class="summary-cards">
+                <div class="card"><div class="smallcaps">${t(locale, 'depositMaturity.projectedFv')}</div><div class="amount" style="font-size:15px">${formatCurrency(result.summary.projected_fv_constant_installment, locale, settings.currency)}</div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'depositMaturity.endingValue')}</div><div class="amount" style="font-size:15px">${formatCurrency(result.summary.ending_value, locale, settings.currency)}</div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'depositMaturity.monthlyRate')}</div><div class="amount" style="font-size:15px">${formatPercent(result.summary.monthly_rate, locale)}</div></div>
+            </div>
             <${LedgerTable} rows=${result.ledger} settings=${settings} columns=${[
                 {key:'date', label:t(locale, 'column.date')},
                 {key:'installment_amount', label:t(locale, 'column.installment'), fmt:'currency'},
                 {key:'current_value', label:t(locale, 'column.currentValue'), fmt:'currency'},
-                {key:'maturity_date', label:t(locale, 'depositMaturity.maturityDate')},
-                {key:'days_to_maturity', label:t(locale, 'depositMaturity.daysToMaturity')},
                 {key:'maturity_status', label:t(locale, 'depositMaturity.status')},
-                {key:'maturity_value', label:t(locale, 'depositMaturity.maturityValue'), fmt:'currency'},
-                {key:'accrued_interest', label:t(locale, 'depositMaturity.accruedInterest'), fmt:'currency'},
             ]} />
         </div>`}
         <${RelatedCalcs} current="term-deposits" settings=${settings} />
