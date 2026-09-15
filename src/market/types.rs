@@ -29,6 +29,10 @@ pub struct StockQuoteResponse {
     pub price: f64,
     pub currency: String,
     pub dividend_yield: Option<f64>,
+    /// True when served from the daily snapshot instead of live Yahoo.
+    pub delayed: bool,
+    /// Trading date of the data (today when live).
+    pub as_of: NaiveDate,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -43,6 +47,10 @@ pub struct IndexHistoryResponse {
     pub name: String,
     pub period: String,
     pub points: Vec<HistoryPoint>,
+    /// True when served from the daily snapshot instead of live Yahoo.
+    pub delayed: bool,
+    /// Trading date of the data (today when live).
+    pub as_of: NaiveDate,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -53,6 +61,10 @@ pub struct PriceHistoryResponse {
     pub currency: String,
     pub dividend_yield: Option<f64>,
     pub points: Vec<HistoryPoint>,
+    /// True when served from the daily snapshot instead of live Yahoo.
+    pub delayed: bool,
+    /// Trading date of the data (today when live).
+    pub as_of: NaiveDate,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -68,4 +80,6 @@ pub struct DividendYieldItem {
 pub struct DividendYieldsResponse {
     pub as_of: NaiveDate,
     pub items: Vec<DividendYieldItem>,
+    /// True when served from the daily snapshot instead of live Yahoo.
+    pub delayed: bool,
 }

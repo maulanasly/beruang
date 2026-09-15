@@ -47,6 +47,15 @@ impl SnapshotFile {
         Some(file)
     }
 
+    /// The snapshot baked into the binary at compile time
+    /// (`static/data/snapshot.json`, also served by rust-embed).
+    pub fn embedded() -> Option<&'static Self> {
+        static EMBEDDED: std::sync::OnceLock<Option<SnapshotFile>> = std::sync::OnceLock::new();
+        EMBEDDED
+            .get_or_init(|| SnapshotFile::parse(include_str!("../../static/data/snapshot.json")))
+            .as_ref()
+    }
+
     pub fn quote(&self, symbol: &str) -> Option<&StockQuoteResponse> {
         self.quotes.get(symbol)
     }
@@ -68,7 +77,7 @@ mod tests {
         "version": 1,
         "as_of": "2026-09-12",
         "quotes": {
-            "BBCA.JK": { "symbol": "BBCA.JK", "name": "Bank Central Asia Tbk", "price": 6325.0, "currency": "IDR", "dividend_yield": 0.0602 }
+            "BBCA.JK": { "symbol": "BBCA.JK", "name": "Bank Central Asia Tbk", "price": 6325.0, "currency": "IDR", "dividend_yield": 0.0602, "delayed": false, "as_of": "2026-09-12" }
         },
         "histories": {
             "BBCA.JK": [ { "date": "2026-09-11", "close": 6300.0 }, { "date": "2026-09-12", "close": 6325.0 } ]
