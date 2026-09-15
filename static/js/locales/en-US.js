@@ -118,6 +118,7 @@ export default {
     syncYields: 'Div yields: {yields}',
     dividendYield: 'Dividend Yield',
     lastFetched: 'Last Fetched',
+    delayedAsOf: 'Delayed · as of {date}',
     targetLedgerRow: 'Target Ledger Row',
     searchPlaceholder: 'Type to search any IDX stock code…',
     searching: 'Searching…',

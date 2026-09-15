@@ -520,6 +520,7 @@ mod tests {
             "reviewRestore:",
             "themeDark:",
             "themeToggle:",
+            "delayedAsOf:",
         ] {
             assert!(en.contains(key), "en-US missing {key}");
             assert!(id.contains(key), "id-ID missing {key}");

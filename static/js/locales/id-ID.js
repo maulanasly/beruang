@@ -117,6 +117,7 @@ export default {
     syncYields: 'Imbal hasil dividen: {yields}',
     dividendYield: 'Imbal Hasil Dividen',
     lastFetched: 'Terakhir Diambil',
+    delayedAsOf: 'Tertunda · per {date}',
     targetLedgerRow: 'Baris Buku Besar Target',
     searchPlaceholder: 'Ketik untuk mencari kode saham IDX apa pun…',
     searching: 'Mencari…',

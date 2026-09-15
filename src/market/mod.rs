@@ -4,6 +4,7 @@
 
 pub mod cache;
 pub mod service;
+pub mod snapshot;
 pub mod types;
 pub mod yahoo;
 
@@ -13,6 +14,7 @@ pub use service::{
     top_dividend_yields, yields_cache, MarketError, QuoteCache, YieldsCache, INDEX_OPTIONS,
     INDEX_PERIODS, KOMPAS100_STARTER,
 };
+pub use snapshot::{SnapshotFile, SNAPSHOT_VERSION};
 pub use types::{
     DividendYieldItem, DividendYieldsResponse, HistoryPoint, IdxStockItem, IdxStockListResponse,
     IdxStockSearchResponse, IndexHistoryResponse, PriceHistoryResponse, StockQuoteResponse,

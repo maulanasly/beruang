@@ -8,6 +8,7 @@ use std::time::Duration;
 use chrono::{Local, NaiveDate};
 
 use super::cache::TtlCache;
+use super::snapshot::SnapshotFile;
 use super::types::{
     DividendYieldItem, DividendYieldsResponse, HistoryPoint, IdxStockItem, IdxStockListResponse,
     IdxStockSearchResponse, IndexHistoryResponse, PriceHistoryResponse, StockQuoteResponse,
@@ -114,6 +115,45 @@ fn raw_str(value: &serde_json::Value) -> Option<&str> {
         serde_json::Value::Object(map) => map.get("raw").and_then(raw_str),
         _ => None,
     }
+}
+
+/// Keep the newest points inside a Yahoo-style window. The snapshot always
+/// holds 1y of dailies; shorter requests slice its tail.
+fn filter_points_by_period(points: &[HistoryPoint], period: &str) -> Vec<HistoryPoint> {
+    let days: Option<i64> = match period {
+        "1mo" => Some(31),
+        "3mo" => Some(93),
+        "6mo" => Some(186),
+        "1y" => Some(366),
+        _ => None,
+    };
+    match days {
+        None => points.to_vec(),
+        Some(n) => {
+            let cutoff = today() - chrono::Duration::days(n);
+            points
+                .iter()
+                .filter(|p| p.date >= cutoff)
+                .cloned()
+                .collect()
+        }
+    }
+}
+
+/// Snapshot fallback for a single-symbol quote. Returns None when the file
+/// has no usable row for the symbol.
+fn snapshot_quote(symbol: &str) -> Option<StockQuoteResponse> {
+    let file = SnapshotFile::embedded()?;
+    let row = file.quote(symbol)?;
+    Some(StockQuoteResponse {
+        symbol: row.symbol.clone(),
+        name: row.name.clone(),
+        price: row.price,
+        currency: row.currency.clone(),
+        dividend_yield: row.dividend_yield,
+        delayed: true,
+        as_of: file.as_of,
+    })
 }
 
 pub fn kompas100() -> IdxStockListResponse {
@@ -363,6 +403,11 @@ pub async fn latest_quote(
     }
     let snap = snapshot(client, &normalized).await?;
     let Some(price) = snap.price else {
+        // Degraded tier: yesterday's (or older) snapshot row beats an error.
+        if let Some(quote) = snapshot_quote(&normalized) {
+            cache.put(normalized, quote.clone());
+            return Ok(quote);
+        }
         return Err(MarketError::Upstream(format!(
             "Unable to fetch latest market price for symbol '{normalized}'."
         )));
@@ -373,6 +418,8 @@ pub async fn latest_quote(
         price,
         currency: snap.currency,
         dividend_yield: snap.dividend_yield,
+        delayed: false,
+        as_of: today(),
     };
     cache.put(normalized, quote.clone());
     Ok(quote)
@@ -410,12 +457,39 @@ pub async fn index_history(
             ))
         })?;
     check_period(period)?;
-    let payload = client.chart(&normalized, period).await?;
+    let payload = match client.chart(&normalized, period).await {
+        Ok(payload) => payload,
+        Err(_) => return snapshot_index_history(&normalized, name, period),
+    };
     Ok(IndexHistoryResponse {
         symbol: normalized,
         name,
         period: period.to_string(),
         points: points_from_chart(&payload)?,
+        delayed: false,
+        as_of: today(),
+    })
+}
+
+/// Snapshot fallback for `^JKSE` / `^JKLQ45` histories.
+fn snapshot_index_history(
+    symbol: &str,
+    name: String,
+    period: &str,
+) -> Result<IndexHistoryResponse, MarketError> {
+    let file = SnapshotFile::embedded().ok_or_else(|| {
+        MarketError::Upstream(format!("Unable to fetch index history for '{symbol}'."))
+    })?;
+    let points = file.index(symbol).ok_or_else(|| {
+        MarketError::Upstream(format!("Unable to fetch index history for '{symbol}'."))
+    })?;
+    Ok(IndexHistoryResponse {
+        symbol: symbol.to_string(),
+        name,
+        period: period.to_string(),
+        points: filter_points_by_period(points, period),
+        delayed: true,
+        as_of: file.as_of,
     })
 }
 
@@ -429,7 +503,10 @@ pub async fn price_history(
         return Err(MarketError::Validation("Symbol is required.".to_string()));
     }
     check_period(period)?;
-    let payload = client.chart(&normalized, period).await?;
+    let payload = match client.chart(&normalized, period).await {
+        Ok(payload) => payload,
+        Err(_) => return snapshot_price_history(&normalized, period),
+    };
     let points = points_from_chart(&payload)?;
     // Name/currency/yield enrich the response; a summary outage degrades to
     // defaults rather than failing the history the chart already provided.
@@ -469,6 +546,36 @@ pub async fn price_history(
         currency,
         dividend_yield,
         points,
+        delayed: false,
+        as_of: today(),
+    })
+}
+
+/// Snapshot fallback for per-symbol histories (meta degrades to the
+/// snapshot quote row when present).
+fn snapshot_price_history(symbol: &str, period: &str) -> Result<PriceHistoryResponse, MarketError> {
+    let file = SnapshotFile::embedded().ok_or_else(|| {
+        MarketError::Upstream(format!("Unable to fetch price history for '{symbol}'."))
+    })?;
+    let points = file.history(symbol).ok_or_else(|| {
+        MarketError::Upstream(format!("Unable to fetch price history for '{symbol}'."))
+    })?;
+    let (mut name, mut currency, mut dividend_yield) =
+        (symbol.to_string(), "IDR".to_string(), None);
+    if let Some(row) = file.quote(symbol) {
+        name = row.name.clone();
+        currency = row.currency.clone();
+        dividend_yield = row.dividend_yield;
+    }
+    Ok(PriceHistoryResponse {
+        symbol: symbol.to_string(),
+        name,
+        period: period.to_string(),
+        currency,
+        dividend_yield,
+        points: filter_points_by_period(points, period),
+        delayed: true,
+        as_of: file.as_of,
     })
 }
 
@@ -533,12 +640,51 @@ pub async fn top_dividend_yields(
             .unwrap_or(std::cmp::Ordering::Equal)
     });
     results.truncate(limit);
+    if results.is_empty() {
+        // Degraded tier: yesterday's top yields beat an empty table.
+        if let Some(fallback) = snapshot_yields(limit) {
+            return Ok(fallback);
+        }
+    }
     let response = DividendYieldsResponse {
         as_of: Local::now().date_naive(),
         items: results,
+        delayed: false,
     };
     cache.put(key, response.clone());
     Ok(response)
+}
+
+/// Snapshot fallback for the yields board: positive-yield rows only,
+/// ranked and truncated exactly like the live path.
+fn snapshot_yields(limit: usize) -> Option<DividendYieldsResponse> {
+    let file = SnapshotFile::embedded()?;
+    let mut items: Vec<DividendYieldItem> = file
+        .quotes
+        .values()
+        .filter(|q| q.dividend_yield.unwrap_or(0.0) > 0.0)
+        .map(|q| DividendYieldItem {
+            symbol: q.symbol.clone(),
+            name: q.name.clone(),
+            price: q.price,
+            currency: q.currency.clone(),
+            dividend_yield: q.dividend_yield.unwrap_or(0.0),
+        })
+        .collect();
+    if items.is_empty() {
+        return None;
+    }
+    items.sort_by(|a, b| {
+        b.dividend_yield
+            .partial_cmp(&a.dividend_yield)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
+    items.truncate(limit);
+    Some(DividendYieldsResponse {
+        as_of: file.as_of,
+        items,
+        delayed: true,
+    })
 }
 
 pub fn today() -> NaiveDate {
@@ -548,7 +694,9 @@ pub fn today() -> NaiveDate {
 #[cfg(test)]
 mod tests {
     use super::{
-        filter_search_results, normalize_dividend_yield, points_from_chart, INDEX_PERIODS,
+        filter_points_by_period, filter_search_results, normalize_dividend_yield,
+        points_from_chart, snapshot_price_history, snapshot_quote, snapshot_yields, today,
+        INDEX_PERIODS,
     };
 
     #[test]
@@ -623,5 +771,45 @@ mod tests {
     fn chart_without_data_is_upstream() {
         let payload = serde_json::json!({"chart": {"result": null}});
         assert!(points_from_chart(&payload).is_err());
+    }
+
+    #[test]
+    fn snapshot_fallback_serves_embedded_rows_as_delayed() {
+        // Reads the real baked-in snapshot (committed by `make snapshot`).
+        let quote = snapshot_quote("BBCA.JK").expect("snapshot has BBCA.JK");
+        assert!(quote.delayed);
+        assert!(quote.price > 0.0);
+        assert!(snapshot_quote("NOPE.JK").is_none());
+
+        let history = snapshot_price_history("BBCA.JK", "1mo").expect("history");
+        assert!(history.delayed);
+        assert!(!history.points.is_empty());
+        // 1y window holds more than the 1mo slice.
+        let full = snapshot_price_history("BBCA.JK", "5y").expect("history");
+        assert!(full.points.len() >= history.points.len());
+        assert!(snapshot_price_history("NOPE.JK", "1mo").is_err());
+
+        let yields = snapshot_yields(10).expect("yields fallback");
+        assert!(yields.delayed);
+        assert_eq!(yields.items.len(), 10);
+        assert!(yields
+            .items
+            .windows(2)
+            .all(|w| w[0].dividend_yield >= w[1].dividend_yield));
+    }
+
+    #[test]
+    fn period_filter_keeps_tail_only() {
+        use crate::market::HistoryPoint;
+        let points: Vec<HistoryPoint> = (0..400)
+            .map(|i| HistoryPoint {
+                date: today() - chrono::Duration::days(i),
+                close: 100.0,
+            })
+            .collect();
+        let month = filter_points_by_period(&points, "1mo");
+        assert!(!month.is_empty() && month.len() < points.len());
+        let all = filter_points_by_period(&points, "5y");
+        assert_eq!(all.len(), points.len());
     }
 }

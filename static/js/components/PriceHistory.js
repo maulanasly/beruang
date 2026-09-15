@@ -11,6 +11,7 @@ export function PriceHistory({ symbol, settings }) {
     const [points, setPoints] = useState([]);
     const [name, setName] = useState('');
     const [yield_, setYield] = useState(null);
+    const [stale, setStale] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [loaded, setLoaded] = useState(false);
@@ -23,6 +24,7 @@ export function PriceHistory({ symbol, settings }) {
             const data = await fetchPriceHistory(sym, period);
             setPoints(data.points || []); setName(data.name || sym);
             setYield(data.dividend_yield ?? null); setLoaded(true);
+            setStale(data.delayed ? t(locale, 'market.delayedAsOf', { date: data.as_of }) : '');
         } catch (e) { setError(e.message); setPoints([]); setLoaded(false); }
         finally { setLoading(false); }
     }
@@ -49,7 +51,7 @@ export function PriceHistory({ symbol, settings }) {
         ${error && html`<p style="color:var(--danger); font-size:13px">${error}</p>`}
         ${loaded && !closes.length && html`<p class="muted" style="font-size:13px">${t(locale, 'priceHistory.noData')}</p>`}
         ${closes.length > 1 && html`<div>
-            <p class="muted" style="font-size:12px">${name} · ${closes.length} closes</p>
+            <p class="muted" style="font-size:12px">${name} · ${closes.length} closes${stale ? ` · ${stale}` : ''}</p>
             <svg viewBox="0 0 ${w} ${h}" width="100%" height="140" role="img" aria-label=${svgLabel} style="background:var(--surface);border:1px solid var(--hairline);border-radius:10px">
                 <title>${svgLabel}</title>
                 <path d=${d} fill="none" style="stroke:var(--chart-blue)" stroke-width="1.5" />

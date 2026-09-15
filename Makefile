@@ -106,6 +106,13 @@ verify-rust: verify ## Alias for verify
 verify-all: verify ## Alias for verify
 
 # ------------------------------------------------------------------------------
+# Market snapshot (degraded data tier; see src/bin/snapshot.rs)
+# ------------------------------------------------------------------------------
+.PHONY: snapshot
+snapshot: ## Refresh static/data/snapshot.json from Yahoo (daily cron does this in CI)
+	cargo run --manifest-path $(RUST_MANIFEST) --bin snapshot
+
+# ------------------------------------------------------------------------------
 # Release (production deploys trigger on published GitHub Releases;
 # see docs/DEPLOY.md for the full runbook)
 # ------------------------------------------------------------------------------

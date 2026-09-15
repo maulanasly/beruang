@@ -7,6 +7,7 @@ export function DividendFocus({ settings, onApply }) {
     const locale = settings.locale;
     const [items, setItems] = useState([]);
     const [asOf, setAsOf] = useState(null);
+    const [stale, setStale] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -15,6 +16,7 @@ export function DividendFocus({ settings, onApply }) {
         try {
             const data = await fetchDividendYields(10);
             setItems(data.items || []); setAsOf(data.as_of || null);
+            setStale(!!data.delayed);
         } catch (e) { setError(e.message); setItems([]); }
         finally { setLoading(false); }
     }
@@ -26,7 +28,7 @@ export function DividendFocus({ settings, onApply }) {
             <span style="flex:1"></span>
             <button class="btn-ghost btn-sm" onClick=${load} disabled=${loading}>${loading ? t(locale, 'dividendFocus.loading') : t(locale, 'dividendFocus.refresh')}</button>
         </div>
-        ${asOf && html`<p class="muted" style="font-size:12px">As of ${asOf}</p>`}
+        ${asOf && html`<p class="muted" style="font-size:12px">${stale ? t(locale, 'market.delayedAsOf', { date: asOf }) : `As of ${asOf}`}</p>`}
         ${error && html`<p style="color:var(--danger); font-size:13px">${error}</p>`}
         ${!loading && !error && !items.length
             ? html`<p class="muted" style="font-size:13px">${t(locale, 'dividendFocus.empty')}</p>`

@@ -226,7 +226,7 @@ export function Stocks({ settings }) {
                 <button class="btn-ghost btn-sm" onClick=${doQuote} disabled=${quoteLoading || !quoteSym.trim()}>${quoteLoading ? t(locale, 'market.fetchingQuote') : t(locale, 'ui.fetchQuote')}</button>
                 <button class="btn-ghost btn-sm" onClick=${applyLatest} disabled=${quoteLoading || !quoteSym.trim()}>${t(locale, 'market.applyLatestPrice')}</button>
                 <button class="btn-ghost btn-sm" onClick=${syncAll} disabled=${syncing}>${syncing ? t(locale, 'market.syncingPrices') : t(locale, 'market.syncAllPrices')}</button>
-                ${lastQuote && html`<span class="muted" style="font-size:13px">${t(locale, 'market.lastFetched')}: <strong>${formatCurrency(lastQuote.price, locale, lastQuote.currency)}</strong> ${show(lastQuote.symbol)}${typeof lastQuote.dividend_yield === 'number' ? ` · ${t(locale, 'market.dividendYield')} ${formatPercent(lastQuote.dividend_yield, locale)}` : ''}</span>`}
+                ${lastQuote && html`<span class="muted" style="font-size:13px">${t(locale, 'market.lastFetched')}: <strong>${formatCurrency(lastQuote.price, locale, lastQuote.currency)}</strong> ${show(lastQuote.symbol)}${typeof lastQuote.dividend_yield === 'number' ? ` · ${t(locale, 'market.dividendYield')} ${formatPercent(lastQuote.dividend_yield, locale)}` : ''}${lastQuote.delayed ? ` · ${t(locale, 'market.delayedAsOf', { date: lastQuote.as_of })}` : ''}</span>`}
             </div>
             ${quoteStatus && html`<p class="muted" style="font-size:13px">${quoteStatus}</p>`}
             ${syncMsg && html`<p class="muted" style="font-size:13px">${syncMsg}</p>`}
