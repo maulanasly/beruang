@@ -381,6 +381,8 @@ export default {
   share: {
     copyLink: 'Copy Share Link',
     copied: 'Link copied!',
+    rowCount: '{count}/120 rows',
+    autoCalc: 'Opens with these inputs and calculates automatically',
   },
   howto: {
     title: 'What do I enter?',

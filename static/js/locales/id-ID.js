@@ -381,6 +381,8 @@ export default {
   share: {
     copyLink: 'Salin Tautan',
     copied: 'Tautan disalin!',
+    rowCount: '{count}/120 baris',
+    autoCalc: 'Membuka dengan input ini dan menghitung otomatis',
   },
   howto: {
     title: 'Apa yang diisi?',

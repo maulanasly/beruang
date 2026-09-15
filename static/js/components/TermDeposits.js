@@ -154,19 +154,27 @@ export function TermDeposits({ settings }) {
             <p class="muted" style="font-size:12px; margin:6px 0 0">${t(locale, 'calc.apyAppliesAll')}</p>
         </div>
         <div class="card">
-            ${entries.map((e,idx)=> html`<div class="entry-grid" style="--cols:5">
+            ${entries.map((e,idx)=> html`<div class="deposit-row">
+                <div class="deposit-row__head"><span class="smallcaps">${t(locale, 'market.row')} ${idx + 1}</span><button class="btn-ghost btn-sm" onClick=${()=>rm(idx)}>${t(locale, 'common.remove')}</button></div>
+                <div class="entry-grid" style="--cols:4">
                 <label>${t(locale, 'form.date')} <input type="date" value=${e.date} onInput=${ev=>upd(idx,'date',ev.target.value)} /></label>
                 <label>${t(locale, 'form.installmentAmount')} <input type="number" min="0" value=${e.installment_amount} onInput=${ev=>upd(idx,'installment_amount',ev.target.value)} /></label>
                 <label>${t(locale, 'form.currentValue')} <input type="number" min="0" value=${e.current_value} onInput=${ev=>upd(idx,'current_value',ev.target.value)} /></label>
                 <label>${t(locale, 'form.termMonths')} <${InfoTip} locale=${locale} tipKey="glossary.termMonths" /> <input type="number" min="1" value=${e.term_months} onInput=${ev=>upd(idx,'term_months',ev.target.value)} /></label>
-                <label>${t(locale, 'form.maturityDate')} <${InfoTip} locale=${locale} tipKey="glossary.maturityDate" /> <input type="date" value=${e.maturity_date||''} placeholder=${t(locale, 'form.maturityAuto')} onInput=${ev=>upd(idx,'maturity_date',ev.target.value)} /></label>
-                <button class="btn-ghost btn-sm entry-remove" onClick=${()=>rm(idx)}>${t(locale, 'common.remove')}</button>
+                </div>
+                <details class="maturity-details">
+                    <summary>${t(locale, 'form.maturityDate')} <${InfoTip} locale=${locale} tipKey="glossary.maturityDate" />${e.maturity_date ? ` · ${e.maturity_date}` : ''}</summary>
+                    <label>${t(locale, 'form.maturityDate')} <input type="date" value=${e.maturity_date||''} placeholder=${t(locale, 'form.maturityAuto')} onInput=${ev=>upd(idx,'maturity_date',ev.target.value)} /></label>
+                </details>
             </div>`)}
-            <button class="btn-ghost" onClick=${addRow}>${t(locale, 'common.addRow')}</button>
-            ${!entries.length && html`<button class="btn-ghost" style="margin-left:8px" onClick=${loadSample}>${t(locale, 'overview.loadDemo')}</button>`}
-            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap">
+            <div style="display:flex; gap:8px; flex-wrap:wrap">
+                <button class="btn-ghost" onClick=${addRow}>${t(locale, 'common.addRow')}</button>
+                <button class="btn-ghost" onClick=${loadSample}>${t(locale, 'overview.loadDemo')}</button>
+            </div>
+            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; align-items:center">
                 <button onClick=${()=>onCalc()} disabled=${loading}>${loading ? t(locale, 'common.calculating') : t(locale, 'common.calculateReturns')}</button>
                 <${ShareLink} route="term-deposits" state=${{ entries, apy: Number(apy) || 0 }} locale=${locale} />
+                <span class="muted" style="font-size:12px" title=${t(locale, 'share.autoCalc')}>${t(locale, 'share.rowCount', { count: entries.length })}</span>
             </div>
             ${error && html`<p style="color:var(--danger)" role="alert">${error}</p>`}
             ${notice && html`<p style="color:var(--success); font-size:13px" role="status">${notice}</p>`}
