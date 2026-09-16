@@ -482,6 +482,12 @@ export default {
     nwChartRenter: 'Renter (invested)',
     sensTitle: 'What if appreciation differs?',
     sensNever: 'never',
+    groupFinancing: 'Purchase & financing',
+    groupMonthly: 'Monthly costs',
+    groupMarket: 'Market assumptions',
+    dpModeAmount: 'Rp',
+    dpModePercent: '%',
+    flipHint: 'At {pct}% appreciation, buying pulls ahead in year {year}',
   },
 
   related: {

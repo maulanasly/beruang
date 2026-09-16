@@ -482,6 +482,12 @@ export default {
     nwChartRenter: 'Penyewa (terinvestasi)',
     sensTitle: 'Bagaimana jika apresiasi berbeda?',
     sensNever: 'tak pernah',
+    groupFinancing: 'Pembelian & pembiayaan',
+    groupMonthly: 'Biaya bulanan',
+    groupMarket: 'Asumsi pasar',
+    dpModeAmount: 'Rp',
+    dpModePercent: '%',
+    flipHint: 'Pada apresiasi {pct}%, beli unggul mulai tahun ke-{year}',
   },
 
   related: {
