@@ -1,4 +1,4 @@
-# beruang production deploy runbook — kalkulator.rayakala.ink on 43.173.12.145.
+# beruang production deploy runbook — kalkulator (.ink canonical + .id aliases) on 43.173.12.145.
 #
 # Flow: cut a GitHub Release (stable) -> `Build + Deploy` workflow builds the
 # release binary -> scp to the VPS -> install-release.sh installs, restarts,
@@ -19,8 +19,11 @@
 
 ## 1. One-time DNS
 
-Create an **A** record `kalkulator.rayakala.ink` → `43.173.12.145`.
-Verify from the VPS before requesting TLS: `getent hosts kalkulator.rayakala.ink`.
+Create **A** records → `43.173.12.145` (Rumahweb, outside Tencent):
+`kalkulator.rayakala.ink`, `hitung.rayakala.id`
+(plus `kalkulator.rayakala.id` once you want it — add to `EXTRA_DOMAINS` then).
+Apex + `www.rayakala.id` belong to rayakala-landing, not this vhost.
+Verify from the VPS before requesting TLS: `getent hosts kalkulator.rayakala.ink hitung.rayakala.id`.
 
 ## 2. One-time server bootstrap (as root on the VPS)
 
@@ -31,7 +34,7 @@ The `deploy` SSH user and nginx already exist (monthly-logs). Copy
 ```bash
 bash bootstrap-server.sh        # beruang user, dirs, sudoers, unit, nginx vhost
 bash scripts/setup-nginx.sh     # install vhost, reload, local healthcheck
-DOMAIN=kalkulator.rayakala.ink EMAIL=you@example.com bash scripts/setup-tls.sh
+DOMAIN=kalkulator.rayakala.ink EXTRA_DOMAINS="hitung.rayakala.id www.rayakala.ink" EMAIL=you@example.com bash scripts/setup-tls.sh
 ```
 
 `setup-tls.sh` uses Let's Encrypt HTTP-01 via the nginx plugin, adds the
@@ -45,7 +48,8 @@ renewal dry-run (renewals continue via the certbot systemd timer).
    `Build + Deploy` builds `--release`, copies the binary + installer +
    unit to `/tmp`, and runs `install-release.sh` (keeps `.prev`,
    refreshes the unit, restarts, polls `/health` 20×).
-3. Verify: `curl -f https://kalkulator.rayakala.ink/health` and check a
+3. Verify: `curl -f https://kalkulator.rayakala.ink/health` plus
+   `https://hitung.rayakala.id/health`, and check a
    versioned asset URL (`/js/app.js?v=…`) changed.
 4. Manual redeploy without a release: Actions -> `Build + Deploy` ->
    `Run workflow` (`workflow_dispatch`).
@@ -65,7 +69,7 @@ sudo bash /opt/beruang/scripts/rollback.sh   # .prev binary + restart + healthch
 | `/usr/local/bin/beruang-gateway` (+`.prev`) | CI artifact |
 | `/etc/systemd/system/beruang.service` | `deploy/beruang.service` |
 | `/etc/nginx/sites-{available,enabled}/beruang` | `deploy/nginx-beruang.conf` |
-| `/etc/letsencrypt/live/kalkulator.rayakala.ink/` | certbot |
+| `/etc/letsencrypt/live/kalkulator.rayakala.ink/` | certbot (SANs: `.ink` + `hitung.rayakala.id` + legacy `www.rayakala.ink` used by landing vhost; expand with `EXTRA_DOMAINS` as DNS grows) |
 | `/var/lib/beruang/` | working dir (no app writes) |
 | `/opt/beruang/scripts/` | operator copy of `scripts/` |
 

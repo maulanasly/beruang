@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# setup-nginx.sh — install nginx server block for kalkulator.rayakala.ink
+# setup-nginx.sh — install nginx server block for kalkulator
 # (80 -> 127.0.0.1:8000), coexisting with the monthly-logs vhost.
+# Serves kalkulator.rayakala.ink (canonical) + kalkulator.rayakala.id and
+# hitung.rayakala.id (apex + www .id belong to rayakala-landing).
 # Idempotent. Run as root on an already-bootstrapped server:
 #   bash setup-nginx.sh   (expects nginx-beruang.conf next to this script,
 #                          or ../deploy/nginx-beruang.conf, or /tmp/nginx-beruang.conf)
@@ -29,6 +31,7 @@ systemctl enable nginx >/dev/null 2>&1 || true
 systemctl restart nginx
 
 DOMAIN="${DOMAIN:-kalkulator.rayakala.ink}"
+ALIASES="${ALIASES:-kalkulator.rayakala.id hitung.rayakala.id}"
 echo "==> Healthcheck via nginx (Host: $DOMAIN)"
 for i in $(seq 1 10); do
   if curl -fsS --max-time 5 -H "Host: $DOMAIN" http://127.0.0.1/health >/dev/null 2>&1; then
@@ -55,6 +58,18 @@ if [ -f "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" ]; then
     && echo "TLS healthy: https://$DOMAIN/health" \
     || echo "warning: cert exists but https://$DOMAIN/health failed" >&2
 fi
+
+echo "==> Alias check (warning-only before DNS/TLS is live)"
+# shellcheck disable=SC2086
+for name in $ALIASES; do
+  if getent hosts "$name" >/dev/null 2>&1; then
+    curl -fsS --max-time 5 -H "Host: $name" http://127.0.0.1/health >/dev/null 2>&1 \
+      && echo "Host $name serves via nginx." \
+      || echo "warning: Host $name not served yet (check server_name)" >&2
+  else
+    echo "warning: $name does not resolve — add an A record to 43.173.12.145" >&2
+  fi
+done
 
 echo "Nginx OK. Public HTTP: http://43.173.12.145/ ; HTTPS (after setup-tls.sh): https://$DOMAIN/"
 echo "Note: app :8000 stays on localhost behind nginx; do not expose it publicly."
