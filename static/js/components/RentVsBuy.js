@@ -1,6 +1,6 @@
 import { html, useState, useEffect } from '../vendor/preact-htm-signals.js';
 import { rentBuyComparison } from '../api.js';
-import { formatCurrency } from '../utils.js';
+import { formatCurrency, formatCompactCurrency } from '../utils.js';
 import { t } from '../i18n.js';
 import { readSharedState, ShareLink } from '../share.js';
 import { HowTo } from './HowTo.js';
@@ -210,6 +210,10 @@ export function RentVsBuy({ settings }) {
     const v = verdict();
     const flip = flipHint();
     const adv = result ? result.net_advantage_buy_minus_rent : 0;
+    // Compact card figures ("Rp1,67 M") with the exact value on hover, so
+    // house-scale numbers never overflow their pill.
+    const cc = (value) => formatCompactCurrency(value, locale, currency);
+    const full = (value) => formatCurrency(value, locale, currency);
 
     return html`<div>
         <${Crumbs} locale=${locale} currentKey="nav.rentBuy" />
@@ -237,19 +241,19 @@ export function RentVsBuy({ settings }) {
                 ${flip && html`<div class="muted" style="font-size:13px; margin-top:4px">↗ ${flip}</div>`}
             </div>`}
             <div class="summary-cards">
-                <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.monthlyBuy')}</div><div class="amount">${formatCurrency(result.monthly_buy, locale, currency)}</div></div>
-                <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.monthlyRent')}</div><div class="amount">${formatCurrency(result.monthly_rent, locale, currency)}</div></div>
-                <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.saving')}</div><div class="amount" style="color:${result.monthly_saving >= 0 ? 'var(--success)' : 'var(--danger)'}">${result.monthly_saving >= 0 ? '▲ ' : '▼ '}${formatCurrency(result.monthly_saving, locale, currency)}</div></div>
-                <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.upfront')}</div><div class="amount" style="font-size:15px">${formatCurrency(result.upfront_buy, locale, currency)}</div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.monthlyBuy')}</div><div class="amount" title=${full(result.monthly_buy)}>${cc(result.monthly_buy)}</div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.monthlyRent')}</div><div class="amount" title=${full(result.monthly_rent)}>${cc(result.monthly_rent)}</div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.saving')}</div><div class="amount" title=${full(result.monthly_saving)} style="color:${result.monthly_saving >= 0 ? 'var(--success)' : 'var(--danger)'}">${result.monthly_saving >= 0 ? '▲ ' : '▼ '}${cc(result.monthly_saving)}</div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.upfront')}</div><div class="amount" title=${full(result.upfront_buy)} style="font-size:15px">${cc(result.upfront_buy)}</div></div>
                 <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.breakEven')} <${InfoTip} locale=${locale} tipKey="glossary.roi" /></div><div class="amount" style="font-size:15px">${result.break_even_months == null ? t(locale, 'rentbuy.breakEvenNever') : result.break_even_months === 0 ? t(locale, 'rentbuy.verdictBuyNow') : t(locale, 'rentbuy.breakEvenMonths', { months: result.break_even_months })}</div></div>
             </div>
             <${RentBuyChart} schedule=${result.schedule} breakEvenMonths=${result.break_even_months} settings=${settings} />
             <${NetWorthChart} schedule=${result.schedule} breakEvenYear=${result.net_worth_break_even_year} settings=${settings} />
             <div class="summary-cards">
-                <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.interestPaid')}</div><div class="amount" style="font-size:15px">${formatCurrency(result.total_interest_paid, locale, currency)}</div></div>
-                <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.buyerNw')}</div><div class="amount" style="font-size:15px">${formatCurrency(result.end_buyer_net_worth, locale, currency)}</div></div>
-                <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.renterNw')}</div><div class="amount" style="font-size:15px">${formatCurrency(result.end_renter_net_worth, locale, currency)}</div></div>
-                <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.netAdvantage')}</div><div class="amount" style="font-size:15px; color:${adv >= 0 ? 'var(--success)' : 'var(--danger)'}">${adv >= 0 ? '▲ ' : '▼ '}${formatCurrency(adv, locale, currency)}</div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.interestPaid')}</div><div class="amount" title=${full(result.total_interest_paid)} style="font-size:15px">${cc(result.total_interest_paid)}</div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.buyerNw')}</div><div class="amount" title=${full(result.end_buyer_net_worth)} style="font-size:15px">${cc(result.end_buyer_net_worth)}</div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.renterNw')}</div><div class="amount" title=${full(result.end_renter_net_worth)} style="font-size:15px">${cc(result.end_renter_net_worth)}</div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.netAdvantage')}</div><div class="amount" title=${full(adv)} style="font-size:15px; color:${adv >= 0 ? 'var(--success)' : 'var(--danger)'}">${adv >= 0 ? '▲ ' : '▼ '}${cc(adv)}</div></div>
             </div>
             ${Array.isArray(result.sensitivity) && result.sensitivity.length > 0 && html`<div class="card">
                 <div class="smallcaps">${t(locale, 'rentbuy.sensTitle')}</div>

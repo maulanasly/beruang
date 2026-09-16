@@ -1,6 +1,6 @@
 import { html } from '../vendor/preact-htm-signals.js';
 import { t } from '../i18n.js';
-import { formatCurrency } from '../utils.js';
+import { formatCurrency, formatCompactCurrency } from '../utils.js';
 
 // Zero-dependency SVG crossover chart: cumulative cash paid buying vs
 // renting over the tenor, with a breakeven marker when the lines cross.
@@ -55,7 +55,7 @@ export function RentBuyChart({ schedule, breakEvenMonths, settings }) {
         <div class="muted" style="font-size:12px; margin-top:4px">
             <span style="color:var(--chart-blue)">— ${buyLabel}</span> ·
             <span style="color:var(--chart-orange)">— ${rentLabel}</span> ·
-            ${t(locale, 'rentbuy.totalBuy')} ${formatCurrency(buy[buy.length - 1], locale, settings.currency)}
+            ${t(locale, 'rentbuy.totalBuy')} <span title=${formatCurrency(buy[buy.length - 1], locale, settings.currency)}>${formatCompactCurrency(buy[buy.length - 1], locale, settings.currency)}</span>
         </div>
     </div>`;
 }

@@ -1,6 +1,6 @@
 import { html } from '../vendor/preact-htm-signals.js';
 import { t } from '../i18n.js';
-import { formatCurrency } from '../utils.js';
+import { formatCurrency, formatCompactCurrency } from '../utils.js';
 
 // Zero-dependency SVG net-worth chart: buyer wealth (home equity net of
 // selling friction + invested surplus) vs renter wealth (down payment plus
@@ -41,6 +41,7 @@ export function NetWorthChart({ schedule, breakEvenYear, settings }) {
     }
 
     const svgLabel = `${t(locale, 'rentbuy.nwChartTitle')}: ${buyLabel} vs ${rentLabel}`;
+    const gap = buy[buy.length - 1] - rent[rent.length - 1];
     return html`<div class="card">
         <div class="smallcaps">${t(locale, 'rentbuy.nwChartTitle')}</div>
         <svg viewBox="0 0 ${w} ${h}" width="100%" height="220" role="img" aria-label=${svgLabel} style="background:var(--surface);border:1px solid var(--hairline);border-radius:10px; margin-top:8px">
@@ -60,7 +61,7 @@ export function NetWorthChart({ schedule, breakEvenYear, settings }) {
         <div class="muted" style="font-size:12px; margin-top:4px">
             <span style="color:var(--chart-blue)">— ${buyLabel}</span> ·
             <span style="color:var(--chart-orange)">— ${rentLabel}</span> ·
-            ${t(locale, 'rentbuy.netAdvantage')} ${formatCurrency(buy[buy.length - 1] - rent[rent.length - 1], locale, settings.currency)}
+            ${t(locale, 'rentbuy.netAdvantage')} <span title=${formatCurrency(gap, locale, settings.currency)}>${formatCompactCurrency(gap, locale, settings.currency)}</span>
         </div>
     </div>`;
 }
