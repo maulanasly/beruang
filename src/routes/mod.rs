@@ -1,4 +1,5 @@
 pub mod ev;
+pub mod flatloan;
 pub mod health;
 pub mod market;
 pub mod rentbuy;
@@ -75,6 +76,10 @@ pub fn create_router() -> Router {
             axum::routing::post(returns::term_deposits),
         )
         .route("/api/v1/ev/comparison", axum::routing::post(ev::comparison))
+        .route(
+            "/api/v1/flat-loan/comparison",
+            axum::routing::post(flatloan::comparison),
+        )
         .route(
             "/api/v1/rent-vs-buy/comparison",
             axum::routing::post(rentbuy::comparison),

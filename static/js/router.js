@@ -21,6 +21,9 @@ const routes = {
     '/rent-vs-buy': 'rent-buy',
     '/kalkulator/sewa-vs-beli': 'rent-buy',
     '/calculators/rent-vs-buy': 'rent-buy',
+    '/flat-loan': 'flat-loan',
+    '/kalkulator/bunga-flat': 'flat-loan',
+    '/calculators/flat-rate-loan': 'flat-loan',
 };
 
 // Canonical (shareable, Indonesian-first) path per route.
@@ -32,6 +35,7 @@ export const canonicalPath = {
     'term-deposits': '/kalkulator/deposito',
     ev: '/kalkulator/mobil-listrik',
     'rent-buy': '/kalkulator/sewa-vs-beli',
+    'flat-loan': '/kalkulator/bunga-flat',
 };
 
 // One-time upgrade: old `#/path` links become real paths without reload.

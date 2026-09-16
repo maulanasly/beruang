@@ -894,3 +894,107 @@ async fn rent_buy_english_alias_meta() {
         "<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/sewa-vs-beli\">"
     ));
 }
+
+/// Flat-loan true cost: the dealer quote reveals ~2x the effective rate;
+/// bad input keeps 422 shape; schedule amortizes the burn-down chart.
+#[tokio::test]
+async fn flat_loan_comparison_matches_model() {
+    let app = beruang_gateway::routes::create_router();
+    let payload = serde_json::json!({
+        "price": 150000000.0, "down_payment": 30000000.0,
+        "flat_rate_annual": 0.05, "tenor_months": 35.0,
+        "upfront_fees": 1500000.0,
+    })
+    .to_string();
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/flat-loan/comparison")
+                .header("content-type", "application/json")
+                .body(Body::from(payload))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_json(response).await;
+    assert_eq!(body["principal"].as_f64().unwrap(), 120_000_000.0);
+    // 5% flat on a 35-month quote hides a ~9% effective rate.
+    let nominal = body["effective_annual_nominal"].as_f64().unwrap();
+    assert!((0.08..0.11).contains(&nominal), "{nominal}");
+    assert!(body["effective_annual_rate"].as_f64().unwrap() > nominal);
+    assert!(body["true_cost_multiple"].as_f64().unwrap() > 1.1);
+    let schedule = body["schedule"].as_array().unwrap();
+    assert_eq!(schedule.len(), 35);
+    assert!(schedule[34]["balance"].as_f64().unwrap().abs() < 1.0);
+    assert_eq!(
+        schedule[34]["cum_interest"].as_f64().unwrap().round(),
+        body["total_interest"].as_f64().unwrap().round()
+    );
+
+    let bad = r#"{"price": 150000000, "down_payment": 200000000,
+        "flat_rate_annual": 0.05, "tenor_months": 35}"#;
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/flat-loan/comparison")
+                .header("content-type", "application/json")
+                .body(Body::from(bad))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+    assert!(response_body_json(response).await["detail"]
+        .as_str()
+        .unwrap()
+        .contains("down_payment"));
+}
+
+/// Flat-loan page shares the Indonesian canonical like the calculators.
+#[tokio::test]
+async fn flat_loan_page_meta() {
+    let app = beruang_gateway::routes::create_router();
+    for uri in ["/kalkulator/bunga-flat", "/flat-loan"] {
+        let response = app
+            .clone()
+            .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK, "{uri}");
+        let body = response_body_text(response).await;
+        assert!(
+            body.contains("<title>Kalkulator Bunga Flat vs Efektif — Beruang</title>"),
+            "{uri}"
+        );
+        assert!(
+            body.contains(
+                "<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/bunga-flat\">"
+            ),
+            "{uri}"
+        );
+    }
+}
+
+/// English flat-loan alias serves English copy under the same canonical.
+#[tokio::test]
+async fn flat_loan_english_alias_meta() {
+    let app = beruang_gateway::routes::create_router();
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/calculators/flat-rate-loan")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_text(response).await;
+    assert!(body.contains("<title>Flat-Rate vs Effective Loan Calculator — Beruang</title>"));
+    assert!(body
+        .contains("<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/bunga-flat\">"));
+}

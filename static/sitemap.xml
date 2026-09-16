@@ -43,6 +43,13 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="{{BASE_URL}}/kalkulator/sewa-vs-beli"/>
   </url>
   <url>
+    <loc>{{BASE_URL}}/kalkulator/bunga-flat</loc>
+    <changefreq>weekly</changefreq><priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="id" href="{{BASE_URL}}/kalkulator/bunga-flat"/>
+    <xhtml:link rel="alternate" hreflang="en" href="{{BASE_URL}}/calculators/flat-rate-loan"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="{{BASE_URL}}/kalkulator/bunga-flat"/>
+  </url>
+  <url>
     <loc>{{BASE_URL}}/portofolio</loc>
     <changefreq>weekly</changefreq><priority>0.7</priority>
   </url>
@@ -60,6 +67,10 @@
   </url>
   <url>
     <loc>{{BASE_URL}}/rent-vs-buy</loc>
+    <changefreq>weekly</changefreq><priority>0.7</priority>
+  </url>
+  <url>
+    <loc>{{BASE_URL}}/flat-loan</loc>
     <changefreq>weekly</changefreq><priority>0.7</priority>
   </url>
 </urlset>
