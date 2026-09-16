@@ -53,7 +53,7 @@ async fn static_serves_index_and_guards_api() {
         .clone()
         .oneshot(
             Request::builder()
-                .uri("/mutual-funds")
+                .uri("/kalkulator/reksa-dana")
                 .body(Body::empty())
                 .unwrap(),
         )
@@ -380,7 +380,7 @@ async fn seo_meta_per_route() {
         "hreflang"
     );
     assert!(
-        body.contains("property=\"og:image\" content=\"http://localhost:8000/og-image.png\""),
+        body.contains("property=\"og:image\" content=\"http://localhost:8000/og-saham.png\""),
         "og:image"
     );
     assert!(
@@ -393,6 +393,9 @@ async fn seo_meta_per_route() {
         "{{TITLE}}",
         "{{DESCRIPTION}}",
         "{{CANONICAL}}",
+        "{{LANG}}",
+        "{{OG_LOCALE}}",
+        "{{OG_LOCALE_ALT}}",
         "{{OG_IMAGE}}",
         "{{JSON_LD}}",
         "{{NOSCRIPT}}",
@@ -436,7 +439,7 @@ async fn seo_alias_and_fallback() {
     assert_eq!(response.status(), StatusCode::OK);
     assert!(response_body_text(response)
         .await
-        .contains("<title>Beruang — Kalkulator Investasi</title>"));
+        .contains("<title>Beruang — Kalkulator Keuangan</title>"));
 }
 
 /// Crawl infrastructure is served, never the SPA shell.
@@ -487,7 +490,7 @@ async fn robots_and_sitemap_served() {
 #[tokio::test]
 async fn portfolio_canonical_and_alias() {
     let app = beruang_gateway::routes::create_router();
-    for uri in ["/portofolio", "/overview"] {
+    for uri in ["/portofolio"] {
         let response = app
             .clone()
             .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
@@ -562,7 +565,7 @@ async fn ev_comparison_matches_model() {
 #[tokio::test]
 async fn ev_page_meta() {
     let app = beruang_gateway::routes::create_router();
-    for uri in ["/kalkulator/mobil-listrik", "/ev"] {
+    for uri in ["/kalkulator/mobil-listrik"] {
         let response = app
             .clone()
             .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
@@ -853,7 +856,7 @@ async fn rent_buy_signals() {
 #[tokio::test]
 async fn rent_buy_page_meta() {
     let app = beruang_gateway::routes::create_router();
-    for uri in ["/kalkulator/sewa-vs-beli", "/rent-vs-buy"] {
+    for uri in ["/kalkulator/sewa-vs-beli"] {
         let response = app
             .clone()
             .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
@@ -958,7 +961,7 @@ async fn flat_loan_comparison_matches_model() {
 #[tokio::test]
 async fn flat_loan_page_meta() {
     let app = beruang_gateway::routes::create_router();
-    for uri in ["/kalkulator/bunga-flat", "/flat-loan"] {
+    for uri in ["/kalkulator/bunga-flat"] {
         let response = app
             .clone()
             .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
@@ -1060,7 +1063,7 @@ async fn debt_payoff_comparison_matches_model() {
 #[tokio::test]
 async fn debt_payoff_page_meta() {
     let app = beruang_gateway::routes::create_router();
-    for uri in ["/kalkulator/lunas-utang", "/debt-payoff"] {
+    for uri in ["/kalkulator/lunas-utang"] {
         let response = app
             .clone()
             .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
@@ -1163,7 +1166,7 @@ async fn retirement_comparison_matches_model() {
 #[tokio::test]
 async fn retirement_page_meta() {
     let app = beruang_gateway::routes::create_router();
-    for uri in ["/kalkulator/dana-pensiun", "/retirement"] {
+    for uri in ["/kalkulator/dana-pensiun"] {
         let response = app
             .clone()
             .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
@@ -1203,4 +1206,200 @@ async fn retirement_english_alias_meta() {
     assert!(body.contains(
         "<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/dana-pensiun\">"
     ));
+}
+
+/// Legacy short URLs 301 to their Indonesian-first canonicals, keeping
+/// query strings (share links) across the redirect.
+#[tokio::test]
+async fn legacy_short_urls_redirect_to_canonical() {
+    let app = beruang_gateway::routes::create_router();
+    for (short, canonical) in [
+        ("/flat-loan", "/kalkulator/bunga-flat"),
+        ("/debt-payoff", "/kalkulator/lunas-utang"),
+        ("/retirement", "/kalkulator/dana-pensiun"),
+        ("/rent-vs-buy", "/kalkulator/sewa-vs-beli"),
+        ("/ev", "/kalkulator/mobil-listrik"),
+        ("/overview", "/portofolio"),
+    ] {
+        let response = app
+            .clone()
+            .oneshot(Request::builder().uri(short).body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::MOVED_PERMANENTLY, "{short}");
+        assert_eq!(
+            response.headers()["location"].to_str().unwrap(),
+            canonical,
+            "{short}"
+        );
+    }
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/flat-loan?s=abc123")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::MOVED_PERMANENTLY);
+    assert_eq!(
+        response.headers()["location"].to_str().unwrap(),
+        "/kalkulator/bunga-flat?s=abc123"
+    );
+}
+
+/// Trailing slashes serve the same route meta as the clean path.
+#[tokio::test]
+async fn trailing_slash_serves_route_meta() {
+    let app = beruang_gateway::routes::create_router();
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/kalkulator/saham/")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_text(response).await;
+    assert!(body.contains("<title>Kalkulator Saham dan Dividen — Beruang</title>"));
+    assert!(
+        body.contains("<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/saham\">")
+    );
+}
+
+/// English aliases label the document locale as English.
+#[tokio::test]
+async fn english_alias_labels_english_locale() {
+    let app = beruang_gateway::routes::create_router();
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/calculators/flat-rate-loan")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_text(response).await;
+    assert!(body.contains("<html lang=\"en\">"), "lang");
+    assert!(
+        body.contains("property=\"og:locale\" content=\"en_US\""),
+        "og:locale"
+    );
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/kalkulator/bunga-flat")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let body = response_body_text(response).await;
+    assert!(body.contains("<html lang=\"id\">"), "lang id");
+    assert!(
+        body.contains("property=\"og:locale\" content=\"id_ID\""),
+        "og:locale id"
+    );
+}
+
+/// Share-link snapshots stay out of the crawl budget; the sitemap lists
+/// canonicals only.
+#[tokio::test]
+async fn robots_and_sitemap_consolidate_crawl() {
+    let app = beruang_gateway::routes::create_router();
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/robots.txt")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert!(response_body_text(response)
+        .await
+        .contains("Disallow: /*?s="));
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/sitemap.xml")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_text(response).await;
+    assert!(body.contains("<loc>http://localhost:8000/kalkulator/dana-pensiun</loc>"));
+    for short in [
+        "<loc>http://localhost:8000/flat-loan</loc>",
+        "<loc>http://localhost:8000/debt-payoff</loc>",
+        "<loc>http://localhost:8000/retirement</loc>",
+        "<loc>http://localhost:8000/rent-vs-buy</loc>",
+    ] {
+        assert!(!body.contains(short), "short listed: {short}");
+    }
+}
+
+/// Every calculator serves its own share image; root and unknown pages
+/// keep the generic fallback.
+#[tokio::test]
+async fn per_route_og_images() {
+    let app = beruang_gateway::routes::create_router();
+    for (uri, image) in [
+        ("/kalkulator/saham", "og-saham.png"),
+        ("/kalkulator/reksa-dana", "og-reksadana.png"),
+        ("/kalkulator/deposito", "og-deposito.png"),
+        ("/kalkulator/mobil-listrik", "og-mobil-listrik.png"),
+        ("/kalkulator/sewa-vs-beli", "og-sewa-vs-beli.png"),
+        ("/kalkulator/bunga-flat", "og-bunga-flat.png"),
+        ("/kalkulator/lunas-utang", "og-lunas-utang.png"),
+        ("/kalkulator/dana-pensiun", "og-dana-pensiun.png"),
+        ("/calculators/debt-payoff", "og-lunas-utang.png"),
+        ("/", "og-image.png"),
+        ("/some-unknown-page", "og-image.png"),
+    ] {
+        let response = app
+            .clone()
+            .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK, "{uri}");
+        let body = response_body_text(response).await;
+        assert!(
+            body.contains(&format!(
+                "property=\"og:image\" content=\"http://localhost:8000/{image}\""
+            )),
+            "{uri} -> {image}"
+        );
+        // The advertised image itself resolves with immutable caching.
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri(format!("/{image}"))
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK, "{image}");
+        assert!(
+            response.headers()["cache-control"]
+                .to_str()
+                .unwrap()
+                .contains("immutable"),
+            "{image}"
+        );
+    }
 }

@@ -67,32 +67,4 @@
     <loc>{{BASE_URL}}/portofolio</loc>
     <changefreq>weekly</changefreq><priority>0.7</priority>
   </url>
-  <url>
-    <loc>{{BASE_URL}}/mutual-funds</loc>
-    <changefreq>weekly</changefreq><priority>0.7</priority>
-  </url>
-  <url>
-    <loc>{{BASE_URL}}/stocks</loc>
-    <changefreq>weekly</changefreq><priority>0.7</priority>
-  </url>
-  <url>
-    <loc>{{BASE_URL}}/term-deposits</loc>
-    <changefreq>weekly</changefreq><priority>0.7</priority>
-  </url>
-  <url>
-    <loc>{{BASE_URL}}/rent-vs-buy</loc>
-    <changefreq>weekly</changefreq><priority>0.7</priority>
-  </url>
-  <url>
-    <loc>{{BASE_URL}}/flat-loan</loc>
-    <changefreq>weekly</changefreq><priority>0.7</priority>
-  </url>
-  <url>
-    <loc>{{BASE_URL}}/debt-payoff</loc>
-    <changefreq>weekly</changefreq><priority>0.7</priority>
-  </url>
-  <url>
-    <loc>{{BASE_URL}}/retirement</loc>
-    <changefreq>weekly</changefreq><priority>0.7</priority>
-  </url>
 </urlset>
