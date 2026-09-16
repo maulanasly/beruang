@@ -10,9 +10,13 @@ import { InfoTip } from './InfoTip.js';
 import { RentBuyChart } from './RentBuyChart.js';
 import { NetWorthChart } from './NetWorthChart.js';
 
-// API payload keys (12). Wealth-layer defaults match the backend, so
-// payloads and share links saved before they existed keep working.
-const API_FIELDS = [
+// Rate fields are entered as percent (7 = 7%) and converted to fractions
+// for the wire. Legacy share links (fractions, no marker) are migrated.
+const RATE_FIELDS = [
+    'mortgage_rate_annual',
+    'home_appreciation_annual', 'rent_growth_annual', 'other_growth_annual',
+    'invest_return_annual', 'selling_cost_rate',
+];
     'house_price', 'down_payment', 'mortgage_rate_annual', 'tenor_years',
     'rent_per_month', 'other_buy_costs_per_month',
     'home_appreciation_annual', 'rent_growth_annual', 'other_growth_annual',
@@ -46,11 +50,11 @@ const GROUP_MARKET = ['home_appreciation_annual', 'invest_return_annual', 'wait_
 const FORM_DEFAULTS = {
     house_price: 800000000, down_payment: 160000000,
     dp_mode: 'amount', dp_percent: 20,
-    mortgage_rate_annual: 0.07, tenor_years: 20,
+    mortgage_rate_annual: 7, tenor_years: 20,
     rent_per_month: 3000000, other_buy_costs_per_month: 500000,
-    home_appreciation_annual: 0.04, rent_growth_annual: 0.03,
-    other_growth_annual: 0.03, invest_return_annual: 0.08,
-    closing_costs: 0, selling_cost_rate: 0.05,
+    home_appreciation_annual: 4, rent_growth_annual: 3,
+    other_growth_annual: 3, invest_return_annual: 8,
+    closing_costs: 0, selling_cost_rate: 5,
     wait_years: 0, gross_monthly_income: 0,
 };
 
@@ -64,6 +68,18 @@ function dpEffective(f) {
         return Number(f.house_price) * Number(f.dp_percent) / 100;
     }
     return Number(f.down_payment);
+}
+
+// Shared-state restore: new links carry percent rates with a marker;
+// legacy links carry fractions and get ×100 on the rate fields.
+function migrateShared(inputs) {
+    const out = { ...FORM_DEFAULTS, ...inputs };
+    if (out.rates_pct !== 1) {
+        for (const key of RATE_FIELDS) {
+            if (Number.isFinite(Number(out[key]))) out[key] = Number(out[key]) * 100;
+        }
+    }
+    return out;
 }
 
 export function RentVsBuy({ settings }) {
@@ -99,13 +115,21 @@ export function RentVsBuy({ settings }) {
     async function onCompare(inputsOverride) {
         // Old share links may lack newer keys; fall back to defaults
         // instead of sending NaN.
-        const inputs = { ...FORM_DEFAULTS, ...(inputsOverride || form) };
+        const inputs = inputsOverride ? migrateShared(inputsOverride) : { ...form };
         setLoading(true); setError('');
         try {
             const payload = Object.fromEntries(
-                API_FIELDS.map((key) => [key, key === 'down_payment' ? dpEffective(inputs) : Number(inputs[key])]),
+                API_FIELDS.map((key) => [
+                    key,
+                    key === 'down_payment'
+                        ? dpEffective(inputs)
+                        : RATE_FIELDS.includes(key) ? Number(inputs[key]) / 100 : Number(inputs[key]),
+                ]),
             );
             if (inputs.dp_mode === 'percent' && !(Number(inputs.dp_percent) >= 0 && Number(inputs.dp_percent) <= 100)) {
+                throw new Error(t(locale, 'error.validationFailed'));
+            }
+            if (RATE_FIELDS.some((key) => !(Number(inputs[key]) >= 0 && Number(inputs[key]) <= 100))) {
                 throw new Error(t(locale, 'error.validationFailed'));
             }
             if (API_FIELDS.some((key) => !Number.isFinite(payload[key]) || payload[key] < 0)) {
@@ -114,6 +138,11 @@ export function RentVsBuy({ settings }) {
             const data = await rentBuyComparison(payload);
             data.calculatedAt = new Date().toISOString();
             data.waitYears = payload.wait_years;
+            data.whyInputs = {
+                g: payload.home_appreciation_annual,
+                r: payload.mortgage_rate_annual,
+                i: payload.invest_return_annual,
+            };
             setResult(data);
             if (inputsOverride) setForm({ ...inputs });
             requestAnimationFrame(() => document.querySelector('[data-results]')?.scrollIntoView());
@@ -198,7 +227,7 @@ export function RentVsBuy({ settings }) {
             </label>`;
         }
         return html`<label>${t(locale, LABELS[key])}
-            <input type="number" min="0" step="any" value=${form[key]} onInput=${(e) => set(key, e.target.value)} />
+            <input type="number" min="0" max=${RATE_FIELDS.includes(key) ? '100' : undefined} step="any" value=${form[key]} onInput=${(e) => set(key, e.target.value)} />
         </label>`;
     }
 
@@ -239,7 +268,7 @@ export function RentVsBuy({ settings }) {
         return html`<div class="card">
             <div class="smallcaps">${t(locale, 'rentbuy.sigTitle')}</div>
             <div style="display:grid; gap:8px; margin-top:8px; font-size:13px">
-                <div style="display:flex; justify-content:space-between; gap:8px"><span>${t(locale, 'rentbuy.sigPriceToRent')}</span><span class="num">${result.price_to_rent == null ? '—' : `${result.price_to_rent.toFixed(1)}×`}
+                <div style="display:flex; justify-content:space-between; gap:8px"><span>${t(locale, 'rentbuy.sigPriceToRent')}</span><span class="num">${result.price_to_rent == null ? '—' : `${result.price_to_rent.toFixed(1)}× · ${(100 / result.price_to_rent).toFixed(1)}% ${t(locale, 'rentbuy.sigYield')}`}
                     ${band && html`<span style=${`color:${band.color}; font-weight:700`}> · ${t(locale, band.key)}</span>`}</span></div>
                 <div style="display:flex; justify-content:space-between; gap:8px"><span>${t(locale, 'rentbuy.sigPaymentToRent')}</span><span class="num">${result.payment_to_rent == null ? '—' : `${result.payment_to_rent.toFixed(2)}×`}</span></div>
                 <div>${requiredLine()}</div>
@@ -251,8 +280,25 @@ export function RentVsBuy({ settings }) {
                     <div style="display:flex; justify-content:space-between; gap:8px"><span>${t(locale, 'rentbuy.sigAfford')}</span><span class="num" style=${`color:${ab.color}; font-weight:700`}>${(share * 100).toFixed(0)}% · ${t(locale, ab.key)}</span></div>
                     <div style="height:10px; border-radius:999px; background:var(--chart-track); overflow:hidden; margin-top:4px"><div style="height:100%; width:${Math.min(share * 100, 100).toFixed(1)}%; background:${ab.color}"></div></div>
                 </div>`}
+                <div class="muted" style="font-size:12px">${t(locale, 'rentbuy.method')}</div>
             </div>
         </div>`;
+    }
+
+    // One-line "why" behind the verdict, from the ordering of the three
+    // rates that decide it (submitted values stashed on the result).
+    function whyLine() {
+        const w = result.whyInputs;
+        if (!w) return null;
+        const f = (x) => (x * 100).toFixed(1);
+        const crossed = result.net_worth_break_even_year != null;
+        if (!crossed) {
+            if (w.i >= w.g && w.i >= w.r) return t(locale, 'rentbuy.whyInvestLeads', { i: f(w.i), g: f(w.g), r: f(w.r) });
+            if (w.r >= w.g) return t(locale, 'rentbuy.whyMortgageDrags', { r: f(w.r), g: f(w.g) });
+            return t(locale, 'rentbuy.whyFrictionWins', { g: f(w.g) });
+        }
+        if (w.g >= w.r && w.g >= w.i) return t(locale, 'rentbuy.whyApprecLeads', { g: f(w.g), r: f(w.r), i: f(w.i) });
+        return t(locale, 'rentbuy.whyCashFlowWins');
     }
 
     function group(titleKey, keys) {
@@ -264,9 +310,9 @@ export function RentVsBuy({ settings }) {
         </div>`;
     }
 
-    const maxBar = result ? Math.max(result.monthly_buy, result.monthly_rent, 1) : 1;
     const v = verdict();
     const flip = flipHint();
+    const why = result ? whyLine() : null;
     const adv = result ? result.net_advantage_buy_minus_rent : 0;
     // Compact card figures ("Rp1,67 M") with the exact value on hover, so
     // house-scale numbers never overflow their pill.
@@ -288,13 +334,14 @@ export function RentVsBuy({ settings }) {
             </details>
             <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap">
                 <button onClick=${() => onCompare()} disabled=${loading}>${loading ? t(locale, 'rentbuy.comparing') : t(locale, 'rentbuy.compare')}</button>
-                <${ShareLink} route="rent-buy" state=${{ inputs: form }} locale=${locale} />
+                <${ShareLink} route="rent-buy" state=${{ inputs: { ...form, rates_pct: 1 } }} locale=${locale} />
             </div>
             ${error && html`<p style="color:var(--danger)" role="alert">${error}</p>`}
         </div>
         ${result && html`<div data-results class="results-anchor">
             ${v && html`<div class="card" style=${`border-left:4px solid ${v.tone}`}>
                 <div class="amount" style=${`font-size:17px; color:${v.tone}`}>${v.text}</div>
+                ${why && html`<div style="font-size:13px; margin-top:4px">${why}</div>`}
                 ${v.sub && html`<div class="muted" style="font-size:13px; margin-top:4px">${v.sub}</div>`}
                 ${flip && html`<div class="muted" style="font-size:13px; margin-top:4px">↗ ${flip}</div>`}
             </div>`}
@@ -304,9 +351,14 @@ export function RentVsBuy({ settings }) {
                 <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.monthlyRent')}</div><div class="amount" title=${full(result.monthly_rent)}>${cc(result.monthly_rent)}</div></div>
                 <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.saving')}</div><div class="amount" title=${full(result.monthly_saving)} style="color:${result.monthly_saving >= 0 ? 'var(--success)' : 'var(--danger)'}">${result.monthly_saving >= 0 ? '▲ ' : '▼ '}${cc(result.monthly_saving)}</div></div>
                 <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.upfront')}</div><div class="amount" title=${full(result.upfront_buy)} style="font-size:15px">${cc(result.upfront_buy)}</div></div>
-                <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.breakEven')} <${InfoTip} locale=${locale} tipKey="glossary.roi" /></div><div class="amount" style="font-size:15px">${result.break_even_months == null ? t(locale, 'rentbuy.breakEvenNever') : result.break_even_months === 0 ? t(locale, 'rentbuy.verdictBuyNow') : t(locale, 'rentbuy.breakEvenMonths', { months: result.break_even_months })}</div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.cashPayback')} <${InfoTip} locale=${locale} tipKey="glossary.roi" /></div><div class="amount" style="font-size:15px">${result.break_even_months == null ? t(locale, 'rentbuy.breakEvenNever') : result.break_even_months === 0 ? t(locale, 'rentbuy.verdictBuyNow') : t(locale, 'rentbuy.breakEvenMonths', { months: result.break_even_months })}</div></div>
+                <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.wealthCrossover')}</div><div class="amount" style="font-size:15px">${result.net_worth_break_even_year == null ? t(locale, 'rentbuy.sensNever') : `Y${result.net_worth_break_even_year}`}</div></div>
             </div>
-            <${RentBuyChart} schedule=${result.schedule} breakEvenMonths=${result.break_even_months} settings=${settings} />
+            <details>
+                <summary style="cursor:pointer; font-size:13px">${t(locale, 'rentbuy.cashDetails')}</summary>
+                <div style="margin-top:8px"><${RentBuyChart} schedule=${result.schedule} breakEvenMonths=${result.break_even_months} settings=${settings} /></div>
+            </details>
+            <div class="muted" style="font-size:12px; margin:4px 0 12px">${t(locale, 'rentbuy.nwCaption')}</div>
             <${NetWorthChart} schedule=${result.schedule} breakEvenYear=${result.net_worth_break_even_year} settings=${settings} />
             <div class="summary-cards">
                 <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.interestPaid')}</div><div class="amount" title=${full(result.total_interest_paid)} style="font-size:15px">${cc(result.total_interest_paid)}</div></div>
@@ -316,20 +368,13 @@ export function RentVsBuy({ settings }) {
             </div>
             ${Array.isArray(result.sensitivity) && result.sensitivity.length > 0 && html`<div class="card">
                 <div class="smallcaps">${t(locale, 'rentbuy.sensTitle')}</div>
+                <div class="muted" style="font-size:12px; margin-top:4px">${t(locale, 'rentbuy.sensCaption')}</div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px">
                     ${result.sensitivity.map((pt) => html`<span style="display:inline-block; padding:2px 10px; border-radius:999px; font-size:12px; background:var(--chart-track); white-space:nowrap">
                         ${(pt.appreciation * 100).toFixed(0)}% → ${pt.break_even_year == null ? t(locale, 'rentbuy.sensNever') : `Y${pt.break_even_year}`}
                     </span>`)}
                 </div>
             </div>`}
-            <div class="card">
-                <div style="display:grid; gap:8px">
-                    ${[[t(locale, 'rentbuy.monthlyBuy'), result.monthly_buy, 'var(--chart-blue)'], [t(locale, 'rentbuy.monthlyRent'), result.monthly_rent, 'var(--chart-orange)']].map(([label, value, color]) => html`<div>
-                        <div style="display:flex; justify-content:space-between; font-size:13px"><span>${label}</span><span class="num">${formatCurrency(value, locale, currency)}</span></div>
-                        <div style="height:10px; border-radius:999px; background:var(--chart-track); overflow:hidden"><div style="height:100%; width:${(100 * value / maxBar).toFixed(1)}%; background:${color}"></div></div>
-                    </div>`)}
-                </div>
-            </div>
         </div>`}
         <${RelatedCalcs} current="rent-buy" settings=${settings} />
     </div>`;
