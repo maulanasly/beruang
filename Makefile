@@ -5,6 +5,7 @@
 # ------------------------------------------------------------------------------
 GATEWAY_PORT ?= 8000
 RUST_MANIFEST := Cargo.toml
+GATEWAY_BIN := beruang-gateway
 
 # ------------------------------------------------------------------------------
 # Help
@@ -19,30 +20,26 @@ help: ## Show this help message
 # ------------------------------------------------------------------------------
 # Run / Dev (local, no Docker)
 # ------------------------------------------------------------------------------
-.PHONY: run dev run-gateway dev-gateway
+.PHONY: run dev dev-gateway dev-watch-install check-port
+
+check-port:
+	@if lsof -n -iTCP:$(GATEWAY_PORT) -sTCP:LISTEN >/dev/null 2>&1; then \
+		echo "Port $(GATEWAY_PORT) is already in use. Stop the existing process or retry with GATEWAY_PORT=<free_port>"; \
+		exit 1; \
+	fi
 
 # Self-contained binary: Axum serves the API + embedded static/ on :8000.
-run: ## Run the self-contained binary without Docker (API + UI on :$(GATEWAY_PORT))
-	@if lsof -n -iTCP:$(GATEWAY_PORT) -sTCP:LISTEN >/dev/null 2>&1; then \
-		echo "Port $(GATEWAY_PORT) is already in use. Stop the existing process or run: make run GATEWAY_PORT=<free_port>"; \
-		exit 1; \
-	fi
+run: check-port ## Run the self-contained binary without Docker (API + UI on :$(GATEWAY_PORT))
 	@echo "Starting beruang on 0.0.0.0:$(GATEWAY_PORT) -> http://localhost:$(GATEWAY_PORT)"
-	cargo run --manifest-path $(RUST_MANIFEST)
+	cargo run --manifest-path $(RUST_MANIFEST) --bin $(GATEWAY_BIN)
 
-dev: ## Run with hot reload: static/ served from disk (no rebuild for UI edits) + browser auto-reload
-	@if lsof -n -iTCP:$(GATEWAY_PORT) -sTCP:LISTEN >/dev/null 2>&1; then \
-		echo "Port $(GATEWAY_PORT) is already in use. Stop the existing process or run: make dev GATEWAY_PORT=<free_port>"; \
-		exit 1; \
-	fi
+dev: check-port ## Run with hot reload: static/ served from disk (no rebuild for UI edits) + browser auto-reload
 	@echo "Starting beruang (DEV: disk-served static/ + live reload) on 0.0.0.0:$(GATEWAY_PORT) -> http://localhost:$(GATEWAY_PORT)"
-	BERUANG_DEV=1 cargo run --manifest-path $(RUST_MANIFEST)
+	BERUANG_DEV=1 cargo run --manifest-path $(RUST_MANIFEST) --bin $(GATEWAY_BIN)
 
-run-gateway: run ## Alias for run
-
-dev-gateway: ## Start Rust gateway with auto-reload (cargo watch if installed, else plain dev)
+dev-gateway: check-port ## Start Rust gateway with auto-reload (cargo watch if installed, else plain dev)
 	@if cargo watch --version >/dev/null 2>&1; then \
-		BERUANG_DEV=1 cargo watch -x 'run --manifest-path $(RUST_MANIFEST)'; \
+		BERUANG_DEV=1 cargo watch -x 'run --manifest-path $(RUST_MANIFEST) --bin $(GATEWAY_BIN)'; \
 	else \
 		echo "cargo-watch not found; falling back to 'make dev' (static hot reload still works)."; \
 		echo "Install the Rust reloader with: make dev-watch-install"; \
@@ -71,39 +68,25 @@ logs: ## Tail Docker Compose logs
 # ------------------------------------------------------------------------------
 # Test
 # ------------------------------------------------------------------------------
-.PHONY: test test-rust test-all
-test: test-rust ## Run Rust gateway tests (alias)
-
-test-rust: ## Run Rust gateway tests
+.PHONY: test
+test: ## Run Rust gateway tests
 	cargo test --manifest-path $(RUST_MANIFEST)
-
-test-all: test-rust ## Run all tests (alias)
 
 # ------------------------------------------------------------------------------
 # Lint / Format / Verify
 # ------------------------------------------------------------------------------
-.PHONY: lint lint-rust fmt fmt-rust fmt-check fmt-check-rust verify verify-rust verify-all
+.PHONY: lint fmt fmt-check verify
 
-lint: lint-rust ## Lint Rust gateway (clippy, alias)
-
-lint-rust: ## Lint Rust gateway (clippy)
+lint: ## Lint Rust gateway (clippy)
 	cargo clippy --manifest-path $(RUST_MANIFEST) --all-targets -- -D warnings
 
-fmt: fmt-rust ## Format Rust gateway (alias)
-
-fmt-rust: ## Format Rust gateway
+fmt: ## Format Rust gateway
 	cargo fmt --manifest-path $(RUST_MANIFEST)
 
-fmt-check: fmt-check-rust ## Check Rust formatting (alias)
-
-fmt-check-rust: ## Check Rust formatting (no write)
+fmt-check: ## Check Rust formatting (no write)
 	cargo fmt --manifest-path $(RUST_MANIFEST) -- --check
 
-verify: lint-rust fmt-check-rust test-rust ## Verify Rust gateway (clippy + fmt check + tests)
-
-verify-rust: verify ## Alias for verify
-
-verify-all: verify ## Alias for verify
+verify: lint fmt-check test ## Verify Rust gateway (clippy + fmt check + tests)
 
 # ------------------------------------------------------------------------------
 # Market snapshot (degraded data tier; see src/bin/snapshot.rs)
