@@ -770,6 +770,85 @@ async fn rent_buy_net_worth_layer() {
         .unwrap()
         .contains("home_appreciation_annual"));
 }
+/// Rent-vs-buy signals: ratios, implied thresholds, wait comparison, and
+/// affordability ride the same route with the same 422 shape.
+#[tokio::test]
+async fn rent_buy_signals() {
+    let app = beruang_gateway::routes::create_router();
+    let base = serde_json::json!({
+        "house_price": 800000000.0, "down_payment": 160000000.0,
+        "mortgage_rate_annual": 0.07, "tenor_years": 20.0,
+        "rent_per_month": 3000000.0, "other_buy_costs_per_month": 500000.0,
+    });
+    let payload = base.to_string();
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/rent-vs-buy/comparison")
+                .header("content-type", "application/json")
+                .body(Body::from(payload))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_json(response).await;
+    assert!((body["price_to_rent"].as_f64().unwrap() - 22.2222).abs() < 0.01);
+    assert!(body["payment_to_rent"].as_f64().unwrap() > 1.0);
+    let req = body["required_appreciation"].as_f64().unwrap();
+    assert!((0.04..0.05).contains(&req), "{req}");
+    assert!(body["max_invest_return"].as_f64().unwrap() < 0.08);
+    assert_eq!(body["closing_recovery_years"].as_u64().unwrap(), 0);
+    assert!(body["wait_advantage_vs_buy_now"].is_null());
+    assert!(body["installment_share"].is_null());
+
+    // Waiting 5 years and earning 20M/month: advantage is a number, share
+    // sits in the comfortable band.
+    let mut full = base.as_object().unwrap().clone();
+    full.insert("wait_years".to_string(), serde_json::json!(5.0));
+    full.insert(
+        "gross_monthly_income".to_string(),
+        serde_json::json!(20000000.0),
+    );
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/rent-vs-buy/comparison")
+                .header("content-type", "application/json")
+                .body(Body::from(serde_json::Value::Object(full).to_string()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_json(response).await;
+    assert!(body["wait_advantage_vs_buy_now"].as_f64().is_some());
+    assert!(body["installment_share"].as_f64().unwrap() < 0.30);
+
+    // Waiting past the tenor is rejected like any other bad input.
+    let mut bad = base.as_object().unwrap().clone();
+    bad.insert("wait_years".to_string(), serde_json::json!(99.0));
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/rent-vs-buy/comparison")
+                .header("content-type", "application/json")
+                .body(Body::from(serde_json::Value::Object(bad).to_string()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+    assert!(response_body_json(response).await["detail"]
+        .as_str()
+        .unwrap()
+        .contains("wait_years"));
+}
 /// Rent-vs-buy page shares the Indonesian canonical like the calculators.
 #[tokio::test]
 async fn rent_buy_page_meta() {

@@ -17,6 +17,7 @@ const API_FIELDS = [
     'rent_per_month', 'other_buy_costs_per_month',
     'home_appreciation_annual', 'rent_growth_annual', 'other_growth_annual',
     'invest_return_annual', 'closing_costs', 'selling_cost_rate',
+    'wait_years', 'gross_monthly_income',
 ];
 
 const LABELS = {
@@ -32,13 +33,15 @@ const LABELS = {
     invest_return_annual: 'rentbuy.investReturn',
     closing_costs: 'rentbuy.closingCosts',
     selling_cost_rate: 'rentbuy.sellingRate',
+    wait_years: 'rentbuy.waitYears',
+    gross_monthly_income: 'rentbuy.income',
 };
 
 // Input groups, each a similar category. Down payment renders custom
 // (amount/percent toggle) wherever its group maps it.
-const GROUP_FINANCING = ['house_price', 'down_payment', 'mortgage_rate_annual', 'tenor_years', 'closing_costs', 'selling_cost_rate'];
+const GROUP_FINANCING = ['house_price', 'down_payment', 'mortgage_rate_annual', 'tenor_years', 'closing_costs', 'selling_cost_rate', 'gross_monthly_income'];
 const GROUP_MONTHLY = ['rent_per_month', 'other_buy_costs_per_month', 'rent_growth_annual', 'other_growth_annual'];
-const GROUP_MARKET = ['home_appreciation_annual', 'invest_return_annual'];
+const GROUP_MARKET = ['home_appreciation_annual', 'invest_return_annual', 'wait_years'];
 
 const FORM_DEFAULTS = {
     house_price: 800000000, down_payment: 160000000,
@@ -48,6 +51,7 @@ const FORM_DEFAULTS = {
     home_appreciation_annual: 0.04, rent_growth_annual: 0.03,
     other_growth_annual: 0.03, invest_return_annual: 0.08,
     closing_costs: 0, selling_cost_rate: 0.05,
+    wait_years: 0, gross_monthly_income: 0,
 };
 
 // Percent-mode presets. A custom value arriving via a share link is kept
@@ -109,6 +113,7 @@ export function RentVsBuy({ settings }) {
             }
             const data = await rentBuyComparison(payload);
             data.calculatedAt = new Date().toISOString();
+            data.waitYears = payload.wait_years;
             setResult(data);
             if (inputsOverride) setForm({ ...inputs });
             requestAnimationFrame(() => document.querySelector('[data-results]')?.scrollIntoView());
@@ -197,6 +202,59 @@ export function RentVsBuy({ settings }) {
         </label>`;
     }
 
+    // Buy signals: ratios with classic bands plus the model-exact implied
+    // thresholds (required appreciation, max invest return).
+    function priceBand(value) {
+        if (value == null) return null;
+        if (value < 15) return { key: 'rentbuy.sigBandBuy', color: 'var(--success)' };
+        if (value <= 20) return { key: 'rentbuy.sigBandGray', color: 'var(--chart-orange)' };
+        return { key: 'rentbuy.sigBandRent', color: 'var(--danger)' };
+    }
+
+    function requiredLine() {
+        const req = result.required_appreciation;
+        if (req == null) return t(locale, 'rentbuy.sigRequiredNever');
+        if (req <= 0) return t(locale, 'rentbuy.sigRequiredZero');
+        return t(locale, 'rentbuy.sigRequired', { pct: (req * 100).toFixed(1) });
+    }
+
+    function maxInvestLine() {
+        const mi = result.max_invest_return;
+        if (mi == null) return t(locale, 'rentbuy.sigMaxInvestNone');
+        if (mi >= 1) return t(locale, 'rentbuy.sigMaxInvestAll');
+        return t(locale, 'rentbuy.sigMaxInvest', { pct: (mi * 100).toFixed(1) });
+    }
+
+    function affordBand(share) {
+        if (share <= 0.30) return { key: 'rentbuy.sigAffordComfortable', color: 'var(--success)' };
+        if (share <= 0.40) return { key: 'rentbuy.sigAffordStretched', color: 'var(--chart-orange)' };
+        return { key: 'rentbuy.sigAffordDanger', color: 'var(--danger)' };
+    }
+
+    function signalsPanel() {
+        const band = priceBand(result.price_to_rent);
+        const rec = result.closing_recovery_years;
+        const share = result.installment_share;
+        const ab = share != null ? affordBand(share) : null;
+        return html`<div class="card">
+            <div class="smallcaps">${t(locale, 'rentbuy.sigTitle')}</div>
+            <div style="display:grid; gap:8px; margin-top:8px; font-size:13px">
+                <div style="display:flex; justify-content:space-between; gap:8px"><span>${t(locale, 'rentbuy.sigPriceToRent')}</span><span class="num">${result.price_to_rent == null ? '—' : `${result.price_to_rent.toFixed(1)}×`}
+                    ${band && html`<span style=${`color:${band.color}; font-weight:700`}> · ${t(locale, band.key)}</span>`}</span></div>
+                <div style="display:flex; justify-content:space-between; gap:8px"><span>${t(locale, 'rentbuy.sigPaymentToRent')}</span><span class="num">${result.payment_to_rent == null ? '—' : `${result.payment_to_rent.toFixed(2)}×`}</span></div>
+                <div>${requiredLine()}</div>
+                <div>${maxInvestLine()}</div>
+                ${rec !== 0 && html`<div>${rec == null ? t(locale, 'rentbuy.sigClosingNever') : t(locale, 'rentbuy.sigClosing', { years: rec })}</div>`}
+                ${result.wait_advantage_vs_buy_now != null && html`<div style=${`color:${result.wait_advantage_vs_buy_now >= 0 ? 'var(--success)' : 'var(--danger)'}; font-weight:600`}>
+                    ${t(locale, 'rentbuy.sigWait', { years: result.waitYears, amount: cc(result.wait_advantage_vs_buy_now) })}</div>`}
+                ${ab && html`<div>
+                    <div style="display:flex; justify-content:space-between; gap:8px"><span>${t(locale, 'rentbuy.sigAfford')}</span><span class="num" style=${`color:${ab.color}; font-weight:700`}>${(share * 100).toFixed(0)}% · ${t(locale, ab.key)}</span></div>
+                    <div style="height:10px; border-radius:999px; background:var(--chart-track); overflow:hidden; margin-top:4px"><div style="height:100%; width:${Math.min(share * 100, 100).toFixed(1)}%; background:${ab.color}"></div></div>
+                </div>`}
+            </div>
+        </div>`;
+    }
+
     function group(titleKey, keys) {
         return html`<div style="margin-top:12px">
             <div class="smallcaps">${t(locale, titleKey)}</div>
@@ -218,7 +276,7 @@ export function RentVsBuy({ settings }) {
     return html`<div>
         <${Crumbs} locale=${locale} currentKey="nav.rentBuy" />
         <div class="page-head"><h1>${t(locale, 'nav.rentBuy')}</h1><p class="muted">${t(locale, 'rentbuy.subtitle')}</p></div>
-        <${HowTo} locale=${locale} startOpen=${!result} steps=${[t(locale, 'howto.rentbuy1'), t(locale, 'howto.rentbuy2'), t(locale, 'howto.rentbuy3'), t(locale, 'howto.rentbuy4')]} />
+        <${HowTo} locale=${locale} startOpen=${!result} steps=${[t(locale, 'howto.rentbuy1'), t(locale, 'howto.rentbuy2'), t(locale, 'howto.rentbuy3'), t(locale, 'howto.rentbuy4'), t(locale, 'howto.rentbuy5')]} />
         <div class="card">
             ${group('rentbuy.groupFinancing', GROUP_FINANCING)}
             ${group('rentbuy.groupMonthly', GROUP_MONTHLY)}
@@ -240,6 +298,7 @@ export function RentVsBuy({ settings }) {
                 ${v.sub && html`<div class="muted" style="font-size:13px; margin-top:4px">${v.sub}</div>`}
                 ${flip && html`<div class="muted" style="font-size:13px; margin-top:4px">↗ ${flip}</div>`}
             </div>`}
+            <${signalsPanel} />
             <div class="summary-cards">
                 <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.monthlyBuy')}</div><div class="amount" title=${full(result.monthly_buy)}>${cc(result.monthly_buy)}</div></div>
                 <div class="card"><div class="smallcaps">${t(locale, 'rentbuy.monthlyRent')}</div><div class="amount" title=${full(result.monthly_rent)}>${cc(result.monthly_rent)}</div></div>

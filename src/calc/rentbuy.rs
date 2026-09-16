@@ -17,6 +17,9 @@ fn default_invest_return() -> f64 {
 fn default_closing() -> f64 {
     0.0
 }
+fn default_zero() -> f64 {
+    0.0
+}
 fn default_selling_rate() -> f64 {
     0.05
 }
@@ -47,6 +50,12 @@ pub struct RentBuyInput {
     pub closing_costs: f64,
     #[serde(default = "default_selling_rate")]
     pub selling_cost_rate: f64,
+    /// Whole years to wait before buying (0 = buy now, feature off).
+    #[serde(default = "default_zero")]
+    pub wait_years: f64,
+    /// Gross monthly income for the affordability gauge (0 = hidden).
+    #[serde(default = "default_zero")]
+    pub gross_monthly_income: f64,
 }
 
 /// One point of the yearly series backing both charts (`year` 0..=tenor).
@@ -94,6 +103,24 @@ pub struct RentBuyComparison {
     pub net_advantage_buy_minus_rent: f64,
     pub net_worth_break_even_year: Option<u32>,
     pub sensitivity: Vec<SensitivityPoint>,
+    /// Buy signals: price ÷ annual rent (`None` when rent is zero) and
+    /// first-month buy ÷ rent (`None` when rent is zero).
+    pub price_to_rent: Option<f64>,
+    pub payment_to_rent: Option<f64>,
+    /// Appreciation at which buying breaks even by horizon (`Some(0.0)` =
+    /// wins at any appreciation, `None` = cannot win below 30%/yr).
+    pub required_appreciation: Option<f64>,
+    /// Invest return below which buying wins (`None` = renting wins even
+    /// at 0% returns).
+    pub max_invest_return: Option<f64>,
+    /// Years of renter surplus covering closing costs (`Some(0)` when no
+    /// closing costs, `None` when buying never runs a surplus).
+    pub closing_recovery_years: Option<u32>,
+    /// Waiter end wealth minus buy-now end wealth (`None` when
+    /// `wait_years` is 0).
+    pub wait_advantage_vs_buy_now: Option<f64>,
+    /// First-month buy cost ÷ income (`None` when income is 0/absent).
+    pub installment_share: Option<f64>,
     pub schedule: Vec<RentBuyYearPoint>,
 }
 
@@ -245,8 +272,126 @@ fn crossover_year(schedule: &[RentBuyYearPoint]) -> Option<u32> {
         .map(|pt| pt.year)
 }
 
-/// Appreciation scenarios around the input (±2pts, floored at 0) with the
-/// net-worth crossover year under each.
+/// End-horizon buyer-minus-renter wealth with appreciation and invest
+/// return overridden. Buyer wealth rises strictly with `apprec` and falls
+/// strictly with `invest`, so both bisections below always converge.
+fn advantage_at(p: &Resolved, apprec: f64, invest: f64) -> f64 {
+    let q = Resolved {
+        apprec,
+        invest,
+        ..*p
+    };
+    let (sched, _) = simulate(&q);
+    let last = sched.last().expect("schedule always has year 0");
+    last.buyer_net_worth - last.renter_net_worth
+}
+
+fn round4(x: f64) -> f64 {
+    (x * 10_000.0).round() / 10_000.0
+}
+
+/// Bisection root of `f` on `[lo, hi]`; `increasing` selects the branch.
+fn bisect(f: impl Fn(f64) -> f64, mut lo: f64, mut hi: f64, increasing: bool) -> f64 {
+    for _ in 0..40 {
+        let mid = 0.5 * (lo + hi);
+        if (f(mid) > 0.0) == increasing {
+            hi = mid;
+        } else {
+            lo = mid;
+        }
+    }
+    round4(0.5 * (lo + hi))
+}
+
+/// Minimum appreciation for buying to win by horizon. `Some(0.0)` wins at
+/// any appreciation; `None` cannot win below 30%/yr.
+fn required_appreciation(p: &Resolved) -> Option<f64> {
+    if advantage_at(p, 0.0, p.invest) > 0.0 {
+        return Some(0.0);
+    }
+    if advantage_at(p, 0.30, p.invest) < 0.0 {
+        return None;
+    }
+    Some(bisect(|g| advantage_at(p, g, p.invest), 0.0, 0.30, true))
+}
+
+/// Maximum invest return at which buying still wins. `None` means renting
+/// wins even if investments return nothing.
+fn max_invest_return(p: &Resolved) -> Option<f64> {
+    if advantage_at(p, p.apprec, 0.0) < 0.0 {
+        return None;
+    }
+    if advantage_at(p, p.apprec, 1.0) >= 0.0 {
+        return Some(1.0);
+    }
+    Some(bisect(|i| advantage_at(p, p.apprec, i), 0.0, 1.0, false))
+}
+
+/// Years of first-year renter surplus covering closing costs.
+fn closing_recovery_years(p: &Resolved, pmt: f64) -> Option<u32> {
+    if p.closing <= 0.0 {
+        return Some(0);
+    }
+    let rent_f = monthly_factor(p.rent_g);
+    let other_f = monthly_factor(p.other_g);
+    let surplus: f64 = (0..12)
+        .map(|m| {
+            let buy_m = pmt + p.other0 * (1.0 + other_f).powf(m as f64);
+            (buy_m - p.rent0 * (1.0 + rent_f).powf(m as f64)).max(0.0)
+        })
+        .sum();
+    if surplus <= 0.0 {
+        return None;
+    }
+    Some((p.closing / surplus).ceil() as u32)
+}
+
+/// Buy-now-vs-wait: rent and invest everything for `w` years, then deploy
+/// the whole accumulated portfolio as the down payment (net of a fresh
+/// round of closing costs) on the appreciated house with a new same-rate,
+/// same-tenor loan. Returns end-horizon buyer wealth for the waiter.
+fn wait_net_worth(p: &Resolved, w: u32) -> f64 {
+    let months_total = p.years * 12;
+    let principal0 = p.price - p.dp;
+    let pmt0 = monthly_payment(principal0, p.rate, months_total);
+    let rent_f = monthly_factor(p.rent_g);
+    let other_f = monthly_factor(p.other_g);
+    let inv_f = monthly_factor(p.invest);
+
+    // Phase 1: rent while investing the would-be buyer surplus.
+    let mut pf = p.dp + p.closing;
+    let w_m = w * 12;
+    for m in 1..=w_m {
+        let grow = |f: f64| (1.0 + f).powf((m - 1) as f64);
+        let rent_m = p.rent0 * grow(rent_f);
+        let buy_m = pmt0 + p.other0 * grow(other_f);
+        pf = pf * (1.0 + inv_f) + (buy_m - rent_m).max(0.0);
+    }
+    // Purchase at year w: everything deployed as down payment.
+    let price_w = p.price * (1.0 + p.apprec).powf(w as f64);
+    let dp_w = (pf - p.closing).max(0.0);
+    let principal_w = (price_w - dp_w).max(0.0);
+    let pmt_w = monthly_payment(principal_w, p.rate, months_total);
+    let r = p.rate / 12.0;
+
+    // Phase 2: own for the remaining months, investing own surplus.
+    let mut balance = principal_w;
+    let mut buyer_pf = 0.0;
+    for m in 1..=(months_total - w_m) {
+        let gm = w_m + m;
+        let grow = |f: f64| (1.0 + f).powf((gm - 1) as f64);
+        let rent_m = p.rent0 * grow(rent_f);
+        let buy_m = pmt_w + p.other0 * grow(other_f);
+        if buy_m < rent_m {
+            buyer_pf = buyer_pf * (1.0 + inv_f) + (rent_m - buy_m);
+        } else {
+            buyer_pf *= 1.0 + inv_f;
+        }
+        balance = (balance + balance * r - pmt_w).max(0.0);
+    }
+    let home_end = p.price * (1.0 + p.apprec).powf(p.years as f64);
+    (home_end - balance) - p.sell * home_end + buyer_pf
+}
 fn sensitivity(p: &Resolved) -> Vec<SensitivityPoint> {
     [-0.02, -0.01, 0.0, 0.01, 0.02]
         .into_iter()
@@ -274,6 +419,8 @@ pub fn rent_buy_comparison(input: &RentBuyInput) -> Result<RentBuyComparison, Ca
     let invest = require_rate(input.invest_return_annual, "invest_return_annual")?;
     let closing = require_amount(input.closing_costs, "closing_costs")?;
     let sell = require_rate(input.selling_cost_rate, "selling_cost_rate")?;
+    let wait = require_amount(input.wait_years, "wait_years")?;
+    let income = require_amount(input.gross_monthly_income, "gross_monthly_income")?;
 
     if price <= 0.0 {
         return Err(CalcError::validation(
@@ -290,8 +437,19 @@ pub fn rent_buy_comparison(input: &RentBuyInput) -> Result<RentBuyComparison, Ca
             "tenor_years must be a whole number of years between 1 and 30.",
         ));
     }
+    if (wait.round() - wait).abs() > 1e-9 || !(0.0..=10.0).contains(&wait) {
+        return Err(CalcError::validation(
+            "wait_years must be a whole number of years between 0 and 10.",
+        ));
+    }
 
     let years = tenor.round() as u32;
+    let wait_y = wait.round() as u32;
+    if wait_y >= years {
+        return Err(CalcError::validation(
+            "wait_years must be less than tenor_years.",
+        ));
+    }
     let months = years * 12;
     let principal = price - dp;
     let pmt = monthly_payment(principal, rate, months);
@@ -340,6 +498,13 @@ pub fn rent_buy_comparison(input: &RentBuyInput) -> Result<RentBuyComparison, Ca
         net_advantage_buy_minus_rent: end_buyer - end_renter,
         net_worth_break_even_year: nw_break_even,
         sensitivity: sensitivity(&p),
+        price_to_rent: (rent > 0.0).then_some(price / (12.0 * rent)),
+        payment_to_rent: (rent > 0.0).then_some(monthly_buy / rent),
+        required_appreciation: required_appreciation(&p),
+        max_invest_return: max_invest_return(&p),
+        closing_recovery_years: closing_recovery_years(&p, pmt),
+        wait_advantage_vs_buy_now: (wait_y > 0).then(|| wait_net_worth(&p, wait_y) - end_buyer),
+        installment_share: (income > 0.0).then_some(monthly_buy / income),
         schedule,
     })
 }
@@ -366,6 +531,8 @@ mod tests {
             invest_return_annual: 0.08,
             closing_costs: 0.0,
             selling_cost_rate: 0.05,
+            wait_years: 0.0,
+            gross_monthly_income: 0.0,
         }
     }
 
@@ -525,6 +692,72 @@ mod tests {
     }
 
     #[test]
+    fn signals_match_typical_case() {
+        let out = rent_buy_comparison(&typical()).unwrap();
+        // 800M ÷ 36M annual rent sits in rent territory on the 15/20 scale.
+        let ptr = out.price_to_rent.expect("rent is nonzero");
+        assert!((ptr - 22.2222).abs() < 0.01, "{ptr}");
+        let pmt = monthly_payment(640_000_000.0, 0.07, 240);
+        let pr = out.payment_to_rent.expect("rent is nonzero");
+        assert!((pr - (pmt + 500_000.0) / 3_000_000.0).abs() < 1e-9);
+        // End-horizon flips between 4% and 5%: the required rate hides in
+        // between, and 8% investing beats buying (max return below it).
+        let req = out.required_appreciation.expect("flips in range");
+        assert!((0.04..0.05).contains(&req), "{req}");
+        let max_i = out.max_invest_return.expect("wins at 0%");
+        assert!((0.0..0.08).contains(&max_i), "{max_i}");
+        // No closing costs recover immediately; nothing to wait for.
+        assert_eq!(out.closing_recovery_years, Some(0));
+        assert_eq!(out.wait_advantage_vs_buy_now, None);
+        assert_eq!(out.installment_share, None);
+    }
+
+    #[test]
+    fn zero_rent_gives_null_ratios() {
+        let mut input = typical();
+        input.rent_per_month = 0.0;
+        let out = rent_buy_comparison(&input).unwrap();
+        assert_eq!(out.price_to_rent, None);
+        assert_eq!(out.payment_to_rent, None);
+    }
+
+    #[test]
+    fn closing_recovery_and_income_share() {
+        let mut input = typical();
+        input.closing_costs = 20_000_000.0;
+        input.gross_monthly_income = 20_000_000.0;
+        let out = rent_buy_comparison(&input).unwrap();
+        // ~29.5M first-year surplus covers 20M closing in year 1.
+        assert_eq!(out.closing_recovery_years, Some(1));
+        let share = out.installment_share.expect("income given");
+        assert!((share - out.monthly_buy / 20_000_000.0).abs() < 1e-12);
+        assert!(share < 0.30, "comfortable band: {share}");
+    }
+
+    #[test]
+    fn wait_zero_matches_buy_now_internally() {
+        let input = typical();
+        let out = rent_buy_comparison(&input).unwrap();
+        // wait_net_worth(0) must reproduce the buy-now end wealth exactly
+        // (same purchase, same loan, same horizon).
+        let p = super::Resolved {
+            price: input.house_price,
+            dp: input.down_payment,
+            rate: input.mortgage_rate_annual,
+            years: 20,
+            rent0: input.rent_per_month,
+            other0: input.other_buy_costs_per_month,
+            apprec: input.home_appreciation_annual,
+            rent_g: input.rent_growth_annual,
+            other_g: input.other_growth_annual,
+            invest: input.invest_return_annual,
+            closing: input.closing_costs,
+            sell: input.selling_cost_rate,
+        };
+        assert!((super::wait_net_worth(&p, 0) - out.end_buyer_net_worth).abs() < 1.0);
+    }
+
+    #[test]
     fn sensitivity_is_monotonic_and_centered() {
         let out = rent_buy_comparison(&typical()).unwrap();
         assert_eq!(out.sensitivity.len(), 5);
@@ -577,6 +810,18 @@ mod tests {
         assert!(rent_buy_comparison(&input).is_err());
         input = typical();
         input.closing_costs = -1.0;
+        assert!(rent_buy_comparison(&input).is_err());
+        input = typical();
+        input.wait_years = 99.0;
+        assert!(rent_buy_comparison(&input).is_err());
+        input = typical();
+        input.wait_years = 2.5;
+        assert!(rent_buy_comparison(&input).is_err());
+        input = typical();
+        input.wait_years = 20.0;
+        assert!(rent_buy_comparison(&input).is_err());
+        input = typical();
+        input.gross_monthly_income = -1.0;
         assert!(rent_buy_comparison(&input).is_err());
     }
 }
