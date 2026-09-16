@@ -152,6 +152,15 @@ fn page_meta(path: &str) -> PageMeta {
             hreflang_en: Some("/calculators/flat-rate-loan"),
             noscript: "Kalkulator bunga flat: isi harga OTR, uang muka, flat yang ditawarkan, dan tenor bulan untuk melihat tarif efektif, cicilan, dan grafik saldo. Aktifkan JavaScript untuk menghitung.",
         },
+        "debt-payoff" | "kalkulator/lunas-utang" | "calculators/debt-payoff" => PageMeta {
+            title_id: "Perencana Pelunasan Utang: Avalanche vs Snowball — Beruang",
+            title_en: "Debt Payoff Planner: Avalanche vs Snowball — Beruang",
+            desc_id: "Bandingkan strategi avalanche vs snowball untuk melunasi paylater, kredit motor, dan KPR beserta extra payment.",
+            desc_en: "Compare avalanche vs snowball strategies to pay off paylater, vehicle loans, and mortgages with extra payments.",
+            canonical: "/kalkulator/lunas-utang",
+            hreflang_en: Some("/calculators/debt-payoff"),
+            noscript: "Perencana pelunasan utang: daftarkan tiap utang, bunga, dan cicilan minimum untuk melihat strategi tercepat dan termurah. Aktifkan JavaScript untuk menghitung.",
+        },
         _ => PageMeta {
             title_id: "Beruang — Kalkulator Investasi",
             title_en: "Beruang — Investment Calculators",

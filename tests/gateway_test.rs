@@ -998,3 +998,108 @@ async fn flat_loan_english_alias_meta() {
     assert!(body
         .contains("<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/bunga-flat\">"));
 }
+
+/// Debt payoff: avalanche beats snowball on the sample debts; bad input
+/// keeps 422 shape; both schedules amortize to zero.
+#[tokio::test]
+async fn debt_payoff_comparison_matches_model() {
+    let app = beruang_gateway::routes::create_router();
+    let payload = serde_json::json!({
+        "extra_payment": 1000000.0,
+        "debts": [
+            {"name": "Paylater", "balance": 12000000.0, "annual_rate": 0.36,
+             "rate_kind": "effective", "tenor_months": 0.0, "min_payment": 1000000.0},
+            {"name": "Motor", "balance": 20000000.0, "annual_rate": 0.08,
+             "rate_kind": "flat", "tenor_months": 24.0, "min_payment": 0.0},
+        ],
+    })
+    .to_string();
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/debt-payoff/comparison")
+                .header("content-type", "application/json")
+                .body(Body::from(payload))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_json(response).await;
+    assert!(body["interest_saved_avalanche"].as_f64().unwrap() >= 0.0);
+    for plan in ["avalanche", "snowball"] {
+        assert_eq!(body[plan]["debts"].as_array().unwrap().len(), 2);
+        let sched = body[plan]["schedule"].as_array().unwrap();
+        assert!(sched.last().unwrap().as_f64().unwrap().abs() < 0.01);
+    }
+
+    let bad = r#"{"extra_payment": 0, "debts": [
+        {"name": "Paylater", "balance": 12000000, "annual_rate": 0.36,
+         "rate_kind": "effective", "tenor_months": 0, "min_payment": 100000}]}"#;
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/debt-payoff/comparison")
+                .header("content-type", "application/json")
+                .body(Body::from(bad))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+    assert!(response_body_json(response).await["detail"]
+        .as_str()
+        .unwrap()
+        .contains("min_payment"));
+}
+
+/// Debt-payoff page shares the Indonesian canonical like the calculators.
+#[tokio::test]
+async fn debt_payoff_page_meta() {
+    let app = beruang_gateway::routes::create_router();
+    for uri in ["/kalkulator/lunas-utang", "/debt-payoff"] {
+        let response = app
+            .clone()
+            .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK, "{uri}");
+        let body = response_body_text(response).await;
+        assert!(
+            body.contains(
+                "<title>Perencana Pelunasan Utang: Avalanche vs Snowball — Beruang</title>"
+            ),
+            "{uri}"
+        );
+        assert!(
+            body.contains(
+                "<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/lunas-utang\">"
+            ),
+            "{uri}"
+        );
+    }
+}
+
+/// English debt-payoff alias serves English copy under the same canonical.
+#[tokio::test]
+async fn debt_payoff_english_alias_meta() {
+    let app = beruang_gateway::routes::create_router();
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/calculators/debt-payoff")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_text(response).await;
+    assert!(body.contains("<title>Debt Payoff Planner: Avalanche vs Snowball — Beruang</title>"));
+    assert!(body.contains(
+        "<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/lunas-utang\">"
+    ));
+}
