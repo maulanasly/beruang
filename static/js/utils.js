@@ -10,6 +10,14 @@ export function formatNumber(value, locale = 'id-ID') {
     if (value == null || isNaN(value)) return '-';
     return new Intl.NumberFormat(locale, { minimumFractionDigits: 0, maximumFractionDigits: 6 }).format(value);
 }
+// Compact currency for result cards: exact below Rp1jt (or 1M), shortened
+// above ("Rp1,67 M") so long figures never overflow their pill. Pair with
+// title={formatCurrency(...)} to keep the exact value one hover away.
+export function formatCompactCurrency(value, locale = 'id-ID', currency = 'IDR') {
+    if (value == null || isNaN(value)) return '-';
+    if (Math.abs(value) < 1000000) return formatCurrency(value, locale, currency);
+    return new Intl.NumberFormat(locale, { style: 'currency', currency, notation: 'compact', maximumFractionDigits: 2 }).format(value);
+}
 export function formatCellValue(key, value, locale, currency) {
     if (value == null) return '-';
     const k = String(key).toLowerCase();

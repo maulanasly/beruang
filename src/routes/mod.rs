@@ -1,6 +1,7 @@
 pub mod ev;
 pub mod health;
 pub mod market;
+pub mod rentbuy;
 pub mod returns;
 pub mod static_handler;
 
@@ -74,6 +75,10 @@ pub fn create_router() -> Router {
             axum::routing::post(returns::term_deposits),
         )
         .route("/api/v1/ev/comparison", axum::routing::post(ev::comparison))
+        .route(
+            "/api/v1/rent-vs-buy/comparison",
+            axum::routing::post(rentbuy::comparison),
+        )
         .route(
             "/api/v1/market-data/idx/kompas100",
             axum::routing::get(market::kompas100),

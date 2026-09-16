@@ -135,6 +135,15 @@ fn page_meta(path: &str) -> PageMeta {
             hreflang_en: Some("/calculators/ev"),
             noscript: "Kalkulator mobil listrik vs bensin: isi harga, jarak bulanan, dan biaya energi untuk melihat hemat per bulan dan titik impas. Aktifkan JavaScript untuk menghitung.",
         },
+        "rent-vs-buy" | "kalkulator/sewa-vs-beli" | "calculators/rent-vs-buy" => PageMeta {
+            title_id: "Kalkulator Sewa vs Beli Rumah — Beruang",
+            title_en: "Rent vs Buy House Calculator — Beruang",
+            desc_id: "Bandingkan kas sewa dengan cicilan KPR dan lihat grafik salip kumulatif beserta tahun impasnya.",
+            desc_en: "Compare renting cash against mortgage payments with a cumulative crossover chart and break-even year.",
+            canonical: "/kalkulator/sewa-vs-beli",
+            hreflang_en: Some("/calculators/rent-vs-buy"),
+            noscript: "Kalkulator sewa vs beli rumah: isi harga, DP, bunga KPR, tenor, dan sewa bulanan untuk melihat putusan, total bulanan, dan grafik kumulatif. Aktifkan JavaScript untuk menghitung.",
+        },
         _ => PageMeta {
             title_id: "Beruang — Kalkulator Investasi",
             title_en: "Beruang — Investment Calculators",

@@ -70,6 +70,10 @@ export function Landing({ settings }) {
                     <h2 style="margin:0 0 4px; font-size:17px"><a href="/kalkulator/mobil-listrik" onClick=${e => go(e, '/kalkulator/mobil-listrik')}>${t(locale, 'home.evTitle')}</a></h2>
                     <p class="muted" style="font-size:13px; margin:0">${t(locale, 'home.evDesc')}</p>
                 </article>
+                <article class="card" aria-label=${t(locale, 'home.rentBuyTitle')}>
+                    <h2 style="margin:0 0 4px; font-size:17px"><a href="/kalkulator/sewa-vs-beli" onClick=${e => go(e, '/kalkulator/sewa-vs-beli')}>${t(locale, 'home.rentBuyTitle')}</a></h2>
+                    <p class="muted" style="font-size:13px; margin:0">${t(locale, 'home.rentBuyDesc')}</p>
+                </article>
             </div>
         </section>
         <section class="card">

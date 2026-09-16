@@ -18,6 +18,9 @@ const routes = {
     '/ev': 'ev',
     '/kalkulator/mobil-listrik': 'ev',
     '/calculators/ev': 'ev',
+    '/rent-vs-buy': 'rent-buy',
+    '/kalkulator/sewa-vs-beli': 'rent-buy',
+    '/calculators/rent-vs-buy': 'rent-buy',
 };
 
 // Canonical (shareable, Indonesian-first) path per route.
@@ -28,6 +31,7 @@ export const canonicalPath = {
     stocks: '/kalkulator/saham',
     'term-deposits': '/kalkulator/deposito',
     ev: '/kalkulator/mobil-listrik',
+    'rent-buy': '/kalkulator/sewa-vs-beli',
 };
 
 // One-time upgrade: old `#/path` links become real paths without reload.
