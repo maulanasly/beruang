@@ -9,30 +9,42 @@ const LINKS = {
         { path: '/kalkulator/deposito', titleKey: 'related.toDeposits', descKey: 'related.toDepositsDesc' },
         { path: '/kalkulator/mobil-listrik', titleKey: 'related.toEv', descKey: 'related.toEvDesc' },
         { path: '/kalkulator/sewa-vs-beli', titleKey: 'related.toRentBuy', descKey: 'related.toRentBuyDesc' },
+        { path: '/kalkulator/bunga-flat', titleKey: 'related.toFlatLoan', descKey: 'related.toFlatLoanDesc' },
     ],
     stocks: [
         { path: '/kalkulator/reksa-dana', titleKey: 'related.toMf', descKey: 'related.toMfDesc' },
         { path: '/kalkulator/deposito', titleKey: 'related.toDeposits', descKey: 'related.toDepositsDesc' },
         { path: '/kalkulator/mobil-listrik', titleKey: 'related.toEv', descKey: 'related.toEvDesc' },
         { path: '/kalkulator/sewa-vs-beli', titleKey: 'related.toRentBuy', descKey: 'related.toRentBuyDesc' },
+        { path: '/kalkulator/bunga-flat', titleKey: 'related.toFlatLoan', descKey: 'related.toFlatLoanDesc' },
     ],
     'term-deposits': [
         { path: '/kalkulator/reksa-dana', titleKey: 'related.toMf', descKey: 'related.toMfDesc' },
         { path: '/kalkulator/saham', titleKey: 'related.toStocks', descKey: 'related.toStocksDesc' },
         { path: '/kalkulator/mobil-listrik', titleKey: 'related.toEv', descKey: 'related.toEvDesc' },
         { path: '/kalkulator/sewa-vs-beli', titleKey: 'related.toRentBuy', descKey: 'related.toRentBuyDesc' },
+        { path: '/kalkulator/bunga-flat', titleKey: 'related.toFlatLoan', descKey: 'related.toFlatLoanDesc' },
     ],
     ev: [
         { path: '/kalkulator/reksa-dana', titleKey: 'related.toMf', descKey: 'related.toMfDesc' },
         { path: '/kalkulator/saham', titleKey: 'related.toStocks', descKey: 'related.toStocksDesc' },
         { path: '/kalkulator/deposito', titleKey: 'related.toDeposits', descKey: 'related.toDepositsDesc' },
         { path: '/kalkulator/sewa-vs-beli', titleKey: 'related.toRentBuy', descKey: 'related.toRentBuyDesc' },
+        { path: '/kalkulator/bunga-flat', titleKey: 'related.toFlatLoan', descKey: 'related.toFlatLoanDesc' },
     ],
     'rent-buy': [
         { path: '/kalkulator/reksa-dana', titleKey: 'related.toMf', descKey: 'related.toMfDesc' },
         { path: '/kalkulator/saham', titleKey: 'related.toStocks', descKey: 'related.toStocksDesc' },
         { path: '/kalkulator/deposito', titleKey: 'related.toDeposits', descKey: 'related.toDepositsDesc' },
         { path: '/kalkulator/mobil-listrik', titleKey: 'related.toEv', descKey: 'related.toEvDesc' },
+        { path: '/kalkulator/bunga-flat', titleKey: 'related.toFlatLoan', descKey: 'related.toFlatLoanDesc' },
+    ],
+    'flat-loan': [
+        { path: '/kalkulator/reksa-dana', titleKey: 'related.toMf', descKey: 'related.toMfDesc' },
+        { path: '/kalkulator/saham', titleKey: 'related.toStocks', descKey: 'related.toStocksDesc' },
+        { path: '/kalkulator/deposito', titleKey: 'related.toDeposits', descKey: 'related.toDepositsDesc' },
+        { path: '/kalkulator/mobil-listrik', titleKey: 'related.toEv', descKey: 'related.toEvDesc' },
+        { path: '/kalkulator/sewa-vs-beli', titleKey: 'related.toRentBuy', descKey: 'related.toRentBuyDesc' },
     ],
 };
 

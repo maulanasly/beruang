@@ -53,3 +53,7 @@ export async function evComparison(payload) {
 export async function rentBuyComparison(payload) {
     return fetchJSON(`${BASE}/rent-vs-buy/comparison`, { method: 'POST', body: JSON.stringify(payload) });
 }
+
+export async function flatLoanComparison(payload) {
+    return fetchJSON(`${BASE}/flat-loan/comparison`, { method: 'POST', body: JSON.stringify(payload) });
+}

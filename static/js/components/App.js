@@ -9,6 +9,7 @@ import { Stocks } from './Stocks.js';
 import { TermDeposits } from './TermDeposits.js';
 import { Ev } from './Ev.js';
 import { RentVsBuy } from './RentVsBuy.js';
+import { FlatLoan } from './FlatLoan.js';
 import { Footer } from './Footer.js';
 
 // No-JS fallback hook: without JS the nav panel stays visible (see CSS).
@@ -54,6 +55,7 @@ export function App() {
             'term-deposits': t(locale, 'nav.termDeposits'),
             ev: t(locale, 'nav.ev'),
             'rent-buy': t(locale, 'nav.rentBuy'),
+            'flat-loan': t(locale, 'nav.flatLoan'),
         };
         document.title = `${titles[route] || 'Beruang'} — Beruang`;
     }, [route, locale]);
@@ -69,6 +71,7 @@ export function App() {
         'term-deposits': html`<${TermDeposits} settings=${settings} />`,
         ev: html`<${Ev} settings=${settings} />`,
         'rent-buy': html`<${RentVsBuy} settings=${settings} />`,
+        'flat-loan': html`<${FlatLoan} settings=${settings} />`,
     };
 
     // Canonical order everywhere (header, mobile menu, footer):
@@ -79,6 +82,7 @@ export function App() {
         { to: '/kalkulator/deposito', key: 'term-deposits', labelKey: 'nav.termDeposits', descKey: 'home.calcTdDesc' },
         { to: '/kalkulator/mobil-listrik', key: 'ev', labelKey: 'nav.ev', descKey: 'home.evDesc' },
         { to: '/kalkulator/sewa-vs-beli', key: 'rent-buy', labelKey: 'nav.rentBuy', descKey: 'home.rentBuyDesc' },
+        { to: '/kalkulator/bunga-flat', key: 'flat-loan', labelKey: 'nav.flatLoan', descKey: 'home.flatDesc' },
     ];
     const calcActive = calcLinks.some(l => l.key === route);
     const go = (e, to) => { e.preventDefault(); setMenuOpen(false); setCalcOpen(false); navigate(to); };
