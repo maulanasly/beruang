@@ -17,6 +17,10 @@ const RATE_FIELDS = [
     'home_appreciation_annual', 'rent_growth_annual', 'other_growth_annual',
     'invest_return_annual', 'selling_cost_rate',
 ];
+
+// API payload keys (14). Wealth-layer defaults match the backend, so
+// payloads and share links saved before they existed keep working.
+const API_FIELDS = [
     'house_price', 'down_payment', 'mortgage_rate_annual', 'tenor_years',
     'rent_per_month', 'other_buy_costs_per_month',
     'home_appreciation_annual', 'rent_growth_annual', 'other_growth_annual',
