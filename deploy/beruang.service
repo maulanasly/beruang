@@ -9,7 +9,8 @@ Group=beruang
 WorkingDirectory=/var/lib/beruang
 # Self-contained binary: no secrets, no writable state (ledgers live in
 # each visitor's browser). PUBLIC_BASE_URL feeds absolute share URLs
-# (og:url, canonical, sitemap).
+# (og:url, canonical, sitemap). Canonical stays .ink while hitung.rayakala.id
+# (and later kalkulator.rayakala.id) are nginx aliases.
 Environment=PORT=8000
 Environment=RUST_LOG=info
 Environment=PUBLIC_BASE_URL=https://kalkulator.rayakala.ink
