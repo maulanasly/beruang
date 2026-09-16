@@ -683,6 +683,93 @@ async fn rent_buy_comparison_matches_model() {
         .contains("down_payment"));
 }
 
+/// Rent-vs-buy net-worth layer: old 6-field payloads gain documented
+/// defaults (4/3/8/5%), explicit wealth inputs are honored, and bad new
+/// input keeps the 422 shape.
+#[tokio::test]
+async fn rent_buy_net_worth_layer() {
+    let app = beruang_gateway::routes::create_router();
+    let payload = serde_json::json!({
+        "house_price": 800000000.0, "down_payment": 160000000.0,
+        "mortgage_rate_annual": 0.07, "tenor_years": 20.0,
+        "rent_per_month": 3000000.0, "other_buy_costs_per_month": 500000.0,
+    })
+    .to_string();
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/rent-vs-buy/comparison")
+                .header("content-type", "application/json")
+                .body(Body::from(payload))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_json(response).await;
+    // Typical defaults: honest close race, renter ahead at 4% vs 8%.
+    assert!(body["net_worth_break_even_year"].is_null());
+    assert!(body["total_interest_paid"].as_f64().unwrap() > 0.0);
+    assert!(
+        body["end_renter_net_worth"].as_f64().unwrap()
+            > body["end_buyer_net_worth"].as_f64().unwrap()
+    );
+    assert_eq!(body["sensitivity"].as_array().unwrap().len(), 5);
+    let schedule = body["schedule"].as_array().unwrap();
+    assert_eq!(schedule[0]["home_value"].as_f64().unwrap(), 800_000_000.0);
+    assert_eq!(schedule[0]["loan_balance"].as_f64().unwrap(), 640_000_000.0);
+    assert_eq!(schedule[0]["equity"].as_f64().unwrap(), 160_000_000.0);
+
+    // Explicit 6% appreciation flips the verdict early.
+    let payload = serde_json::json!({
+        "house_price": 800000000.0, "down_payment": 160000000.0,
+        "mortgage_rate_annual": 0.07, "tenor_years": 20.0,
+        "rent_per_month": 3000000.0, "other_buy_costs_per_month": 500000.0,
+        "home_appreciation_annual": 0.06, "rent_growth_annual": 0.03,
+        "other_growth_annual": 0.03, "invest_return_annual": 0.08,
+        "closing_costs": 0.0, "selling_cost_rate": 0.05,
+    })
+    .to_string();
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/rent-vs-buy/comparison")
+                .header("content-type", "application/json")
+                .body(Body::from(payload))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_json(response).await;
+    assert!(body["net_worth_break_even_year"].as_u64().unwrap() <= 20);
+    assert!(body["net_advantage_buy_minus_rent"].as_f64().unwrap() > 0.0);
+
+    let bad = r#"{"house_price": 800000000, "down_payment": 160000000,
+        "mortgage_rate_annual": 0.07, "tenor_years": 20,
+        "rent_per_month": 3000000, "other_buy_costs_per_month": 500000,
+        "home_appreciation_annual": 1.5}"#;
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/rent-vs-buy/comparison")
+                .header("content-type", "application/json")
+                .body(Body::from(bad))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+    assert!(response_body_json(response).await["detail"]
+        .as_str()
+        .unwrap()
+        .contains("home_appreciation_annual"));
+}
 /// Rent-vs-buy page shares the Indonesian canonical like the calculators.
 #[tokio::test]
 async fn rent_buy_page_meta() {
