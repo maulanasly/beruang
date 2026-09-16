@@ -24,6 +24,7 @@ export function Footer({ settings }) {
                 <a href="/kalkulator/sewa-vs-beli" onClick=${e => go(e, '/kalkulator/sewa-vs-beli')}>${t(locale, 'nav.rentBuy')}</a>
                 <a href="/kalkulator/bunga-flat" onClick=${e => go(e, '/kalkulator/bunga-flat')}>${t(locale, 'nav.flatLoan')}</a>
                 <a href="/kalkulator/lunas-utang" onClick=${e => go(e, '/kalkulator/lunas-utang')}>${t(locale, 'nav.debtPayoff')}</a>
+                <a href="/kalkulator/dana-pensiun" onClick=${e => go(e, '/kalkulator/dana-pensiun')}>${t(locale, 'nav.retire')}</a>
             </nav>
         </div>
         <p class="site-footer__note">${t(locale, 'footer.dataNote')}</p>

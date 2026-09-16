@@ -82,6 +82,10 @@ export function Landing({ settings }) {
                     <h2 style="margin:0 0 4px; font-size:17px"><a href="/kalkulator/lunas-utang" onClick=${e => go(e, '/kalkulator/lunas-utang')}>${t(locale, 'home.debtTitle')}</a></h2>
                     <p class="muted" style="font-size:13px; margin:0">${t(locale, 'home.debtDesc')}</p>
                 </article>
+                <article class="card" aria-label=${t(locale, 'home.retireTitle')}>
+                    <h2 style="margin:0 0 4px; font-size:17px"><a href="/kalkulator/dana-pensiun" onClick=${e => go(e, '/kalkulator/dana-pensiun')}>${t(locale, 'home.retireTitle')}</a></h2>
+                    <p class="muted" style="font-size:13px; margin:0">${t(locale, 'home.retireDesc')}</p>
+                </article>
             </div>
         </section>
         <section class="card">

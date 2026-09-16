@@ -1103,3 +1103,104 @@ async fn debt_payoff_english_alias_meta() {
         "<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/lunas-utang\">"
     ));
 }
+
+/// Retirement plan: the typical case needs ~Rp11M/mo for a ~Rp6.6B fund;
+/// bad input keeps 422 shape; schedule tracks to the target.
+#[tokio::test]
+async fn retirement_comparison_matches_model() {
+    let app = beruang_gateway::routes::create_router();
+    let payload = serde_json::json!({
+        "years_to_retire": 20.0, "monthly_need_today": 10000000.0,
+        "inflation_annual": 0.04, "invest_return_annual": 0.08,
+        "current_savings": 100000000.0, "withdrawal_rate": 0.04,
+        "current_monthly_invest": 2000000.0,
+    })
+    .to_string();
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/retirement/comparison")
+                .header("content-type", "application/json")
+                .body(Body::from(payload))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_json(response).await;
+    assert!(body["target_fund"].as_f64().unwrap() > 6_000_000_000.0);
+    assert!(body["required_monthly"].as_f64().unwrap() > 10_000_000.0);
+    assert!(body["funded_ratio"].as_f64().unwrap() < 1.0);
+    assert_eq!(body["sensitivity"].as_array().unwrap().len(), 5);
+    let schedule = body["schedule"].as_array().unwrap();
+    assert_eq!(schedule.len(), 21);
+    assert_eq!(schedule[0]["fund_value"].as_f64().unwrap(), 100_000_000.0);
+
+    let bad = r#"{"years_to_retire": 20, "monthly_need_today": 10000000,
+        "inflation_annual": 0.04, "invest_return_annual": 0.08,
+        "current_savings": 100000000, "withdrawal_rate": 0.0}"#;
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/retirement/comparison")
+                .header("content-type", "application/json")
+                .body(Body::from(bad))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+    assert!(response_body_json(response).await["detail"]
+        .as_str()
+        .unwrap()
+        .contains("withdrawal_rate"));
+}
+
+/// Retirement page shares the Indonesian canonical like the calculators.
+#[tokio::test]
+async fn retirement_page_meta() {
+    let app = beruang_gateway::routes::create_router();
+    for uri in ["/kalkulator/dana-pensiun", "/retirement"] {
+        let response = app
+            .clone()
+            .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK, "{uri}");
+        let body = response_body_text(response).await;
+        assert!(
+            body.contains("<title>Kalkulator Target Dana Pensiun — Beruang</title>"),
+            "{uri}"
+        );
+        assert!(
+            body.contains(
+                "<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/dana-pensiun\">"
+            ),
+            "{uri}"
+        );
+    }
+}
+
+/// English retirement alias serves English copy under the same canonical.
+#[tokio::test]
+async fn retirement_english_alias_meta() {
+    let app = beruang_gateway::routes::create_router();
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/calculators/retirement")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_text(response).await;
+    assert!(body.contains("<title>Retirement Target Calculator — Beruang</title>"));
+    assert!(body.contains(
+        "<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/dana-pensiun\">"
+    ));
+}

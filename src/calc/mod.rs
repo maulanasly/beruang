@@ -10,6 +10,7 @@ pub mod ev;
 pub mod flatloan;
 pub mod mutual;
 pub mod rentbuy;
+pub mod retire;
 pub mod stock;
 pub mod xirr;
 
@@ -26,5 +27,8 @@ pub use flatloan::{
 };
 pub use mutual::{mutual_fund_returns, MutualFundEntry};
 pub use rentbuy::{rent_buy_comparison, RentBuyComparison, RentBuyInput, RentBuyYearPoint};
+pub use retire::{
+    retire_comparison, RetireComparison, RetireInput, RetireSensitivityPoint, RetireYearPoint,
+};
 pub use stock::{stock_returns, StockEntry};
 pub use xirr::calculate_xirr;

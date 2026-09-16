@@ -4,6 +4,7 @@ pub mod flatloan;
 pub mod health;
 pub mod market;
 pub mod rentbuy;
+pub mod retire;
 pub mod returns;
 pub mod static_handler;
 
@@ -84,6 +85,10 @@ pub fn create_router() -> Router {
         .route(
             "/api/v1/debt-payoff/comparison",
             axum::routing::post(debt::comparison),
+        )
+        .route(
+            "/api/v1/retirement/comparison",
+            axum::routing::post(retire::comparison),
         )
         .route(
             "/api/v1/rent-vs-buy/comparison",
