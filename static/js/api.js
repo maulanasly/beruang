@@ -61,3 +61,7 @@ export async function flatLoanComparison(payload) {
 export async function debtPayoffComparison(payload) {
     return fetchJSON(`${BASE}/debt-payoff/comparison`, { method: 'POST', body: JSON.stringify(payload) });
 }
+
+export async function retireComparison(payload) {
+    return fetchJSON(`${BASE}/retirement/comparison`, { method: 'POST', body: JSON.stringify(payload) });
+}

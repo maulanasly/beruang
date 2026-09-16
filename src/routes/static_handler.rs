@@ -161,6 +161,15 @@ fn page_meta(path: &str) -> PageMeta {
             hreflang_en: Some("/calculators/debt-payoff"),
             noscript: "Perencana pelunasan utang: daftarkan tiap utang, bunga, dan cicilan minimum untuk melihat strategi tercepat dan termurah. Aktifkan JavaScript untuk menghitung.",
         },
+        "retirement" | "kalkulator/dana-pensiun" | "calculators/retirement" => PageMeta {
+            title_id: "Kalkulator Target Dana Pensiun — Beruang",
+            title_en: "Retirement Target Calculator — Beruang",
+            desc_id: "Ubah kebutuhan bulanan menjadi target dana pensiun dan cicilan investasi bulanan.",
+            desc_en: "Turn a monthly retirement need into a target fund and monthly invest plan.",
+            canonical: "/kalkulator/dana-pensiun",
+            hreflang_en: Some("/calculators/retirement"),
+            noscript: "Kalkulator dana pensiun: isi tahun, kebutuhan bulanan, inflasi, imbal, dan tabungan untuk melihat target dana dan grafik trayek. Aktifkan JavaScript untuk menghitung.",
+        },
         _ => PageMeta {
             title_id: "Beruang — Kalkulator Investasi",
             title_en: "Beruang — Investment Calculators",
