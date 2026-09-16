@@ -77,6 +77,7 @@ struct PageMeta {
     canonical: &'static str,
     hreflang_en: Option<&'static str>,
     noscript: &'static str,
+    og_image: &'static str,
 }
 
 fn page_meta(path: &str) -> PageMeta {
@@ -88,6 +89,7 @@ fn page_meta(path: &str) -> PageMeta {
             desc_en: "Free calculators for mutual-fund XIRR, stocks, deposits, flat-loan truth, debt payoff, rent-vs-buy, and retirement. No signup; your data stays on your device.",
             canonical: "/",
             hreflang_en: None,
+            og_image: "og-image.png",
             noscript: "Beruang adalah kalkulator keuangan gratis: XIRR reksa dana, saham, deposito, bunga flat, pelunasan utang, sewa-vs-beli, dan pensiun. Aktifkan JavaScript untuk memakai kalkulator interaktif.",
         },
         "portofolio" | "overview" => PageMeta {
@@ -97,6 +99,7 @@ fn page_meta(path: &str) -> PageMeta {
             desc_en: "Portfolio at a glance: contributions, current value, profit and loss, weighted XIRR, and TWR.",
             canonical: "/portofolio",
             hreflang_en: None,
+            og_image: "og-image.png",
             noscript: "Dasbor portofolio Beruang: total setoran, nilai saat ini, laba-rugi, XIRR, dan TWR. Aktifkan JavaScript untuk memuat datamu.",
         },
         "mutual-funds" | "kalkulator/reksa-dana" | "calculators/mutual-funds" => PageMeta {
@@ -106,6 +109,7 @@ fn page_meta(path: &str) -> PageMeta {
             desc_en: "Compute mutual-fund XIRR and month-over-month returns from installment entries. Paste CSV or type manually.",
             canonical: "/kalkulator/reksa-dana",
             hreflang_en: Some("/calculators/mutual-funds"),
+            og_image: "og-reksadana.png",
             noscript: "Kalkulator XIRR reksa dana: masukkan tanggal, setoran, dan nilai saat ini tiap bulan untuk melihat return bulanan dan XIRR. Aktifkan JavaScript untuk menghitung.",
         },
         "stocks" | "kalkulator/saham" | "calculators/stocks" => PageMeta {
@@ -115,6 +119,7 @@ fn page_meta(path: &str) -> PageMeta {
             desc_en: "Compute stock returns, ROI, XIRR, and estimated dividends with live IDX quotes and price history.",
             canonical: "/kalkulator/saham",
             hreflang_en: Some("/calculators/stocks"),
+            og_image: "og-saham.png",
             noscript: "Kalkulator saham dan dividen: catat pembelian saham dan dividen, sinkronkan harga live IDX, lalu hitung ROI dan XIRR. Aktifkan JavaScript untuk menghitung.",
         },
         "term-deposits" | "kalkulator/deposito" | "calculators/term-deposits" => PageMeta {
@@ -124,6 +129,7 @@ fn page_meta(path: &str) -> PageMeta {
             desc_en: "Simulate term-deposit interest (APY), maturity dates, and rollover suggestions.",
             canonical: "/kalkulator/deposito",
             hreflang_en: Some("/calculators/term-deposits"),
+            og_image: "og-deposito.png",
             noscript: "Kalkulator deposito berjangka: masukkan APY dan setoran untuk melihat bunga berjalan, tanggal jatuh tempo, dan saran rollover. Aktifkan JavaScript untuk menghitung.",
         },
         "ev" | "kalkulator/mobil-listrik" | "calculators/ev" => PageMeta {
@@ -133,6 +139,7 @@ fn page_meta(path: &str) -> PageMeta {
             desc_en: "Compare monthly running costs of an electric car vs a petrol car and find the break-even month.",
             canonical: "/kalkulator/mobil-listrik",
             hreflang_en: Some("/calculators/ev"),
+            og_image: "og-mobil-listrik.png",
             noscript: "Kalkulator mobil listrik vs bensin: isi harga, jarak bulanan, dan biaya energi untuk melihat hemat per bulan dan titik impas. Aktifkan JavaScript untuk menghitung.",
         },
         "rent-vs-buy" | "kalkulator/sewa-vs-beli" | "calculators/rent-vs-buy" => PageMeta {            title_id: "Kalkulator Sewa vs Beli Rumah — Beruang",
@@ -141,6 +148,7 @@ fn page_meta(path: &str) -> PageMeta {
             desc_en: "Compare renting cash against mortgage payments with a cumulative crossover chart and break-even year.",
             canonical: "/kalkulator/sewa-vs-beli",
             hreflang_en: Some("/calculators/rent-vs-buy"),
+            og_image: "og-sewa-vs-beli.png",
             noscript: "Kalkulator sewa vs beli rumah: isi harga, DP, bunga KPR, tenor, dan sewa bulanan untuk melihat putusan, total bulanan, dan grafik kumulatif. Aktifkan JavaScript untuk menghitung.",
         },
         "flat-loan" | "kalkulator/bunga-flat" | "calculators/flat-rate-loan" => PageMeta {
@@ -150,6 +158,7 @@ fn page_meta(path: &str) -> PageMeta {
             desc_en: "A 5% flat quote is ~9.4% effective. Reveal the true rate behind dealer flat quotes with installments and totals.",
             canonical: "/kalkulator/bunga-flat",
             hreflang_en: Some("/calculators/flat-rate-loan"),
+            og_image: "og-bunga-flat.png",
             noscript: "Kalkulator bunga flat: isi harga OTR, uang muka, flat yang ditawarkan, dan tenor bulan untuk melihat tarif efektif, cicilan, dan grafik saldo. Aktifkan JavaScript untuk menghitung.",
         },
         "debt-payoff" | "kalkulator/lunas-utang" | "calculators/debt-payoff" => PageMeta {
@@ -159,6 +168,7 @@ fn page_meta(path: &str) -> PageMeta {
             desc_en: "Compare avalanche vs snowball strategies to pay off paylater, vehicle loans, and mortgages with extra payments.",
             canonical: "/kalkulator/lunas-utang",
             hreflang_en: Some("/calculators/debt-payoff"),
+            og_image: "og-lunas-utang.png",
             noscript: "Perencana pelunasan utang: daftarkan tiap utang, bunga, dan cicilan minimum untuk melihat strategi tercepat dan termurah. Aktifkan JavaScript untuk menghitung.",
         },
         "retirement" | "kalkulator/dana-pensiun" | "calculators/retirement" => PageMeta {
@@ -168,16 +178,18 @@ fn page_meta(path: &str) -> PageMeta {
             desc_en: "Turn a monthly retirement need into a target fund and monthly invest plan.",
             canonical: "/kalkulator/dana-pensiun",
             hreflang_en: Some("/calculators/retirement"),
+            og_image: "og-dana-pensiun.png",
             noscript: "Kalkulator dana pensiun: isi tahun, kebutuhan bulanan, inflasi, imbal, dan tabungan untuk melihat target dana dan grafik trayek. Aktifkan JavaScript untuk menghitung.",
         },
         _ => PageMeta {
-            title_id: "Beruang — Kalkulator Investasi",
-            title_en: "Beruang — Investment Calculators",
-            desc_id: "Kalkulator investasi gratis: XIRR reksa dana, saham dan dividen, serta deposito berjangka.",
-            desc_en: "Free investment calculators: mutual-fund XIRR, stocks and dividends, term deposits.",
+            title_id: "Beruang — Kalkulator Keuangan",
+            title_en: "Beruang — Finance Calculators",
+            desc_id: "Kalkulator keuangan gratis: investasi, kredit, sewa-vs-beli, dan pensiun. Gratis, tanpa daftar.",
+            desc_en: "Free finance calculators: investing, credit, rent-vs-buy, and retirement. No signup.",
             canonical: "/",
             hreflang_en: None,
-            noscript: "Beruang adalah kalkulator investasi gratis. Aktifkan JavaScript untuk memakai kalkulator interaktif.",
+            og_image: "og-image.png",
+            noscript: "Beruang adalah kalkulator keuangan gratis. Aktifkan JavaScript untuk memakai kalkulator interaktif.",
         },
     }
 }
@@ -236,7 +248,25 @@ fn json_ld_for(title: &str, description: &str, meta: &PageMeta, canonical: &str)
         });
         return serde_json::json!([app, faq]).to_string();
     }
-    app.to_string()
+    let breadcrumb = serde_json::json!({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Beruang",
+                "item": public_base_url(),
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": title,
+                "item": canonical,
+            },
+        ],
+    });
+    serde_json::json!([app, breadcrumb]).to_string()
 }
 
 fn etag_for(bytes: &[u8]) -> String {
@@ -253,6 +283,7 @@ fn is_immutable(path: &str) -> bool {
         || path.starts_with("css/")
         || path == "favicon.svg"
         || path == "og-image.png"
+        || path.starts_with("og-")
         || path == "apple-touch-icon.png"
         || path == "manifest.webmanifest"
 }
@@ -415,13 +446,21 @@ fn serve_index(route: &str, headers: &HeaderMap) -> Response {
                 meta.title_id
             };
             let description = if english { meta.desc_en } else { meta.desc_id };
+            let (lang, og_locale, og_locale_alt) = if english {
+                ("en", "en_US", "id_ID")
+            } else {
+                ("id", "id_ID", "en_US")
+            };
             let canonical = format!("{base}{}", meta.canonical);
             let html = String::from_utf8_lossy(&data)
                 .replace(VERSION_PLACEHOLDER, app_version())
                 .replace("{{TITLE}}", title)
                 .replace("{{DESCRIPTION}}", description)
                 .replace("{{CANONICAL}}", &canonical)
-                .replace("{{OG_IMAGE}}", &format!("{base}/og-image.png"))
+                .replace("{{LANG}}", lang)
+                .replace("{{OG_LOCALE}}", og_locale)
+                .replace("{{OG_LOCALE_ALT}}", og_locale_alt)
+                .replace("{{OG_IMAGE}}", &format!("{base}/{}", meta.og_image))
                 .replace("{{HREFLANG}}", &hreflang_links(&base, &meta))
                 .replace(
                     "{{JSON_LD}}",
@@ -437,29 +476,64 @@ fn serve_index(route: &str, headers: &HeaderMap) -> Response {
 
 pub async fn handler(uri: OriginalUri, headers: HeaderMap) -> Result<Response, StatusCode> {
     let path = uri.path().trim_start_matches('/');
-    if path.is_empty() {
+    // Client router strips trailing slashes; scrapers must see the same
+    // meta as the app, so normalize before lookup.
+    let route = path.trim_end_matches('/');
+    if route.is_empty() {
         return Ok(serve_index("", &headers));
     }
     // Don't hijack API routes - let them 404 via routing layer
-    if path.starts_with("api/") {
+    if route.starts_with("api/") {
         return Err(StatusCode::NOT_FOUND);
     }
     // Crawl infrastructure must never fall through to the SPA shell.
-    if path == "robots.txt" || path == "sitemap.xml" {
-        return Ok(serve_template(path, &headers));
+    if route == "robots.txt" || route == "sitemap.xml" {
+        return Ok(serve_template(route, &headers));
+    }
+    // Legacy short URLs consolidate onto canonicals (ranking + cards).
+    // Query strings (e.g. share links) survive the redirect.
+    if let Some(to) = canonical_redirect(route) {
+        let location = match uri.query() {
+            Some(q) => format!("{to}?{q}"),
+            None => to.to_string(),
+        };
+        return Response::builder()
+            .status(StatusCode::MOVED_PERMANENTLY)
+            .header(header::LOCATION, location)
+            .header(header::CACHE_CONTROL, "public, max-age=3600")
+            .body(Body::empty())
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR);
     }
     match load_bytes(path) {
         Some(data) => Ok(serve_bytes(path, data, &headers, dev_mode())),
         // SPA fallback serves the route-aware shell, never an API route.
-        None => Ok(serve_index(path, &headers)),
+        None => Ok(serve_index(route, &headers)),
     }
+}
+
+/// Legacy short URLs (bookmarks, old shares) and the portfolio alias —
+/// every other path is served by the SPA shell or a real asset.
+fn canonical_redirect(path: &str) -> Option<&'static str> {
+    Some(match path {
+        "mutual-funds" => "/kalkulator/reksa-dana",
+        "stocks" => "/kalkulator/saham",
+        "term-deposits" => "/kalkulator/deposito",
+        "ev" => "/kalkulator/mobil-listrik",
+        "rent-vs-buy" => "/kalkulator/sewa-vs-beli",
+        "flat-loan" => "/kalkulator/bunga-flat",
+        "debt-payoff" => "/kalkulator/lunas-utang",
+        "retirement" => "/kalkulator/dana-pensiun",
+        "overview" => "/portofolio",
+        _ => return None,
+    })
 }
 
 #[cfg(test)]
 mod tests {
     use super::{
         app_version, cache_control, content_type_for, effective_cache_control, etag_for,
-        inject_dev_script, is_immutable, load_bytes, page_meta, public_base_url, DEV_RELOAD_TAG,
+        inject_dev_script, is_immutable, json_ld_for, load_bytes, page_meta, public_base_url,
+        DEV_RELOAD_TAG,
     };
 
     #[test]
@@ -481,6 +555,7 @@ mod tests {
             cache_control("og-image.png"),
             "public, max-age=31536000, immutable"
         );
+        assert!(is_immutable("og-saham.png"));
         assert_eq!(cache_control("robots.txt"), "public, max-age=3600");
         assert!(!is_immutable("index.html"));
     }
@@ -499,6 +574,30 @@ mod tests {
         assert_eq!(etag_for(b"abc"), etag_for(b"abc"));
         assert_ne!(etag_for(b"abc"), etag_for(b"abd"));
         assert!(etag_for(b"abc").starts_with('"'));
+    }
+
+    #[test]
+    fn breadcrumb_json_ld_names_home_and_tool() {
+        let meta = page_meta("kalkulator/saham");
+        let out = json_ld_for(
+            meta.title_id,
+            meta.desc_id,
+            &meta,
+            "http://localhost:8000/kalkulator/saham",
+        );
+        let v: serde_json::Value = serde_json::from_str(&out).unwrap();
+        let crumbs = &v[1];
+        assert_eq!(crumbs["@type"], "BreadcrumbList");
+        assert_eq!(crumbs["itemListElement"][0]["name"], "Beruang");
+        assert_eq!(
+            crumbs["itemListElement"][1]["item"],
+            "http://localhost:8000/kalkulator/saham"
+        );
+        // Root keeps app + FAQ only.
+        let root = page_meta("");
+        let out = json_ld_for(root.title_id, root.desc_id, &root, "http://localhost:8000");
+        let v: serde_json::Value = serde_json::from_str(&out).unwrap();
+        assert_eq!(v[1]["@type"], "FAQPage");
     }
 
     #[test]
