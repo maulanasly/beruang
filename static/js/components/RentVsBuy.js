@@ -170,29 +170,26 @@ export function RentVsBuy({ settings }) {
             const pcts = DP_PRESETS.includes(cur)
                 ? DP_PRESETS
                 : [...DP_PRESETS, cur].filter((v) => Number.isFinite(v)).sort((a, b) => a - b);
-            // Both modes show a one-line muted equivalent, so flipping
-            // never changes the cell height and the grid stays aligned.
-            const price = Number(form.house_price);
-            const equiv = pct
-                ? `= ${formatCurrency(dpEffective(form) || 0, locale, currency)}`
-                : (price > 0 && Number.isFinite(Number(form.down_payment))
-                    ? `= ${(Math.round((Number(form.down_payment) / price) * 1000) / 10)}%`
-                    : '= —');
-            const seg = 'flex:1; padding:4px 10px; font-size:12px; font-weight:600;';
-            return html`<label>${t(locale, LABELS[key])}
-                <div style="display:flex; margin-bottom:4px">
-                    ${[['amount', 'rentbuy.dpModeAmount'], ['percent', 'rentbuy.dpModePercent']].map(([mode, labelKey], i) => html`<button
-                        type="button"
-                        class=${form.dp_mode === mode ? 'btn-sm' : 'btn-ghost btn-sm'}
-                        style=${seg + (i === 0 ? 'border-radius:999px 0 0 999px;' : 'border-radius:0 999px 999px 0; margin-left:-1px;')}
-                        onClick=${() => setDpMode(mode)}>${t(locale, labelKey)}</button>`)}
-                </div>
+            // Toggle lives on the label line and there is no extra hint
+            // row, so this cell keeps the exact same height as every other
+            // input cell and the grid stays symmetric.
+            const seg = 'padding:2px 8px; font-size:11px; font-weight:600; line-height:1.4;';
+            return html`<label>
+                <span style="display:flex; align-items:center; justify-content:space-between; gap:6px">
+                    <span>${t(locale, LABELS[key])}</span>
+                    <span style="display:flex; flex:none">
+                        ${[['amount', 'rentbuy.dpModeAmount'], ['percent', 'rentbuy.dpModePercent']].map(([mode, labelKey], i) => html`<button
+                            type="button"
+                            class=${form.dp_mode === mode ? 'btn-sm' : 'btn-ghost btn-sm'}
+                            style=${seg + (i === 0 ? 'border-radius:999px 0 0 999px;' : 'border-radius:0 999px 999px 0; margin-left:-1px;')}
+                            onClick=${() => setDpMode(mode)}>${t(locale, labelKey)}</button>`)}
+                    </span>
+                </span>
                 ${pct
                     ? html`<select value=${form.dp_percent} onChange=${(e) => set('dp_percent', e.target.value)}>
                             ${pcts.map((v) => html`<option value=${v}>${v}%</option>`)}
                         </select>`
                     : html`<input type="number" min="0" value=${form.down_payment} onInput=${(e) => set('down_payment', e.target.value)} />`}
-                <span class="muted" style="font-size:12px">${equiv}</span>
             </label>`;
         }
         return html`<label>${t(locale, LABELS[key])}
