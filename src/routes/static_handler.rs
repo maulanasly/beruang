@@ -82,13 +82,13 @@ struct PageMeta {
 fn page_meta(path: &str) -> PageMeta {
     match path {
         "" => PageMeta {
-            title_id: "Beruang — Kalkulator Investasi Gratis: XIRR, Saham, Deposito",
-            title_en: "Beruang — Free Investment Calculators: XIRR, Stocks, Deposits",
-            desc_id: "Hitung XIRR reksa dana, return saham dan dividen, serta bunga deposito berjangka. Gratis, tanpa daftar, data tersimpan di perangkatmu.",
-            desc_en: "Free calculators for mutual-fund XIRR, stock dividends, and term-deposit maturity. No signup; your data stays on your device.",
+            title_id: "Beruang — Kalkulator Keuangan Gratis: Investasi, Kredit, Pensiun",
+            title_en: "Beruang — Free Finance Calculators: Invest, Borrow, Retire",
+            desc_id: "Hitung XIRR reksa dana, return saham, bunga deposito, tarif flat asli, pelunasan utang, sewa-vs-beli, dan target pensiun. Gratis, tanpa daftar, data tersimpan di perangkatmu.",
+            desc_en: "Free calculators for mutual-fund XIRR, stocks, deposits, flat-loan truth, debt payoff, rent-vs-buy, and retirement. No signup; your data stays on your device.",
             canonical: "/",
             hreflang_en: None,
-            noscript: "Beruang adalah kalkulator investasi gratis: XIRR reksa dana, return saham dan dividen, serta simulasi deposito. Aktifkan JavaScript untuk memakai kalkulator interaktif.",
+            noscript: "Beruang adalah kalkulator keuangan gratis: XIRR reksa dana, saham, deposito, bunga flat, pelunasan utang, sewa-vs-beli, dan pensiun. Aktifkan JavaScript untuk memakai kalkulator interaktif.",
         },
         "portofolio" | "overview" => PageMeta {
             title_id: "Portofolio Saya — Beruang",
@@ -226,6 +226,11 @@ fn json_ld_for(title: &str, description: &str, meta: &PageMeta, canonical: &str)
                     "@type": "Question",
                     "name": "Dari mana harga saham berasal?",
                     "acceptedAnswer": { "@type": "Answer", "text": "Harga live IDX beserta riwayatnya diambil dari Yahoo Finance saat kamu menekan tombol kuotasi." }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Kalkulator apa saja yang tersedia selain investasi?",
+                    "acceptedAnswer": { "@type": "Answer", "text": "Ada pengungkap tarif flat, perencana pelunasan utang avalanche vs snowball, perbandingan sewa vs beli rumah, dan perencana target dana pensiun." }
                 }
             ]
         });
