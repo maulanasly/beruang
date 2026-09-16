@@ -21,6 +21,7 @@ export function Footer({ settings }) {
                 <a href="/kalkulator/saham" onClick=${e => go(e, '/kalkulator/saham')}>${t(locale, 'nav.stocks')}</a>
                 <a href="/kalkulator/deposito" onClick=${e => go(e, '/kalkulator/deposito')}>${t(locale, 'nav.termDeposits')}</a>
                 <a href="/kalkulator/mobil-listrik" onClick=${e => go(e, '/kalkulator/mobil-listrik')}>${t(locale, 'nav.ev')}</a>
+                <a href="/kalkulator/sewa-vs-beli" onClick=${e => go(e, '/kalkulator/sewa-vs-beli')}>${t(locale, 'nav.rentBuy')}</a>
             </nav>
         </div>
         <p class="site-footer__note">${t(locale, 'footer.dataNote')}</p>

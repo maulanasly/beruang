@@ -8,6 +8,7 @@ import { MutualFunds } from './MutualFunds.js';
 import { Stocks } from './Stocks.js';
 import { TermDeposits } from './TermDeposits.js';
 import { Ev } from './Ev.js';
+import { RentVsBuy } from './RentVsBuy.js';
 import { Footer } from './Footer.js';
 
 // No-JS fallback hook: without JS the nav panel stays visible (see CSS).
@@ -52,6 +53,7 @@ export function App() {
             stocks: t(locale, 'nav.stocks'),
             'term-deposits': t(locale, 'nav.termDeposits'),
             ev: t(locale, 'nav.ev'),
+            'rent-buy': t(locale, 'nav.rentBuy'),
         };
         document.title = `${titles[route] || 'Beruang'} — Beruang`;
     }, [route, locale]);
@@ -66,6 +68,7 @@ export function App() {
         stocks: html`<${Stocks} settings=${settings} />`,
         'term-deposits': html`<${TermDeposits} settings=${settings} />`,
         ev: html`<${Ev} settings=${settings} />`,
+        'rent-buy': html`<${RentVsBuy} settings=${settings} />`,
     };
 
     // Canonical order everywhere (header, mobile menu, footer):
@@ -75,6 +78,7 @@ export function App() {
         { to: '/kalkulator/saham', key: 'stocks', labelKey: 'nav.stocks', descKey: 'home.calcStocksDesc' },
         { to: '/kalkulator/deposito', key: 'term-deposits', labelKey: 'nav.termDeposits', descKey: 'home.calcTdDesc' },
         { to: '/kalkulator/mobil-listrik', key: 'ev', labelKey: 'nav.ev', descKey: 'home.evDesc' },
+        { to: '/kalkulator/sewa-vs-beli', key: 'rent-buy', labelKey: 'nav.rentBuy', descKey: 'home.rentBuyDesc' },
     ];
     const calcActive = calcLinks.some(l => l.key === route);
     const go = (e, to) => { e.preventDefault(); setMenuOpen(false); setCalcOpen(false); navigate(to); };

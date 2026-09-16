@@ -8,21 +8,31 @@ const LINKS = {
         { path: '/kalkulator/saham', titleKey: 'related.toStocks', descKey: 'related.toStocksDesc' },
         { path: '/kalkulator/deposito', titleKey: 'related.toDeposits', descKey: 'related.toDepositsDesc' },
         { path: '/kalkulator/mobil-listrik', titleKey: 'related.toEv', descKey: 'related.toEvDesc' },
+        { path: '/kalkulator/sewa-vs-beli', titleKey: 'related.toRentBuy', descKey: 'related.toRentBuyDesc' },
     ],
     stocks: [
         { path: '/kalkulator/reksa-dana', titleKey: 'related.toMf', descKey: 'related.toMfDesc' },
         { path: '/kalkulator/deposito', titleKey: 'related.toDeposits', descKey: 'related.toDepositsDesc' },
         { path: '/kalkulator/mobil-listrik', titleKey: 'related.toEv', descKey: 'related.toEvDesc' },
+        { path: '/kalkulator/sewa-vs-beli', titleKey: 'related.toRentBuy', descKey: 'related.toRentBuyDesc' },
     ],
     'term-deposits': [
         { path: '/kalkulator/reksa-dana', titleKey: 'related.toMf', descKey: 'related.toMfDesc' },
         { path: '/kalkulator/saham', titleKey: 'related.toStocks', descKey: 'related.toStocksDesc' },
         { path: '/kalkulator/mobil-listrik', titleKey: 'related.toEv', descKey: 'related.toEvDesc' },
+        { path: '/kalkulator/sewa-vs-beli', titleKey: 'related.toRentBuy', descKey: 'related.toRentBuyDesc' },
     ],
     ev: [
         { path: '/kalkulator/reksa-dana', titleKey: 'related.toMf', descKey: 'related.toMfDesc' },
         { path: '/kalkulator/saham', titleKey: 'related.toStocks', descKey: 'related.toStocksDesc' },
         { path: '/kalkulator/deposito', titleKey: 'related.toDeposits', descKey: 'related.toDepositsDesc' },
+        { path: '/kalkulator/sewa-vs-beli', titleKey: 'related.toRentBuy', descKey: 'related.toRentBuyDesc' },
+    ],
+    'rent-buy': [
+        { path: '/kalkulator/reksa-dana', titleKey: 'related.toMf', descKey: 'related.toMfDesc' },
+        { path: '/kalkulator/saham', titleKey: 'related.toStocks', descKey: 'related.toStocksDesc' },
+        { path: '/kalkulator/deposito', titleKey: 'related.toDeposits', descKey: 'related.toDepositsDesc' },
+        { path: '/kalkulator/mobil-listrik', titleKey: 'related.toEv', descKey: 'related.toEvDesc' },
     ],
 };
 

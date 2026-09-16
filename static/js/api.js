@@ -49,3 +49,7 @@ export async function fetchDividendYields(limit = 10) {
 export async function evComparison(payload) {
     return fetchJSON(`${BASE}/ev/comparison`, { method: 'POST', body: JSON.stringify(payload) });
 }
+
+export async function rentBuyComparison(payload) {
+    return fetchJSON(`${BASE}/rent-vs-buy/comparison`, { method: 'POST', body: JSON.stringify(payload) });
+}

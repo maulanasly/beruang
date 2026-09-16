@@ -624,3 +624,107 @@ async fn ev_english_alias_meta() {
         "<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/mobil-listrik\">"
     ));
 }
+
+/// Rent-vs-buy comparison: typical ID inputs cost less cash renting;
+/// bad input keeps 422 shape; schedule anchors the crossover chart.
+#[tokio::test]
+async fn rent_buy_comparison_matches_model() {
+    let app = beruang_gateway::routes::create_router();
+    let payload = serde_json::json!({
+        "house_price": 800000000.0, "down_payment": 160000000.0,
+        "mortgage_rate_annual": 0.07, "tenor_years": 20.0,
+        "rent_per_month": 3000000.0, "other_buy_costs_per_month": 500000.0,
+    })
+    .to_string();
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/rent-vs-buy/comparison")
+                .header("content-type", "application/json")
+                .body(Body::from(payload))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_json(response).await;
+    assert_eq!(body["upfront_buy"].as_f64().unwrap(), 160_000_000.0);
+    assert!(body["break_even_months"].is_null());
+    assert!(body["monthly_buy"].as_f64().unwrap() > body["monthly_rent"].as_f64().unwrap());
+    let schedule = body["schedule"].as_array().unwrap();
+    assert_eq!(schedule.len(), 21);
+    assert_eq!(schedule[0]["cum_buy"].as_f64().unwrap(), 160_000_000.0);
+    assert_eq!(schedule[0]["cum_rent"].as_f64().unwrap(), 0.0);
+    assert_eq!(
+        schedule[20]["cum_rent"].as_f64().unwrap(),
+        body["total_rent"].as_f64().unwrap()
+    );
+
+    let bad = r#"{"house_price": 800000000, "down_payment": 900000000,
+        "mortgage_rate_annual": 0.07, "tenor_years": 20,
+        "rent_per_month": 3000000, "other_buy_costs_per_month": 500000}"#;
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/rent-vs-buy/comparison")
+                .header("content-type", "application/json")
+                .body(Body::from(bad))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+    assert!(response_body_json(response).await["detail"]
+        .as_str()
+        .unwrap()
+        .contains("down_payment"));
+}
+
+/// Rent-vs-buy page shares the Indonesian canonical like the calculators.
+#[tokio::test]
+async fn rent_buy_page_meta() {
+    let app = beruang_gateway::routes::create_router();
+    for uri in ["/kalkulator/sewa-vs-beli", "/rent-vs-buy"] {
+        let response = app
+            .clone()
+            .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK, "{uri}");
+        let body = response_body_text(response).await;
+        assert!(
+            body.contains("<title>Kalkulator Sewa vs Beli Rumah — Beruang</title>"),
+            "{uri}"
+        );
+        assert!(
+            body.contains(
+                "<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/sewa-vs-beli\">"
+            ),
+            "{uri}"
+        );
+    }
+}
+
+/// English rent-vs-buy alias serves English copy under the same canonical.
+#[tokio::test]
+async fn rent_buy_english_alias_meta() {
+    let app = beruang_gateway::routes::create_router();
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/calculators/rent-vs-buy")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_text(response).await;
+    assert!(body.contains("<title>Rent vs Buy House Calculator — Beruang</title>"));
+    assert!(body.contains(
+        "<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/sewa-vs-beli\">"
+    ));
+}
