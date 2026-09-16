@@ -50,6 +50,10 @@ const FORM_DEFAULTS = {
     closing_costs: 0, selling_cost_rate: 0.05,
 };
 
+// Percent-mode presets. A custom value arriving via a share link is kept
+// as an extra option so the round trip stays exact.
+const DP_PRESETS = [20, 30, 40, 50, 70];
+
 // Effective down-payment rupiah for either entry mode.
 function dpEffective(f) {
     if (f.dp_mode === 'percent') {
@@ -162,6 +166,10 @@ export function RentVsBuy({ settings }) {
     function numberField(key) {
         if (key === 'down_payment') {
             const pct = form.dp_mode === 'percent';
+            const cur = Number(form.dp_percent);
+            const pcts = DP_PRESETS.includes(cur)
+                ? DP_PRESETS
+                : [...DP_PRESETS, cur].filter((v) => Number.isFinite(v)).sort((a, b) => a - b);
             return html`<label>${t(locale, LABELS[key])}
                 <div style="display:flex; gap:4px; margin-bottom:4px">
                     ${[['amount', 'rentbuy.dpModeAmount'], ['percent', 'rentbuy.dpModePercent']].map(([mode, labelKey]) => html`<button
@@ -171,7 +179,9 @@ export function RentVsBuy({ settings }) {
                         onClick=${() => setDpMode(mode)}>${t(locale, labelKey)}</button>`)}
                 </div>
                 ${pct
-                    ? html`<input type="number" min="0" max="100" step="any" value=${form.dp_percent} onInput=${(e) => set('dp_percent', e.target.value)} />
+                    ? html`<select value=${form.dp_percent} onChange=${(e) => set('dp_percent', e.target.value)}>
+                            ${pcts.map((v) => html`<option value=${v}>${v}%</option>`)}
+                        </select>
                         <span class="muted" style="font-size:12px">= ${formatCurrency(dpEffective(form) || 0, locale, currency)}</span>`
                     : html`<input type="number" min="0" value=${form.down_payment} onInput=${(e) => set('down_payment', e.target.value)} />`}
             </label>`;
