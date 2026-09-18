@@ -1,10 +1,12 @@
-use beruang_gateway::routes::create_router;
+use beruang_gateway::{metrics, routes::create_router};
 
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt()
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
         .init();
+
+    metrics::init();
 
     let app = create_router();
     let port: u16 = std::env::var("PORT")

@@ -26,21 +26,35 @@ fn calc_error_response(err: CalcError) -> Response {
 
 pub async fn comparison(req: Request) -> Response {
     const PATH: &str = "/api/v1/ev/comparison";
+    const CALC: &str = "ev";
     let bytes = match axum::body::to_bytes(req.into_body(), 5 * 1024 * 1024).await {
         Ok(b) => b,
-        Err(_) => return unprocessable("Invalid body".to_string()),
+        Err(_) => {
+            crate::metrics::record_calc(CALC, "error");
+            return unprocessable("Invalid body".to_string());
+        }
     };
     let value: serde_json::Value = match serde_json::from_slice(&bytes) {
         Ok(v) => v,
-        Err(e) => return unprocessable(format!("Invalid JSON: {e}")),
+        Err(e) => {
+            crate::metrics::record_calc(CALC, "error");
+            return unprocessable(format!("Invalid JSON: {e}"));
+        }
     };
     let input: EvComparisonInput = match serde_json::from_value(value) {
         Ok(v) => v,
-        Err(e) => return unprocessable(format!("Invalid input: {e}")),
+        Err(e) => {
+            crate::metrics::record_calc(CALC, "error");
+            return unprocessable(format!("Invalid input: {e}"));
+        }
     };
     match ev_comparison(&input) {
-        Ok(out) => axum::Json(out).into_response(),
+        Ok(out) => {
+            crate::metrics::record_calc(CALC, "ok");
+            axum::Json(out).into_response()
+        }
         Err(err) => {
+            crate::metrics::record_calc(CALC, "error");
             tracing::warn!(path = PATH, detail = err.detail(), "ev 422");
             calc_error_response(err)
         }

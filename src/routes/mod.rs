@@ -13,6 +13,7 @@ use axum::http::{HeaderValue, Method, StatusCode};
 use axum::middleware::{self, Next};
 use axum::response::{IntoResponse, Response};
 use axum::Router;
+
 use tower_http::compression::CompressionLayer;
 use tower_http::cors::{AllowHeaders, AllowMethods, AllowOrigin, Any, CorsLayer};
 use tower_http::trace::TraceLayer;
@@ -60,6 +61,10 @@ async fn api_not_found() -> Response {
 pub fn create_router() -> Router {
     Router::new()
         .route("/health", axum::routing::get(health::handler))
+        .route(
+            "/metrics",
+            axum::routing::get(crate::metrics::prometheus_handler),
+        )
         // Dev-only live-reload poller (`BERUANG_DEV=1`); 404 in prod.
         .route(
             "/__dev_version",
@@ -124,6 +129,10 @@ pub fn create_router() -> Router {
         .layer(middleware::from_fn(security_headers))
         .layer(CompressionLayer::new())
         .layer(TraceLayer::new_for_http())
+        // Outermost: edge latency + status of the final response, with route
+        // templates (`MatchedPath`) as labels. `/metrics` scrapes show up as
+        // their own series — expected, not filtered.
+        .layer(middleware::from_fn(crate::metrics::track))
 }
 
 /// Same-origin hardening for the embedded SPA. Inline `style=` attributes

@@ -60,10 +60,26 @@ where
     F: Future<Output = Result<T, MarketError>>,
     T: serde::Serialize,
 {
+    let start = std::time::Instant::now();
+    let elapsed_ms = || start.elapsed().as_secs_f64() * 1_000.0;
     match tokio::time::timeout(MARKET_TIMEOUT, fut).await {
-        Err(_) => timed_out(path),
-        Ok(Err(err)) => market_error(path, err),
-        Ok(Ok(value)) => axum::Json(value).into_response(),
+        Err(_) => {
+            crate::metrics::record_market(path, "timeout", elapsed_ms());
+            timed_out(path)
+        }
+        Ok(Err(err)) => {
+            let status = match err.status() {
+                422 => "validation",
+                502 => "upstream",
+                _ => "error",
+            };
+            crate::metrics::record_market(path, status, elapsed_ms());
+            market_error(path, err)
+        }
+        Ok(Ok(value)) => {
+            crate::metrics::record_market(path, "ok", elapsed_ms());
+            axum::Json(value).into_response()
+        }
     }
 }
 

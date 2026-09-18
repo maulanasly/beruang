@@ -22,7 +22,7 @@ No Python/Node toolchains.
 |---|---|
 | `make lint` | clippy `--all-targets -D warnings` |
 | `make fmt-check` | `cargo fmt --check` |
-| `make test` | 28 tests: calc unit + parity (16 fixtures @ 1e-9) + gateway |
+| `make test` | 111 tests: calc unit + parity (16 fixtures @ 1e-9) + gateway |
 | `make verify` | all of the above (the gate) |
 
 ## Structure
