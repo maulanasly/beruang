@@ -1403,3 +1403,84 @@ async fn per_route_og_images() {
         );
     }
 }
+
+static METRICS_INIT: std::sync::Once = std::sync::Once::new();
+
+/// tonggeret's engine is process-global (`OnceLock`); init once for the
+/// metrics tests, ignore the already-initialized case.
+fn ensure_metrics() {
+    METRICS_INIT.call_once(|| {
+        let _ = tonggeret::init(tonggeret::Config::default_light());
+    });
+}
+
+#[tokio::test]
+async fn metrics_endpoint_exposes_request_series() {
+    ensure_metrics();
+    let app = beruang_gateway::routes::create_router();
+    // Exercise one route first so the request series exist.
+    let probe = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/health")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(probe.status(), StatusCode::OK);
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/metrics")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    assert!(
+        response.headers()["content-type"]
+            .to_str()
+            .unwrap()
+            .contains("text/plain"),
+        "scrape must use the Prometheus exposition content type"
+    );
+    let body = response_body_text(response).await;
+    assert!(body.contains("http_requests_total"));
+    assert!(body.contains("http_request_duration_ms"));
+}
+
+#[tokio::test]
+async fn calc_error_increments_calc_counter() {
+    ensure_metrics();
+    let app = beruang_gateway::routes::create_router();
+    // Malformed body → 422 through the calc error path.
+    let bad = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/api/v1/ev/comparison")
+                .method("POST")
+                .body(Body::from("not json"))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(bad.status(), StatusCode::UNPROCESSABLE_ENTITY);
+
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/metrics")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_text(response).await;
+    assert!(body.contains("beruang_calc_total"));
+}

@@ -49,53 +49,95 @@ where
 }
 
 pub async fn mutual_funds(req: Request) -> Response {
+    const CALC: &str = "mutual-funds";
     let body = match read_json(req).await {
         Ok(body) => body,
-        Err(resp) => return *resp,
+        Err(resp) => {
+            crate::metrics::record_calc(CALC, "error");
+            return *resp;
+        }
     };
     let entries: Vec<MutualFundEntry> = match parse_entries(&body) {
         Ok(entries) => entries,
-        Err(message) => return unprocessable(message),
+        Err(message) => {
+            crate::metrics::record_calc(CALC, "error");
+            return unprocessable(message);
+        }
     };
     match mutual_fund_returns(entries) {
-        Ok(returns) => axum::Json(returns).into_response(),
-        Err(err) => calc_error_response("/api/v1/mutual-funds/returns", err),
+        Ok(returns) => {
+            crate::metrics::record_calc(CALC, "ok");
+            axum::Json(returns).into_response()
+        }
+        Err(err) => {
+            crate::metrics::record_calc(CALC, "error");
+            calc_error_response("/api/v1/mutual-funds/returns", err)
+        }
     }
 }
 
 pub async fn stocks(req: Request) -> Response {
+    const CALC: &str = "stocks";
     let body = match read_json(req).await {
         Ok(body) => body,
-        Err(resp) => return *resp,
+        Err(resp) => {
+            crate::metrics::record_calc(CALC, "error");
+            return *resp;
+        }
     };
     let entries: Vec<StockEntry> = match parse_entries(&body) {
         Ok(entries) => entries,
-        Err(message) => return unprocessable(message),
+        Err(message) => {
+            crate::metrics::record_calc(CALC, "error");
+            return unprocessable(message);
+        }
     };
     match stock_returns(entries) {
-        Ok(returns) => axum::Json(returns).into_response(),
-        Err(err) => calc_error_response("/api/v1/stocks/returns", err),
+        Ok(returns) => {
+            crate::metrics::record_calc(CALC, "ok");
+            axum::Json(returns).into_response()
+        }
+        Err(err) => {
+            crate::metrics::record_calc(CALC, "error");
+            calc_error_response("/api/v1/stocks/returns", err)
+        }
     }
 }
 
 pub async fn term_deposits(req: Request) -> Response {
+    const CALC: &str = "term-deposits";
     let body = match read_json(req).await {
         Ok(body) => body,
-        Err(resp) => return *resp,
+        Err(resp) => {
+            crate::metrics::record_calc(CALC, "error");
+            return *resp;
+        }
     };
     let apy: f64 = match body.get("apy").and_then(|v| v.as_f64()) {
         Some(apy) => apy,
-        None => return unprocessable("Missing or invalid 'apy'.".to_string()),
+        None => {
+            crate::metrics::record_calc(CALC, "error");
+            return unprocessable("Missing or invalid 'apy'.".to_string());
+        }
     };
     let entries: Vec<TermDepositEntry> = match parse_entries(&body) {
         Ok(entries) => entries,
-        Err(message) => return unprocessable(message),
+        Err(message) => {
+            crate::metrics::record_calc(CALC, "error");
+            return unprocessable(message);
+        }
     };
     // `logic.term_deposit_metrics` defaults `reference_date` to today;
     // system-local date matches `date.today()`.
     let reference = Local::now().date_naive();
     match term_deposit_returns(apy, entries, reference) {
-        Ok(returns) => axum::Json(returns).into_response(),
-        Err(err) => calc_error_response("/api/v1/term-deposits/returns", err),
+        Ok(returns) => {
+            crate::metrics::record_calc(CALC, "ok");
+            axum::Json(returns).into_response()
+        }
+        Err(err) => {
+            crate::metrics::record_calc(CALC, "error");
+            calc_error_response("/api/v1/term-deposits/returns", err)
+        }
     }
 }

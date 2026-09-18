@@ -7,7 +7,7 @@ self-contained Rust binary serves the API and the embedded frontend.
 make run     # API + UI on :8000 (GATEWAY_PORT= to override)
 make dev     # hot reload: static/ from disk + browser auto-reload (BERUANG_DEV=1)
 make up      # same via Docker
-make test    # 28 Rust tests
+make test    # 111 Rust tests
 make verify  # clippy + fmt + tests (the gate)
 ```
 
@@ -25,6 +25,7 @@ make verify  # clippy + fmt + tests (the gate)
 | GET | `/api/v1/market-data/index/history?symbol=&period=` | `^JKSE`, `^JKLQ45` |
 | GET | `/api/v1/market-data/price/history?symbol=&period=` | per-symbol closes |
 | GET | `/health` | `{"status":"ok"}` |
+| GET | `/metrics` | Prometheus exposition: `http_requests_total`, `http_request_duration_ms`, `beruang_calc_total{calc,status}`, `beruang_market_total{endpoint,status}`, `beruang_market_duration_ms` |
 
 Errors are `{"detail": ...}`: 422 bad input · 502 Yahoo failure · 504 timeout.
 
