@@ -129,6 +129,12 @@ pub fn create_router() -> Router {
         .layer(middleware::from_fn(security_headers))
         .layer(CompressionLayer::new())
         .layer(TraceLayer::new_for_http())
+        // Visitor counter (tonggeret 0.3 HLL): `visitors_total{region}` +
+        // `unique_visitors_estimate{region}`. Filtered wrapper skips infra
+        // paths (`/metrics`, `/health`, `/__dev_version`) so scrapes and
+        // probes don't inflate visits. Kept inside `track` so edge latency
+        // still covers the visitor observation.
+        .layer(middleware::from_fn(crate::metrics::track_visitors_filtered))
         // Outermost: edge latency + status of the final response, with route
         // templates (`MatchedPath`) as labels. `/metrics` scrapes show up as
         // their own series — expected, not filtered.

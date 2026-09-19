@@ -25,7 +25,7 @@ make verify  # clippy + fmt + tests (the gate)
 | GET | `/api/v1/market-data/index/history?symbol=&period=` | `^JKSE`, `^JKLQ45` |
 | GET | `/api/v1/market-data/price/history?symbol=&period=` | per-symbol closes |
 | GET | `/health` | `{"status":"ok"}` |
-| GET | `/metrics` | Prometheus exposition: `http_requests_total`, `http_request_duration_ms`, `beruang_calc_total{calc,status}`, `beruang_market_total{endpoint,status}`, `beruang_market_duration_ms` |
+| GET | `/metrics` | Prometheus exposition: `http_requests_total`, `http_request_duration_ms`, `beruang_calc_total{calc,status}`, `beruang_market_total{endpoint,status}`, `beruang_market_duration_ms`, `visitors_total{region}`, `unique_visitors_estimate{region}` (uniques refresh every 15 s; infra paths `/metrics`, `/health`, `/__dev_version` are excluded; `region="unknown"` until nginx passes a CDN country header) |
 
 Errors are `{"detail": ...}`: 422 bad input · 502 Yahoo failure · 504 timeout.
 
