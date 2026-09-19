@@ -19,5 +19,15 @@ async fn main() {
         .await
         .expect("Failed to bind gateway");
     tracing::info!("beruang listening on 0.0.0.0:{port} (self-contained)");
-    axum::serve(listener, app).await.expect("Server failed");
+    // `ConnectInfo` feeds tonggeret's visitor identity when `X-Forwarded-For`
+    // is absent (direct connections, healthchecks): without it every such
+    // visit collapses to peer `"direct"` and uniques distinguish by
+    // `User-Agent` only. Nginx already sends `X-Forwarded-For`, so proxied
+    // traffic is unaffected — this only sharpens the direct fallback.
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<std::net::SocketAddr>(),
+    )
+    .await
+    .expect("Server failed");
 }

@@ -1484,3 +1484,168 @@ async fn calc_error_increments_calc_counter() {
     let body = response_body_text(response).await;
     assert!(body.contains("beruang_calc_total"));
 }
+
+/// Read one `metric{region="XX"} value` sample from Prometheus exposition.
+/// `None` when the series is absent (e.g. filtered paths never create it).
+fn exposition_region_sample(body: &str, metric: &str, region: &str) -> Option<f64> {
+    let needle = format!("region=\"{region}\"");
+    body.lines().find_map(|line| {
+        let mut parts = line.split_whitespace();
+        let head = parts.next()?;
+        let value = parts.next()?;
+        if !head.starts_with(metric) || !head.contains(needle.as_str()) {
+            return None;
+        }
+        value.parse::<f64>().ok()
+    })
+}
+
+async fn scrape_metrics(app: &axum::Router, region: &str) -> (String, Option<f64>, Option<f64>) {
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/metrics")
+                .header("CF-IPCountry", region)
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_text(response).await;
+    let total = exposition_region_sample(&body, "visitors_total", region);
+    let uniques = exposition_region_sample(&body, "unique_visitors_estimate", region);
+    (body, total, uniques)
+}
+
+/// Visitor counter: page + API visits count (even error outcomes — the
+/// observation happens before the handler runs), while infra endpoints
+/// (`/health`, `/metrics`, `/__dev_version`) never create a series.
+///
+/// Each test uses a dedicated synthetic region (`XV`, …) so parallel
+/// tests sharing the process-global tracker cannot shift its baseline.
+#[tokio::test]
+async fn visitor_counter_counts_visits_but_skips_infra() {
+    ensure_metrics();
+    const REGION: &str = "XV";
+    let app = beruang_gateway::routes::create_router();
+
+    // Baseline: no other test uses this region, so the series starts absent.
+    let (_, before, _) = scrape_metrics(&app, REGION).await;
+    assert_eq!(before, None);
+
+    // 1. SPA page view counts.
+    let page = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/")
+                .header("CF-IPCountry", REGION)
+                .header("X-Forwarded-For", "203.0.113.7")
+                .header("User-Agent", "visitor-test/1")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(page.status(), StatusCode::OK);
+
+    // 2. API visit counts even on the 422 error path (no network involved).
+    let api = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/api/v1/ev/comparison")
+                .method("POST")
+                .header("CF-IPCountry", REGION)
+                .header("X-Forwarded-For", "203.0.113.8")
+                .header("User-Agent", "visitor-test/1")
+                .body(Body::from("not json"))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(api.status(), StatusCode::UNPROCESSABLE_ENTITY);
+
+    // 3. Infra probes must not count, even when carrying the same region.
+    for uri in ["/health", "/metrics", "/__dev_version"] {
+        let probe = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri(uri)
+                    .header("CF-IPCountry", REGION)
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert!(
+            probe.status() == StatusCode::OK || probe.status() == StatusCode::NOT_FOUND,
+            "{uri} unexpected status {}",
+            probe.status()
+        );
+    }
+
+    let (body, after, _) = scrape_metrics(&app, REGION).await;
+    assert!(
+        body.contains("visitors_total"),
+        "visitor series must be exposed"
+    );
+    assert_eq!(after, Some(2.0), "exactly the page + API visits");
+}
+
+/// Unique-visitor gauge: distinct `X-Forwarded-For` identities fold into the
+/// per-region HyperLogLog sketch; duplicates don't move the estimate. The
+/// gauge only refreshes on snapshot (background 15 s task in prod, manual
+/// here since `ensure_metrics` bypasses `metrics::init` and its task).
+#[tokio::test]
+async fn visitor_uniques_estimate_tracks_distinct_identities() {
+    ensure_metrics();
+    const REGION: &str = "XU";
+    let app = beruang_gateway::routes::create_router();
+
+    for ip in ["198.51.100.1", "198.51.100.2", "198.51.100.3"] {
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/")
+                    .header("CF-IPCountry", REGION)
+                    .header("X-Forwarded-For", ip)
+                    .header("User-Agent", "uniques-test/1")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+    }
+    // One duplicate visit from an already-seen identity.
+    let dup = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/")
+                .header("CF-IPCountry", REGION)
+                .header("X-Forwarded-For", "198.51.100.1")
+                .header("User-Agent", "uniques-test/1")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(dup.status(), StatusCode::OK);
+
+    // Manual snapshot: the test harness owns no background snapshot task.
+    let _ = tonggeret::visitors::snapshot_visitors();
+
+    let (_, total, uniques) = scrape_metrics(&app, REGION).await;
+    assert_eq!(total, Some(4.0), "3 distinct + 1 duplicate visit");
+    let uniques = uniques.expect("gauge must exist after snapshot");
+    assert!(
+        (1.0..=4.0).contains(&uniques),
+        "HLL estimate {uniques} for 3 distinct visitors"
+    );
+}

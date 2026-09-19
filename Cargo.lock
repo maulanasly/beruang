@@ -1877,9 +1877,9 @@ dependencies = [
 
 [[package]]
 name = "tonggeret"
-version = "0.2.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e9f3041600735bcbee8f7115a2afc13e34a5a83cf11accfa55f1759a44fa38bf"
+checksum = "ecfac16e507c13d9b9928cf9cdcd2086671276289d3d529e7acad4212c271165"
 dependencies = [
  "axum",
  "prometheus",
