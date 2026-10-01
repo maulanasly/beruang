@@ -20,13 +20,18 @@ function DepositScheduleRow({ row, monthlyRate, taxRate, settings, n }) {
     const values = schedule.map(s => s.interest);
     const totalGross = schedule.length ? schedule[schedule.length - 1].cumulative : 0;
     const totalNet = applyTax(totalGross, taxRate);
+    const peak = values.length ? Math.max(...values) : 0;
+    const titles = schedule.map(s => `${s.date}: ${formatCurrency(s.interest, locale, currency)}`);
     return html`<details class="deposit-schedule">
         <summary>
             <span>${t(locale, 'depositSchedule.deposit', { n })} · ${row.date} → ${row.maturity_date || ''}</span>
             <span class="muted">${t(locale, 'depositSchedule.total', { value: formatCurrency(totalGross, locale, currency) })} · ${t(locale, 'depositSchedule.net')} ${formatCurrency(totalNet, locale, currency)}</span>
         </summary>
-        <${MiniBars} values=${values} color="var(--chart-orange)" w=${360} h=${96} />
-        <div class="smallcaps" style="font-size:10px">${t(locale, 'depositSchedule.chartLabel')}</div>
+        <${MiniBars} values=${values} titles=${titles} color="var(--chart-orange)" w=${360} h=${96} />
+        <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap">
+            <span class="smallcaps" style="font-size:10px">${t(locale, 'depositSchedule.chartLabel')}</span>
+            <span class="muted" style="font-size:11px">${t(locale, 'depositInterest.peak')}: ${formatCurrency(peak, locale, currency)}</span>
+        </div>
         <div class="ledger-table-wrap"><table>
             <thead><tr>
                 <th scope="col">${t(locale, 'depositSchedule.month')}</th>

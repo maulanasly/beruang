@@ -32,8 +32,8 @@ export function MiniLines({ series, w = 132, h = 48, label, filledFirst = false 
     </svg>`;
 }
 
-/** Mini bar chart. `colors` optional per-bar; otherwise one colour. */
-export function MiniBars({ values, colors, color = 'var(--chart-blue)', w = 132, h = 48 }) {
+/** Mini bar chart. `colors` optional per-bar; `titles` per-bar tooltips. */
+export function MiniBars({ values, colors, titles, color = 'var(--chart-blue)', w = 132, h = 48 }) {
     const max = Math.max(...values, 1);
     const n = values.length;
     const gap = 6;
@@ -43,7 +43,8 @@ export function MiniBars({ values, colors, color = 'var(--chart-blue)', w = 132,
             const bh = (v / max) * (h - PAD * 2);
             return html`<rect x=${(PAD + i * (bw + gap)).toFixed(1)} y=${(h - PAD - bh).toFixed(1)}
                 width=${bw.toFixed(1)} height=${bh.toFixed(1)} rx="2"
-                fill=${(colors && colors[i]) || color} opacity="0.85" />`;
+                fill=${(colors && colors[i]) || color} opacity="0.85"
+                >${titles && titles[i] ? html`<title>${titles[i]}</title>` : ''}</rect>`;
         })}
     </svg>`;
 }

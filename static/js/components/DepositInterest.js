@@ -41,6 +41,13 @@ export function DepositInterestView({ ledger, summary, monthlyRate, apy, taxRate
 
     const exportCsv = () => downloadScheduleCsv('term-deposit-interest.csv', portfolioToCsv(portfolio));
 
+    const portValues = portfolio.months.map(m => m.gross);
+    const portTitles = portfolio.months.map(m => `${m.month}: ${formatCurrency(m.gross, locale, currency)} (${t(locale, 'depositInterest.net')} ${formatCurrency(m.net, locale, currency)})`);
+    const portPeak = portValues.length ? Math.max(...portValues) : 0;
+    const rollValues = rollover.months.map(m => m.gross);
+    const rollTitles = rollover.months.map(m => `${m.month}: ${formatCurrency(m.gross, locale, currency)}`);
+    const rollPeak = rollValues.length ? Math.max(...rollValues) : 0;
+
     return html`<section class="card">
         <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:space-between">
             <div class="smallcaps">${t(locale, 'depositInterest.title')}</div>
@@ -54,8 +61,11 @@ export function DepositInterestView({ ledger, summary, monthlyRate, apy, taxRate
             </article>`)}
         </div>
 
-        <${MiniBars} values=${portfolio.months.map(m => m.gross)} color="var(--chart-blue)" w=${640} h=${120} />
-        <div class="smallcaps" style="font-size:10px">${t(locale, 'depositInterest.chartLabel')}</div>
+        <${MiniBars} values=${portValues} titles=${portTitles} color="var(--chart-blue)" w=${640} h=${120} />
+        <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap">
+            <span class="smallcaps" style="font-size:10px">${t(locale, 'depositInterest.chartLabel')}</span>
+            <span class="muted" style="font-size:11px">${t(locale, 'depositInterest.peak')}: ${formatCurrency(portPeak, locale, currency)} · ${t(locale, 'depositInterest.cumulative')}: ${formatCurrency(portfolio.totalNet, locale, currency)}</span>
+        </div>
         <div class="ledger-table-wrap" style="margin-top:8px"><table>
             <thead><tr>
                 <th scope="col">${t(locale, 'depositInterest.month')}</th>
@@ -80,6 +90,7 @@ export function DepositInterestView({ ledger, summary, monthlyRate, apy, taxRate
             ${CYCLES.map(c => html`<button class=${cycles === c ? 'btn-sm' : 'btn-ghost btn-sm'} aria-pressed=${cycles === c} onClick=${() => onCycles && onCycles(c)}>${c}</button>`)}
             <span class="muted" style="font-size:12px">${t(locale, 'depositInterest.rolloverTotal')}: <strong>${formatCurrency(rollover.totalNet, locale, currency)}</strong></span>
         </div>
-        <${MiniBars} values=${rollover.months.map(m => m.gross)} color="var(--chart-purple)" w=${640} h=${120} />
+        <${MiniBars} values=${rollValues} titles=${rollTitles} color="var(--chart-purple)" w=${640} h=${120} />
+        <div class="muted" style="font-size:11px">${t(locale, 'depositInterest.peak')}: ${formatCurrency(rollPeak, locale, currency)}</div>
     </section>`;
 }
