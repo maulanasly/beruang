@@ -6,6 +6,7 @@ import { formatCurrency, formatPercent } from '../utils.js';
 import { t } from '../i18n.js';
 import { InfoTip } from './InfoTip.js';
 import { buildMonthlyReturns, portfolioTwr } from '../finance.js';
+import { buildPortfolioInterest } from '../depositInterest.js';
 import { GoalsPanel } from './GoalsPanel.js';
 import { PortfolioIo } from './PortfolioIo.js';
 import { TrendChart } from './TrendChart.js';
@@ -94,6 +95,20 @@ export function Overview({ settings }) {
     const stDiv = stLedger ? sumField(stLedger, 'dividends') : null;
     const tdApy = typeof ledgers.results?.['term-deposits']?.summary?.apy === 'number'
         ? ledgers.results['term-deposits'].summary.apy : null;
+
+    // Term-deposit interest preview (monthly + next 12 months, net of tax).
+    const tdSummary = ledgers.results?.['term-deposits']?.summary;
+    let tdInterest = null;
+    if (tdLedger && tdSummary && typeof tdSummary.monthly_rate === 'number') {
+        const port = buildPortfolioInterest(tdLedger, tdSummary.monthly_rate, settings.taxRate ?? 0.2);
+        const currentMonth = new Date().toISOString().slice(0, 7);
+        const next12 = port.months.filter(m => m.month >= currentMonth).slice(0, 12);
+        tdInterest = {
+            month: Number(lastRow(tdLedger)?.prorated_interest) || 0,
+            next12Net: next12.reduce((s, m) => s + m.net, 0),
+            nextMaturity: tdSummary.next_maturity_date,
+        };
+    }
 
     const calcTimes = [
         ledgers.results?.['mutual-funds']?.calculatedAt,
@@ -186,6 +201,14 @@ export function Overview({ settings }) {
             { label: t(locale, 'nav.stocks'), value: stVal, color: ASSET_COLORS.stocks },
             { label: t(locale, 'nav.termDeposits'), value: tdVal, color: ASSET_COLORS['term-deposits'] },
         ]} />
+        ${tdInterest && html`<div class="card">
+            <div class="smallcaps"><a href="/kalkulator/deposito" onClick=${e=>go(e,'/kalkulator/deposito')}>${t(locale, 'overview.depositInterestTitle')} →</a></div>
+            <div class="summary-cards" style="margin:10px 0 0">
+                <div class="card" style="margin:0"><div class="smallcaps">${t(locale, 'overview.depositMonthlyInterest')}</div><div class="amount" style="font-size:15px">${formatCurrency(tdInterest.month, locale, settings.currency)}</div></div>
+                <div class="card" style="margin:0"><div class="smallcaps">${t(locale, 'overview.depositNext12')}</div><div class="amount" style="font-size:15px">${formatCurrency(tdInterest.next12Net, locale, settings.currency)}</div></div>
+                <div class="card" style="margin:0"><div class="smallcaps">${t(locale, 'overview.depositNextMaturity')}</div><div class="amount" style="font-size:15px">${tdInterest.nextMaturity || '-'}</div></div>
+            </div>
+        </div>`}
         <div class="summary-cards">
             ${[
                 { label: t(locale, 'nav.mutualFunds'), to: '/kalkulator/reksa-dana', value: mfVal, invested: mfInv, extra: mfEdited ? editedText : (mfEst ? t(locale, 'overview.estimated') : null) },

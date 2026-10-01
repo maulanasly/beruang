@@ -9,6 +9,7 @@ import { MomentumKpi } from './MomentumKpi.js';
 import { AssetChart } from './AssetChart.js';
 import { MaturityPanel } from './MaturityPanel.js';
 import { DepositSchedule } from './DepositSchedule.js';
+import { DepositInterest } from './DepositInterest.js';
 import { formatCurrency, formatPercent } from '../utils.js';
 import { HowTo } from './HowTo.js';
 import { Crumbs } from './Crumbs.js';
@@ -185,7 +186,8 @@ export function TermDeposits({ settings }) {
             <${MomentumKpi} ledger=${result.ledger} summary=${result.summary} asset="term-deposits" settings=${settings} />
             <${AssetChart} ledger=${result.ledger} asset="term-deposits" settings=${settings} />
             <${MaturityPanel} summary=${result.summary} ledger=${result.ledger} settings=${settings} onRollover=${rollover} />
-            <${DepositSchedule} ledger=${result.ledger} monthlyRate=${result.summary.monthly_rate} settings=${settings} />
+            <${DepositSchedule} ledger=${result.ledger} monthlyRate=${result.summary.monthly_rate} taxRate=${settings.taxRate ?? 0.2} settings=${settings} />
+            <${DepositInterest} ledger=${result.ledger} summary=${result.summary} monthlyRate=${result.summary.monthly_rate} apy=${result.summary.apy} taxRate=${settings.taxRate ?? 0.2} settings=${settings} />
             <div class="summary-cards">
                 <div class="card"><div class="smallcaps">${t(locale, 'depositMaturity.projectedFv')}</div><div class="amount" style="font-size:15px">${formatCurrency(result.summary.projected_fv_constant_installment, locale, settings.currency)}</div></div>
                 <div class="card"><div class="smallcaps">${t(locale, 'depositMaturity.endingValue')}</div><div class="amount" style="font-size:15px">${formatCurrency(result.summary.ending_value, locale, settings.currency)}</div></div>

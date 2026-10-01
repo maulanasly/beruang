@@ -138,6 +138,9 @@ export function App() {
                                         ${MARKET_OPTIONS.map(o=> html`<option value=${o.value}>${o.label}</option>`)}
                                     </select>
                                 </label>
+                                <label>${t(locale, 'settings.taxRate')} (%)
+                                    <input type="number" min="0" max="100" step="1" value=${Math.round((settings.taxRate ?? 0.2) * 100)} onInput=${e => setSettings({ ...settings, taxRate: Math.max(0, Math.min(1, (Number(e.target.value) || 0) / 100)) })} />
+                                </label>
                             </div>`}
                         </div>
                         <button type="button" class="theme-toggle" title=${t(locale, 'ui.theme')} aria-label=${dark ? t(locale, 'ui.themeToLight') : t(locale, 'ui.themeToDark')} aria-pressed=${dark} onClick=${() => setSettings({...settings, theme: dark ? 'light' : 'dark', themeExplicit: true})}>
