@@ -88,6 +88,11 @@ button:hover{background:var(--ledger-hover)}button:disabled{opacity:.5;cursor:no
 .maturity-details{margin-top:2px}
 .maturity-details summary{cursor:pointer;font-size:13px;font-weight:600}
 .maturity-details label{display:flex;flex-direction:column;gap:4px;font-size:13px;margin-top:8px;max-width:280px}
+.deposit-schedule{border:1px solid var(--hairline);border-radius:8px;padding:8px 12px;margin-top:8px;background:var(--paper)}
+.deposit-schedule>summary{cursor:pointer;display:flex;gap:10px;flex-wrap:wrap;align-items:baseline;justify-content:space-between;font-size:13px;font-weight:600}
+.deposit-schedule[open]>summary{margin-bottom:8px}
+.deposit-schedule .mini{margin:0 0 8px}
+.deposit-schedule .ledger-table-wrap{background:var(--surface)}
 .entry-remove{align-self:end}
 .suggest-list{position:absolute;z-index:10;left:0;right:0;margin:2px 0 0;padding:0;list-style:none;background:var(--surface);border:1px solid var(--hairline);border-radius:8px;max-height:180px;overflow:auto}
 .suggest-list li{padding:6px 10px;cursor:pointer;font-size:13px}
