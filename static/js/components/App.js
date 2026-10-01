@@ -17,11 +17,19 @@ import { Footer } from './Footer.js';
 // No-JS fallback hook: without JS the nav panel stays visible (see CSS).
 document.documentElement.classList.add('js');
 
+// Feather-style inline icons (16px): gear for the settings popover,
+// sun/moon for the theme toggle. Shown next to the *action* label, so
+// "Dark" with a moon reads as the destination, not the current state.
+const gearIcon = html`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`;
+const sunIcon = html`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`;
+const moonIcon = html`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+
 export function App() {
     const [route, setRoute] = useState(getCurrentRoute());
     const [settings, setSettings] = useState(loadSettings());
     const [menuOpen, setMenuOpen] = useState(false);
     const [calcOpen, setCalcOpen] = useState(false);
+    const [settingsOpen, setSettingsOpen] = useState(false);
     const locale = settings.locale;
 
     useEffect(() => {
@@ -29,6 +37,7 @@ export function App() {
             setRoute(getCurrentRoute());
             setMenuOpen(false);
             setCalcOpen(false);
+            setSettingsOpen(false);
             window.scrollTo(0, 0);
             // Move screen-reader/keyboard focus to the new page (main is
             // tabindex=-1 so this never shows a focus ring on click nav).
@@ -38,16 +47,19 @@ export function App() {
         return () => window.removeEventListener('popstate', h);
     }, []);
     useEffect(() => {
-        const onKey = (e) => { if (e.key === 'Escape') { setMenuOpen(false); setCalcOpen(false); } };
+        const onKey = (e) => { if (e.key === 'Escape') { setMenuOpen(false); setCalcOpen(false); setSettingsOpen(false); } };
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
     }, []);
     useEffect(() => {
-        if (!calcOpen) return;
-        const onDown = (e) => { if (!e.target.closest('.nav-drop')) setCalcOpen(false); };
+        if (!calcOpen && !settingsOpen) return;
+        const onDown = (e) => {
+            if (!e.target.closest('.nav-drop')) setCalcOpen(false);
+            if (!e.target.closest('.settings-drop')) setSettingsOpen(false);
+        };
         document.addEventListener('pointerdown', onDown);
         return () => document.removeEventListener('pointerdown', onDown);
-    }, [calcOpen]);
+    }, [calcOpen, settingsOpen]);
     useEffect(() => {
         const titles = {
             home: t(locale, 'nav.home'),
@@ -105,18 +117,31 @@ export function App() {
                             ${t(locale, 'hero.brand')} <small>${t(locale, 'hero.title')}</small>
                         </a>
                     </div>
-                    <div class="locale-group" role="group" aria-label=${`${t(locale, 'settings.locale')} / ${t(locale, 'settings.currency')}`}>
-                        <select value=${locale} title=${t(locale, 'settings.locale')} aria-label=${t(locale, 'settings.locale')} onChange=${e=>setSettings({...settings, locale:e.target.value})}>
-                            ${LOCALE_OPTIONS.map(o=> html`<option value=${o.value}>${o.short || o.label}</option>`)}
-                        </select>
-                        <select value=${settings.currency} title=${t(locale, 'settings.currency')} aria-label=${t(locale, 'settings.currency')} onChange=${e=>setSettings({...settings, currency:e.target.value})}>
-                            ${CURRENCY_OPTIONS.map(o=> html`<option value=${o.value}>${o.short || o.label}</option>`)}
-                        </select>
-                        <select value=${settings.market} title=${t(locale, 'settings.market')} aria-label=${t(locale, 'settings.market')} onChange=${e=>setSettings({...settings, market:e.target.value})}>
-                            ${MARKET_OPTIONS.map(o=> html`<option value=${o.value}>${o.short || o.label}</option>`)}
-                        </select>
-                        <button type="button" class="theme-toggle" title=${t(locale, 'ui.theme')} aria-label=${t(locale, 'ui.themeToggle')} aria-pressed=${dark} onClick=${() => setSettings({...settings, theme: dark ? 'light' : 'dark'})}>
-                            ${dark ? t(locale, 'ui.themeLight') : t(locale, 'ui.themeDark')}
+                    <div class="header-tools" role="group" aria-label=${t(locale, 'settings.groupLabel')}>
+                        <div class="settings-drop">
+                            <button type="button" class="settings-toggle" title=${t(locale, 'settings.groupLabel')} aria-label=${t(locale, 'settings.groupLabel')} aria-haspopup="true" aria-expanded=${settingsOpen} aria-controls="settings-panel" onClick=${() => setSettingsOpen(!settingsOpen)}>
+                                ${gearIcon}
+                            </button>
+                            ${settingsOpen && html`<div id="settings-panel" class="settings-drop__panel" role="group" aria-label=${t(locale, 'settings.groupLabel')}>
+                                <label>${t(locale, 'settings.locale')}
+                                    <select value=${locale} onChange=${e=>setSettings({...settings, locale:e.target.value})}>
+                                        ${LOCALE_OPTIONS.map(o=> html`<option value=${o.value}>${o.label}</option>`)}
+                                    </select>
+                                </label>
+                                <label>${t(locale, 'settings.currency')}
+                                    <select value=${settings.currency} onChange=${e=>setSettings({...settings, currency:e.target.value})}>
+                                        ${CURRENCY_OPTIONS.map(o=> html`<option value=${o.value}>${o.label}</option>`)}
+                                    </select>
+                                </label>
+                                <label>${t(locale, 'settings.market')}
+                                    <select value=${settings.market} onChange=${e=>setSettings({...settings, market:e.target.value})}>
+                                        ${MARKET_OPTIONS.map(o=> html`<option value=${o.value}>${o.label}</option>`)}
+                                    </select>
+                                </label>
+                            </div>`}
+                        </div>
+                        <button type="button" class="theme-toggle" title=${t(locale, 'ui.theme')} aria-label=${dark ? t(locale, 'ui.themeToLight') : t(locale, 'ui.themeToDark')} aria-pressed=${dark} onClick=${() => setSettings({...settings, theme: dark ? 'light' : 'dark', themeExplicit: true})}>
+                            ${dark ? sunIcon : moonIcon} ${dark ? t(locale, 'ui.themeLight') : t(locale, 'ui.themeDark')}
                         </button>
                     </div>
                     <button class="menu-toggle" aria-expanded=${menuOpen} aria-controls="primary-nav" aria-label=${t(locale, 'ui.menu')} onClick=${() => setMenuOpen(!menuOpen)}>
@@ -124,11 +149,24 @@ export function App() {
                     </button>
                     <nav id="primary-nav" class=${menuOpen ? 'topnav open' : 'topnav'} aria-label=${t(locale, 'ui.navLabel')}>
                         <a href="/" class=${route==='home'?'active':''} aria-current=${route==='home' ? 'page' : null} onClick=${e=>go(e, '/')}>${t(locale, 'nav.home')}</a>
-                        <div class="nav-drop">
-                            <button type="button" class=${calcActive ? 'nav-drop__btn active' : 'nav-drop__btn'} aria-expanded=${calcOpen} aria-controls="calc-menu" onClick=${() => setCalcOpen(!calcOpen)}>
+                        <div class="nav-drop" onPointerEnter=${() => { if (window.matchMedia?.('(hover: hover)').matches) setCalcOpen(true); }} onPointerLeave=${() => { if (window.matchMedia?.('(hover: hover)').matches) setCalcOpen(false); }}>
+                            <button type="button" class=${calcActive ? 'nav-drop__btn active' : 'nav-drop__btn'} aria-expanded=${calcOpen} aria-controls="calc-menu" onClick=${() => setCalcOpen(!calcOpen)} onKeyDown=${e => {
+                                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                                    e.preventDefault();
+                                    setCalcOpen(true);
+                                    requestAnimationFrame(() => document.getElementById('calc-menu')?.querySelector('a')?.focus());
+                                }
+                            }}>
                                 ${t(locale, 'nav.calculators')} <span class="nav-drop__chev" aria-hidden="true">${calcOpen ? '▴' : '▾'}</span>
                             </button>
-                            ${calcOpen && html`<div id="calc-menu" class="nav-drop__panel" role="group" aria-label=${t(locale, 'nav.calculators')}>
+                            ${calcOpen && html`<div id="calc-menu" class="nav-drop__panel" role="group" aria-label=${t(locale, 'nav.calculators')} onKeyDown=${e => {
+                                const links = Array.from(e.currentTarget.querySelectorAll('a'));
+                                const i = links.indexOf(document.activeElement);
+                                if (e.key === 'ArrowDown') { e.preventDefault(); links[(i + 1) % links.length]?.focus(); }
+                                else if (e.key === 'ArrowUp') { e.preventDefault(); links[(i - 1 + links.length) % links.length]?.focus(); }
+                                else if (e.key === 'Home') { e.preventDefault(); links[0]?.focus(); }
+                                else if (e.key === 'End') { e.preventDefault(); links[links.length - 1]?.focus(); }
+                            }}>
                                 ${calcLinks.map(l => html`<a href=${l.to} class=${route===l.key?'active':''} aria-current=${route===l.key ? 'page' : null} onClick=${e=>go(e, l.to)}>
                                     <span class="nav-drop__title">${t(locale, l.labelKey)}</span>
                                     <span class="nav-drop__desc">${t(locale, l.descKey)}</span>
