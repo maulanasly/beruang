@@ -266,6 +266,17 @@ export default {
     rolloverValue: 'Nilai Perpanjangan (30 hari)',
     rate: 'Suku Bunga',
   },
+  depositSchedule: {
+    title: 'Jadwal bunga bulanan',
+    deposit: 'Deposito {n}',
+    month: 'Bulan',
+    opening: 'Saldo Awal',
+    interest: 'Bunga',
+    closing: 'Saldo Akhir',
+    cumulative: 'Bunga Kumulatif',
+    total: 'Total bunga saat jatuh tempo: {value}',
+    chartLabel: 'Bunga kumulatif sepanjang tenor',
+  },
   io: {
     importTitle: 'Cadangan & Pulihkan Buku Besar',
     template: 'Unduh Templat',

@@ -267,6 +267,17 @@ export default {
     rolloverValue: 'Rollover Value (30 days)',
     rate: 'Rate',
   },
+  depositSchedule: {
+    title: 'Monthly interest schedule',
+    deposit: 'Deposit {n}',
+    month: 'Month',
+    opening: 'Opening',
+    interest: 'Interest',
+    closing: 'Closing',
+    cumulative: 'Cumulative interest',
+    total: 'Total interest at maturity: {value}',
+    chartLabel: 'Cumulative interest over the term',
+  },
   io: {
     importTitle: 'Ledger Backup & Restore',
     template: 'Download Template',
