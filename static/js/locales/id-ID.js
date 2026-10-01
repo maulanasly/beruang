@@ -295,6 +295,7 @@ export default {
     net: 'Neto',
     cumulative: 'Kumulatif',
     chartLabel: 'Bunga bulanan lintas deposito',
+    peak: 'Bunga bulanan tertinggi',
     rolloverCycles: 'Siklus rollover',
     rolloverTotal: 'Proyeksi bunga dengan rollover',
     empty: 'Hitung hasil untuk melihat bunga bulanan portofolio.',

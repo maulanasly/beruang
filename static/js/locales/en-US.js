@@ -296,6 +296,7 @@ export default {
     net: 'Net',
     cumulative: 'Cumulative',
     chartLabel: 'Monthly interest across deposits',
+    peak: 'Peak monthly interest',
     rolloverCycles: 'Rollover cycles',
     rolloverTotal: 'Projected interest with rollovers',
     empty: 'Calculate returns to see the portfolio monthly interest.',
