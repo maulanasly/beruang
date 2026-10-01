@@ -40,6 +40,7 @@ export function loadSettings() {
         locale: s?.locale || nav,
         currency: s?.currency || 'IDR',
         market: s?.market || 'IDX',
+        taxRate: typeof s?.taxRate === 'number' && s.taxRate >= 0 && s.taxRate <= 1 ? s.taxRate : 0.20,
         // Light is the default; dark persists only after an explicit
         // toggle (themeExplicit). OS dark preference alone never darkens
         // the app, and pre-marker stored themes are treated as unset.
