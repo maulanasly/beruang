@@ -137,6 +137,9 @@ button:hover{background:var(--ledger-hover)}button:disabled{opacity:.5;cursor:no
 .flow-step:not(:last-child)::after{content:'→';position:absolute;right:-11px;top:50%;transform:translateY(-50%);color:var(--hairline-strong);font-size:14px;z-index:1}
 .calc-thumb{margin:0 0 10px;height:48px;display:flex;align-items:center}
 .calc-thumb--wide{margin:0 0 12px;height:56px}
+.calc-card__head{display:flex;align-items:center;gap:8px;margin:0 0 4px}
+.calc-card__icon{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;flex:none;border-radius:8px;background:var(--paper);border:1px solid var(--hairline);color:var(--ledger)}
+.calc-card__icon svg{display:block}
 .concept-band{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .concept-card{display:flex;flex-direction:column;gap:4px;margin:0;text-decoration:none;color:inherit;transition:transform .15s ease,box-shadow .15s ease}
 .concept-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}

@@ -5,6 +5,7 @@ import { SAMPLE_MF, SAMPLE_STOCKS, SAMPLE_TD } from '../store.js';
 import { buildShareUrl } from '../share.js';
 import { HeroCalc } from './HeroCalc.js';
 import { ProductDiagram, StatStrip, FlowSteps, ConceptBand, CalcThumb } from './HomeVisuals.js';
+import { CaseIcon } from './Icons.js';
 
 const INVEST = [
     { route: 'mutual-funds', path: '/kalkulator/reksa-dana', titleKey: 'home.calcMfTitle', descKey: 'home.calcMfDesc', exKey: 'home.cardExampleMf', sample: () => ({ entries: SAMPLE_MF }) },
@@ -88,7 +89,10 @@ function calcCard(c, go, goUrl, locale) {
     const url = buildShareUrl(c.route, c.sample());
     return html`<article class="card calc-card">
         <${CalcThumb} kind=${c.route} />
-        <h2 style="margin:0 0 4px; font-size:17px"><a href=${c.path} onClick=${e => go(e, c.path)}>${t(locale, c.titleKey)}</a></h2>
+        <div class="calc-card__head">
+            <span class="calc-card__icon"><${CaseIcon} kind=${c.route} /></span>
+            <h2 style="margin:0; font-size:17px"><a href=${c.path} onClick=${e => go(e, c.path)}>${t(locale, c.titleKey)}</a></h2>
+        </div>
         <p class="muted" style="font-size:13px; margin:0 0 8px">${t(locale, c.descKey)}</p>
         ${c.exKey && html`<p class="muted" style="font-size:12px; margin:0 0 8px">${t(locale, c.exKey)}</p>`}
         <p style="margin:0; display:flex; gap:12px; font-size:13px">
