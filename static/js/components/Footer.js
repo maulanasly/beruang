@@ -20,11 +20,16 @@ export function Footer({ settings }) {
                 <a href="/kalkulator/reksa-dana" onClick=${e => go(e, '/kalkulator/reksa-dana')}>${t(locale, 'nav.mutualFunds')}</a>
                 <a href="/kalkulator/saham" onClick=${e => go(e, '/kalkulator/saham')}>${t(locale, 'nav.stocks')}</a>
                 <a href="/kalkulator/deposito" onClick=${e => go(e, '/kalkulator/deposito')}>${t(locale, 'nav.termDeposits')}</a>
-                <a href="/kalkulator/mobil-listrik" onClick=${e => go(e, '/kalkulator/mobil-listrik')}>${t(locale, 'nav.ev')}</a>
-                <a href="/kalkulator/sewa-vs-beli" onClick=${e => go(e, '/kalkulator/sewa-vs-beli')}>${t(locale, 'nav.rentBuy')}</a>
-                <a href="/kalkulator/bunga-flat" onClick=${e => go(e, '/kalkulator/bunga-flat')}>${t(locale, 'nav.flatLoan')}</a>
-                <a href="/kalkulator/lunas-utang" onClick=${e => go(e, '/kalkulator/lunas-utang')}>${t(locale, 'nav.debtPayoff')}</a>
-                <a href="/kalkulator/dana-pensiun" onClick=${e => go(e, '/kalkulator/dana-pensiun')}>${t(locale, 'nav.retire')}</a>
+                <details class="site-footer__more">
+                    <summary>${t(locale, 'footer.moreCalcs')}</summary>
+                    <div class="site-footer__more-panel">
+                        <a href="/kalkulator/mobil-listrik" onClick=${e => go(e, '/kalkulator/mobil-listrik')}>${t(locale, 'nav.ev')}</a>
+                        <a href="/kalkulator/sewa-vs-beli" onClick=${e => go(e, '/kalkulator/sewa-vs-beli')}>${t(locale, 'nav.rentBuy')}</a>
+                        <a href="/kalkulator/bunga-flat" onClick=${e => go(e, '/kalkulator/bunga-flat')}>${t(locale, 'nav.flatLoan')}</a>
+                        <a href="/kalkulator/lunas-utang" onClick=${e => go(e, '/kalkulator/lunas-utang')}>${t(locale, 'nav.debtPayoff')}</a>
+                        <a href="/kalkulator/dana-pensiun" onClick=${e => go(e, '/kalkulator/dana-pensiun')}>${t(locale, 'nav.retire')}</a>
+                    </div>
+                </details>
             </nav>
         </div>
         <p class="site-footer__note">${t(locale, 'footer.dataNote')}</p>

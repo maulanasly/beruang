@@ -132,7 +132,7 @@ export function Landing({ settings }) {
             </div>
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:12px">
                 <span class="muted" style="font-size:12px">${t(locale, 'home.popularLabel')}</span>
-                ${[['/kalkulator/bunga-flat', 'nav.flatLoan'], ['/kalkulator/lunas-utang', 'nav.debtPayoff'], ['/kalkulator/dana-pensiun', 'nav.retire']].map(([path, labelKey]) => html`<a href=${path} onClick=${e => go(e, path)} style="font-size:12px; color:#fff">${t(locale, labelKey)} →</a>`)}
+                ${[['/kalkulator/bunga-flat', 'nav.flatLoan'], ['/kalkulator/lunas-utang', 'nav.debtPayoff'], ['/kalkulator/dana-pensiun', 'nav.retire']].map(([path, labelKey]) => html`<a class="hero-pop" href=${path} onClick=${e => go(e, path)} style="font-size:12px">${t(locale, labelKey)} →</a>`)}
             </div>
         </section>
         <section class="card" aria-label=${t(locale, 'home.questionsTitle')}>
@@ -176,6 +176,7 @@ export function Landing({ settings }) {
                     <li><strong>${t(locale, 'home.step1Title')}</strong><br /><span class="muted">${t(locale, 'home.step1Desc')}</span></li>
                     <li><strong>${t(locale, 'home.step2Title')}</strong><br /><span class="muted">${t(locale, 'home.step2Desc')}</span></li>
                     <li><strong>${t(locale, 'home.step3Title')}</strong><br /><span class="muted">${t(locale, 'home.step3Desc')}</span></li>
+                    <li><strong>${t(locale, 'home.step4Title')}</strong><br /><span class="muted">${t(locale, 'home.step4Desc')}</span></li>
                 </ol>
             </details>
             <details class="faq">
