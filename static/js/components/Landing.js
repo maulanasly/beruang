@@ -4,6 +4,7 @@ import { navigate } from '../router.js';
 import { SAMPLE_MF, SAMPLE_STOCKS, SAMPLE_TD } from '../store.js';
 import { buildShareUrl } from '../share.js';
 import { HeroCalc } from './HeroCalc.js';
+import { ProductDiagram, StatStrip, FlowSteps, ConceptBand, CalcThumb } from './HomeVisuals.js';
 
 const INVEST = [
     { route: 'mutual-funds', path: '/kalkulator/reksa-dana', titleKey: 'home.calcMfTitle', descKey: 'home.calcMfDesc', exKey: 'home.cardExampleMf', sample: () => ({ entries: SAMPLE_MF }) },
@@ -83,19 +84,10 @@ const SAMPLE_BY_ROUTE = Object.fromEntries([...CREDIT, ...COMPARE].map(c => [c.r
 const TRUST = ['home.trustNoSignup', 'home.trustLocal', 'home.trustExact', 'home.trustAdj'];
 const FAQS = [['home.faq1q', 'home.faq1a'], ['home.faq2q', 'home.faq2a'], ['home.faq3q', 'home.faq3a'], ['home.faq4q', 'home.faq4a']];
 
-function sparkline() {
-    // Static proof figure: the Rp1M x 12 -> Rp13.2M sample (XIRR 22.6%/yr).
-    const pts = [[8, 60], [56, 53], [104, 46], [152, 40], [200, 33], [248, 22]];
-    const d = pts.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x},${y}`).join(' ');
-    return html`<svg viewBox="0 0 256 72" width="100%" height="72" role="img" aria-hidden="true" style="background:var(--paper);border:1px solid var(--hairline);border-radius:8px; margin-top:10px">
-        <path d=${d} fill="none" style="stroke:var(--accent)" stroke-width="2.5" />
-        ${pts.map(([x, y]) => html`<circle cx=${x} cy=${y} r="3" style="fill:var(--ledger)" />`)}
-    </svg>`;
-}
-
 function calcCard(c, go, goUrl, locale) {
     const url = buildShareUrl(c.route, c.sample());
-    return html`<article class="card">
+    return html`<article class="card calc-card">
+        <${CalcThumb} kind=${c.route} />
         <h2 style="margin:0 0 4px; font-size:17px"><a href=${c.path} onClick=${e => go(e, c.path)}>${t(locale, c.titleKey)}</a></h2>
         <p class="muted" style="font-size:13px; margin:0 0 8px">${t(locale, c.descKey)}</p>
         ${c.exKey && html`<p class="muted" style="font-size:12px; margin:0 0 8px">${t(locale, c.exKey)}</p>`}
@@ -114,27 +106,30 @@ export function Landing({ settings }) {
         const u = new URL(url, window.location.origin);
         navigate(u.pathname + u.search);
     };
+    const popular = [['/kalkulator/bunga-flat', 'nav.flatLoan'], ['/kalkulator/lunas-utang', 'nav.debtPayoff'], ['/kalkulator/dana-pensiun', 'nav.retire']];
     return html`<div>
-        <section class="card hero">
-            <p class="smallcaps">${t(locale, 'home.eyebrow')}</p>
-            <h1>${t(locale, 'home.title')}</h1>
-            <p class="muted hero-sub">${t(locale, 'home.subtitle')}</p>
-            <div class="hero-proof">
-                <div>
-                    <p class="muted" style="font-size:13px; margin:0">${t(locale, 'home.heroProofCaption')}</p>
-                    ${sparkline()}
+        <section class="masthead">
+            <div class="masthead__copy">
+                <p class="smallcaps">${t(locale, 'home.eyebrow')}</p>
+                <h1>${t(locale, 'home.title')}</h1>
+                <p class="muted masthead__sub">${t(locale, 'home.subtitle')}</p>
+                <div class="masthead__cta">
+                    <button onClick=${e => go(e, '/kalkulator/reksa-dana')}>${t(locale, 'home.ctaCalc')}</button>
+                    <button class="btn-ghost" onClick=${e => go(e, '/portofolio')}>${t(locale, 'home.ctaApp')}</button>
                 </div>
+                <div class="masthead__popular">
+                    <span class="muted" style="font-size:12px">${t(locale, 'home.popularLabel')}</span>
+                    ${popular.map(([path, labelKey]) => html`<a class="hero-pop" href=${path} onClick=${e => go(e, path)} style="font-size:12px">${t(locale, labelKey)} →</a>`)}
+                </div>
+            </div>
+            <div class="masthead__visual">
+                <${ProductDiagram} settings=${settings} />
                 <${HeroCalc} settings=${settings} />
             </div>
-            <div class="hero-cta">
-                <button onClick=${e => go(e, '/kalkulator/reksa-dana')}>${t(locale, 'home.ctaCalc')}</button>
-                <button class="btn-ghost" onClick=${e => go(e, '/portofolio')}>${t(locale, 'home.ctaApp')}</button>
-            </div>
-            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:12px">
-                <span class="muted" style="font-size:12px">${t(locale, 'home.popularLabel')}</span>
-                ${[['/kalkulator/bunga-flat', 'nav.flatLoan'], ['/kalkulator/lunas-utang', 'nav.debtPayoff'], ['/kalkulator/dana-pensiun', 'nav.retire']].map(([path, labelKey]) => html`<a class="hero-pop" href=${path} onClick=${e => go(e, path)} style="font-size:12px">${t(locale, labelKey)} →</a>`)}
-            </div>
         </section>
+
+        <${StatStrip} settings=${settings} />
+
         <section class="card" aria-label=${t(locale, 'home.questionsTitle')}>
             <h2 style="margin:0; font-size:17px">${t(locale, 'home.questionsTitle')}</h2>
             <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px">
@@ -146,6 +141,9 @@ export function Landing({ settings }) {
                 })}
             </div>
         </section>
+
+        <${FlowSteps} settings=${settings} />
+
         <section aria-label=${t(locale, 'home.calcsLabel')}>
             <p class="smallcaps" style="margin:14px 0 8px">${t(locale, 'home.groupInvest')}</p>
             <div class="summary-cards">
@@ -166,20 +164,14 @@ export function Landing({ settings }) {
                 </article>
             </div>
         </section>
+
+        <${ConceptBand} settings=${settings} go=${go} />
+
         <section class="card">
             <div class="trust-row">
                 ${TRUST.map(k => html`<a class="trust-badge" href="#method">✓ ${t(locale, k)}</a>`)}
             </div>
             <details class="faq" style="margin-top:12px">
-                <summary>${t(locale, 'home.stepsTitle')}</summary>
-                <ol class="steps">
-                    <li><strong>${t(locale, 'home.step1Title')}</strong><br /><span class="muted">${t(locale, 'home.step1Desc')}</span></li>
-                    <li><strong>${t(locale, 'home.step2Title')}</strong><br /><span class="muted">${t(locale, 'home.step2Desc')}</span></li>
-                    <li><strong>${t(locale, 'home.step3Title')}</strong><br /><span class="muted">${t(locale, 'home.step3Desc')}</span></li>
-                    <li><strong>${t(locale, 'home.step4Title')}</strong><br /><span class="muted">${t(locale, 'home.step4Desc')}</span></li>
-                </ol>
-            </details>
-            <details class="faq">
                 <summary>${t(locale, 'home.faqTitle')}</summary>
                 ${FAQS.map(([q, a]) => html`<details class="faq"><summary>${t(locale, q)}</summary><p class="muted" style="font-size:13px">${t(locale, a)}</p></details>`)}
             </details>
