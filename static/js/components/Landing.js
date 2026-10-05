@@ -80,14 +80,10 @@ const GROUPS = [
 
 // Intent router: one click per question, asked in the user's own words.
 const QUESTIONS = [
-    { qKey: 'home.qMf', route: 'mutual-funds', path: '/kalkulator/reksa-dana', sample: null },
-    { qKey: 'home.qStocks', route: 'stocks', path: '/kalkulator/saham', sample: null },
-    { qKey: 'home.qTd', route: 'term-deposits', path: '/kalkulator/deposito', sample: null },
+    { qKey: 'home.qMf', route: 'mutual-funds', path: '/kalkulator/reksa-dana', sample: 'mutual-funds' },
+    { qKey: 'home.qStocks', route: 'stocks', path: '/kalkulator/saham', sample: 'stocks' },
+    { qKey: 'home.qTd', route: 'term-deposits', path: '/kalkulator/deposito', sample: 'term-deposits' },
     { qKey: 'home.qFlat', route: 'flat-loan', path: '/kalkulator/bunga-flat', sample: 'flat-loan' },
-    { qKey: 'home.qDebt', route: 'debt-payoff', path: '/kalkulator/lunas-utang', sample: 'debt-payoff' },
-    { qKey: 'home.qEv', route: 'ev', path: '/kalkulator/mobil-listrik', sample: 'ev' },
-    { qKey: 'home.qRentBuy', route: 'rent-buy', path: '/kalkulator/sewa-vs-beli', sample: 'rent-buy' },
-    { qKey: 'home.qRetire', route: 'retire', path: '/kalkulator/dana-pensiun', sample: 'retire' },
 ];
 
 const SAMPLE_BY_ROUTE = Object.fromEntries(GROUPS.flatMap(g => g.items).map(it => [it.route, it.sample]));
@@ -111,20 +107,26 @@ function calcRow(item, go, goUrl, locale) {
     return html`<div class="calc-index__row">
         <span class="calc-index__icon"><${CaseIcon} kind=${item.route} /></span>
         <div class="calc-index__body">
-            <a class="calc-index__title" href=${item.path} onClick=${e => go(e, item.path)}>${t(locale, item.titleKey)}</a>
+            <h3 class="calc-index__title">${t(locale, item.titleKey)}</h3>
             <span class="muted calc-index__desc">${t(locale, item.descKey)}</span>
         </div>
         <div class="calc-index__actions">
-            <a href=${url} onClick=${e => goUrl(e, url)}>${t(locale, 'home.cardOpenSample')}</a>
-            <a class="muted" href=${item.path} onClick=${e => go(e, item.path)}>${t(locale, 'home.cardOpenBlank')}</a>
+            <a class="calc-index__sample" href=${url} onClick=${e => goUrl(e, url)}>${t(locale, 'home.cardOpenSample')}</a>
+            <a class="calc-index__blank" href=${item.path} onClick=${e => go(e, item.path)}>${t(locale, 'home.cardOpenBlank')}</a>
         </div>
     </div>`;
 }
 
 export function Landing({ settings }) {
     const locale = settings.locale;
-    const go = (e, path) => { e.preventDefault(); navigate(path); };
+    const letBrowserHandle = (e) => e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey;
+    const go = (e, path) => {
+        if (letBrowserHandle(e)) return;
+        e.preventDefault();
+        navigate(path);
+    };
     const goUrl = (e, url) => {
+        if (letBrowserHandle(e)) return;
         e.preventDefault();
         const u = new URL(url, window.location.origin);
         navigate(u.pathname + u.search);
@@ -138,9 +140,6 @@ export function Landing({ settings }) {
     const primary = hasPortfolio
         ? { to: '/portofolio', labelKey: 'home.ctaApp', sample: false }
         : { to: samplePath, labelKey: 'home.ctaCalc', sample: true };
-    const secondary = hasPortfolio
-        ? { to: '/kalkulator/reksa-dana', labelKey: 'home.ctaNew', sample: false }
-        : { to: '/portofolio', labelKey: 'home.ctaApp', sample: false };
     const openCta = (e, cta) => (cta.sample ? goUrl(e, cta.to) : go(e, cta.to));
 
     return html`<div>
@@ -151,7 +150,7 @@ export function Landing({ settings }) {
                 <p class="muted masthead__sub">${t(locale, 'home.subtitle')}</p>
                 <div class="masthead__cta">
                     <a class="btn-primary" href=${primary.to} onClick=${e => openCta(e, primary)}>${t(locale, primary.labelKey)}</a>
-                    <a class="masthead__cta-link" href=${secondary.to} onClick=${e => openCta(e, secondary)}>${t(locale, secondary.labelKey)}</a>
+                    <a class="masthead__cta-link" href="#calculator-index">${t(locale, 'home.ctaBrowse')}</a>
                 </div>
             </div>
 
@@ -161,23 +160,23 @@ export function Landing({ settings }) {
 
             <section class="card home-questions" aria-label=${t(locale, 'home.questionsTitle')}>
                 <h2 style="margin:0; font-size:17px">${t(locale, 'home.questionsTitle')}</h2>
+                <p class="home-questions__hint muted">${t(locale, 'home.quickStartHint')}</p>
                 <div class="home-questions__chips">
                     ${QUESTIONS.map(q => {
-                        const sample = q.sample ? SAMPLE_BY_ROUTE[q.sample] : null;
-                        const url = sample ? buildShareUrl(q.route, sample()) : q.path;
-                        const open = sample ? (e => goUrl(e, url)) : (e => go(e, url));
-                        return html`<a class="trust-badge" href=${url} onClick=${open}>${t(locale, q.qKey)} →</a>`;
+                        const url = buildShareUrl(q.route, SAMPLE_BY_ROUTE[q.sample]());
+                        return html`<a class="intent-link" href=${url} onClick=${e => goUrl(e, url)}>${t(locale, q.qKey)} <span aria-hidden="true">→</span></a>`;
                     })}
                 </div>
+                <a class="home-questions__browse" href="#calculator-index">${t(locale, 'home.viewAllCalcs')} →</a>
             </section>
         </section>
 
         <${StatStrip} settings=${settings} />
 
-        <section class="card calc-index" aria-label=${t(locale, 'home.calcsLabel')}>
-            <p class="smallcaps" style="margin:0">${t(locale, 'home.calcsLabel')}</p>
+        <section class="card calc-index" id="calculator-index" aria-label=${t(locale, 'home.calcsLabel')}>
+            <h2 class="calc-index__heading">${t(locale, 'home.calcsLabel')}</h2>
             ${GROUPS.map(g => html`<div class="calc-index__group">
-                <p class="smallcaps calc-index__group-label">${t(locale, g.labelKey)}</p>
+                <h3 class="smallcaps calc-index__group-label">${t(locale, g.labelKey)}</h3>
                 ${g.items.map(it => calcRow(it, go, goUrl, locale))}
             </div>`)}
         </section>
@@ -186,7 +185,7 @@ export function Landing({ settings }) {
 
         <section class="card" id="faq">
             <div class="trust-row">
-                ${TRUST.map(([key, anchor]) => html`<a class="trust-badge" href=${anchor}>✓ ${t(locale, key)}</a>`)}
+                ${TRUST.map(([key, anchor]) => html`<a class="trust-badge" href=${anchor} onClick=${anchor === '#method' ? () => { const method = document.getElementById('method'); if (method) method.open = true; } : null}>✓ ${t(locale, key)}</a>`)}
             </div>
             <h2 class="faq-heading">${t(locale, 'home.faqTitle')}</h2>
             <div class="faq-list">

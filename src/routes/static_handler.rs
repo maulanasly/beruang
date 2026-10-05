@@ -85,8 +85,8 @@ fn page_meta(path: &str) -> PageMeta {
         "" => PageMeta {
             title_id: "Beruang — Kalkulator Return Investasi, Kredit & Pensiun",
             title_en: "Beruang — Free Investment Return & Finance Calculators",
-            desc_id: "Lihat return asli reksa dana, saham, dan depositomu, lalu uji bunga flat, pelunasan utang, sewa-vs-beli, dan target pensiun. Gratis, tanpa akun, catatan tersimpan di browser-mu.",
-            desc_en: "See what your mutual funds, stocks, and deposits really earn, then test flat loans, debt payoff, rent-vs-buy, and retirement. Free, no account; records stay in your browser.",
+            desc_id: "Hitung hasil reksa dana, saham, dan deposito. Bandingkan biaya kredit, rencanakan pelunasan utang, dan cek target pensiun. Gratis, tanpa akun; catatan tersimpan di browser.",
+            desc_en: "Track returns from mutual funds, stocks, and deposits. Compare loan costs, plan debt payoff, and check your retirement target. Free, no account; records stay in your browser.",
             canonical: "/",
             hreflang_en: None,
             og_image: "og-image.png",
@@ -227,7 +227,7 @@ fn json_ld_for(title: &str, description: &str, meta: &PageMeta, canonical: &str)
                 {
                     "@type": "Question",
                     "name": "Apakah angkaku dikirim ke server?",
-                    "acceptedAnswer": { "@type": "Answer", "text": "Catatanmu tersimpan di browser, bukan di akun. Angka dikirim ke server hanya untuk dihitung. Tautan berbagi yang kamu buat memuat angkamu di URL." }
+                    "acceptedAnswer": { "@type": "Answer", "text": "Catatan portofoliomu tersimpan di browser. Saat menghitung, angka dikirim ke server. Tautan berbagi memuat angkamu dalam URL yang dikodekan, bukan dienkripsi; bagikan hanya kepada orang yang kamu percaya." }
                 },
                 {
                     "@type": "Question",
@@ -247,7 +247,7 @@ fn json_ld_for(title: &str, description: &str, meta: &PageMeta, canonical: &str)
                 {
                     "@type": "Question",
                     "name": "Mulai dari kalkulator mana?",
-                    "acceptedAnswer": { "@type": "Answer", "text": "Jawab “Mau menghitung apa?” di atas — tiap pertanyaan membuka alat yang tepat, sudah terisi contoh yang bisa dihitung." }
+                    "acceptedAnswer": { "@type": "Answer", "text": "Coba salah satu contoh di atas, atau pilih kalkulator lain dari daftar lengkap di bawah." }
                 }
             ]
         });

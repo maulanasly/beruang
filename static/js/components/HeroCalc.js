@@ -14,6 +14,7 @@ function monthDate(base, back) {
 // carrying the same inputs into the full calculator.
 export function HeroCalc({ settings }) {
     const locale = settings.locale;
+    const currency = settings.currency || 'IDR';
     const [monthly, setMonthly] = useState('1000000');
     const [months, setMonths] = useState('12');
     const [finalValue, setFinalValue] = useState('13200000');
@@ -51,9 +52,9 @@ export function HeroCalc({ settings }) {
     return html`<div class="card hero-widget">
         <div class="smallcaps" style="margin-bottom:8px">${t(locale, 'home.heroWidgetTitle')}</div>
         <div class="entry-grid" style="--cols:3">
-            <label>${t(locale, 'home.heroWidgetMonthly')} <input type="number" min="0" value=${monthly} onInput=${e=>setMonthly(e.target.value)} /></label>
+            <label>${t(locale, 'home.heroWidgetMonthly')} (${currency}) <input type="number" min="0" inputmode="decimal" value=${monthly} onInput=${e=>setMonthly(e.target.value)} /></label>
             <label>${t(locale, 'home.heroWidgetMonths')} <input type="number" min="2" max="120" value=${months} onInput=${e=>setMonths(e.target.value)} /></label>
-            <label>${t(locale, 'home.heroWidgetFinal')} <input type="number" min="0" value=${finalValue} onInput=${e=>setFinalValue(e.target.value)} /></label>
+            <label>${t(locale, 'home.heroWidgetFinal')} (${currency}) <input type="number" min="0" inputmode="decimal" value=${finalValue} onInput=${e=>setFinalValue(e.target.value)} /></label>
         </div>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px">
             <button class="btn-sm" onClick=${onCount} disabled=${loading}>${loading ? t(locale, 'common.calculating') : t(locale, 'home.heroWidgetGo')}</button>
