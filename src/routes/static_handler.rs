@@ -226,23 +226,28 @@ fn json_ld_for(title: &str, description: &str, meta: &PageMeta, canonical: &str)
             "mainEntity": [
                 {
                     "@type": "Question",
-                    "name": "Apakah kalkulator Beruang gratis?",
-                    "acceptedAnswer": { "@type": "Answer", "text": "Ya. Semua kalkulator gratis, tanpa daftar, dan datamu tersimpan di perangkatmu sendiri." }
+                    "name": "Apakah angkaku dikirim ke server?",
+                    "acceptedAnswer": { "@type": "Answer", "text": "Catatanmu tersimpan di browser, bukan di akun. Angka dikirim ke server hanya untuk dihitung. Tautan berbagi yang kamu buat memuat angkamu di URL." }
                 },
                 {
                     "@type": "Question",
                     "name": "Apa itu XIRR?",
-                    "acceptedAnswer": { "@type": "Answer", "text": "XIRR adalah return tahunan yang memperhitungkan setoran dan penarikan pada tanggal yang berbeda." }
+                    "acceptedAnswer": { "@type": "Answer", "text": "XIRR adalah return per tahun yang memperhitungkan kapan tiap setoran masuk. Rupiah yang masuk lebih awal bekerja lebih lama, jadi bobotnya lebih besar." }
                 },
                 {
                     "@type": "Question",
                     "name": "Dari mana harga saham berasal?",
-                    "acceptedAnswer": { "@type": "Answer", "text": "Harga live IDX beserta riwayatnya diambil dari Yahoo Finance saat kamu menekan tombol kuotasi." }
+                    "acceptedAnswer": { "@type": "Answer", "text": "Harga live IDX beserta riwayatnya diambil dari Yahoo Finance saat kamu menekan tombol kuotasi. Data bisa tertunda." }
                 },
                 {
                     "@type": "Question",
-                    "name": "Kalkulator apa saja yang tersedia selain investasi?",
-                    "acceptedAnswer": { "@type": "Answer", "text": "Ada pengungkap tarif flat, perencana pelunasan utang avalanche vs snowball, perbandingan sewa vs beli rumah, dan perencana target dana pensiun." }
+                    "name": "Apakah ini nasihat keuangan?",
+                    "acceptedAnswer": { "@type": "Answer", "text": "Bukan. Beruang adalah sarana edukasi. Data pasar bersifat indikatif dan bisa tertunda." }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Mulai dari kalkulator mana?",
+                    "acceptedAnswer": { "@type": "Answer", "text": "Jawab “Mau menghitung apa?” di atas — tiap pertanyaan membuka alat yang tepat, sudah terisi contoh yang bisa dihitung." }
                 }
             ]
         });
@@ -567,6 +572,35 @@ mod tests {
         assert!(content_type_for("favicon.svg").contains("svg"));
         assert!(content_type_for("sitemap.xml").contains("charset=utf-8"));
         assert!(!app_version().is_empty());
+    }
+
+    #[test]
+    fn home_faq_json_ld_matches_visible_locale() {
+        // Structured data must never drift from what the homepage shows.
+        let locale = include_str!("../../static/js/locales/id-ID.js");
+        let meta = page_meta("");
+        let out = json_ld_for(meta.title_id, meta.desc_id, &meta, "http://localhost:8000");
+        let parsed: serde_json::Value = serde_json::from_str(&out).unwrap();
+        let faq = parsed
+            .as_array()
+            .and_then(|arr| arr.iter().find(|x| x["@type"] == "FAQPage"))
+            .expect("home page emits an FAQPage block");
+        let items = faq["mainEntity"]
+            .as_array()
+            .expect("mainEntity is an array");
+        assert_eq!(items.len(), 5);
+        for item in items {
+            let question = item["name"].as_str().unwrap();
+            let answer = item["acceptedAnswer"]["text"].as_str().unwrap();
+            assert!(
+                locale.contains(question),
+                "FAQ question missing from id-ID locale: {question}"
+            );
+            assert!(
+                locale.contains(answer),
+                "FAQ answer missing from id-ID locale: {answer}"
+            );
+        }
     }
 
     #[test]

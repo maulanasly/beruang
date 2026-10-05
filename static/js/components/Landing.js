@@ -92,8 +92,19 @@ const QUESTIONS = [
 
 const SAMPLE_BY_ROUTE = Object.fromEntries(GROUPS.flatMap(g => g.items).map(it => [it.route, it.sample]));
 
-const TRUST = ['home.trustNoSignup', 'home.trustLocal', 'home.trustExact', 'home.trustAdj'];
-const FAQS = [['home.faq1q', 'home.faq1a'], ['home.faq2q', 'home.faq2a'], ['home.faq3q', 'home.faq3a'], ['home.faq4q', 'home.faq4a']];
+// Trust badges point at the specific FAQ or method section that backs them.
+const TRUST = [
+    ['home.trustLocal', '#faq-server'],
+    ['home.trustExact', '#method'],
+    ['home.trustAdvice', '#faq-advice'],
+];
+const FAQS = [
+    ['faq-server', 'home.faq1q', 'home.faq1a'],
+    ['faq-xirr', 'home.faq2q', 'home.faq2a'],
+    ['faq-prices', 'home.faq3q', 'home.faq3a'],
+    ['faq-advice', 'home.faq4q', 'home.faq4a'],
+    ['faq-start', 'home.faq5q', 'home.faq5a'],
+];
 
 function calcRow(item, go, goUrl, locale) {
     const url = buildShareUrl(item.route, item.sample());
@@ -173,23 +184,26 @@ export function Landing({ settings }) {
 
         <${ConceptBand} settings=${settings} go=${go} />
 
-        <section class="card">
+        <section class="card" id="faq">
             <div class="trust-row">
-                ${TRUST.map(k => html`<a class="trust-badge" href="#method">✓ ${t(locale, k)}</a>`)}
+                ${TRUST.map(([key, anchor]) => html`<a class="trust-badge" href=${anchor}>✓ ${t(locale, key)}</a>`)}
             </div>
-            <details class="faq" style="margin-top:12px">
-                <summary>${t(locale, 'home.faqTitle')}</summary>
-                ${FAQS.map(([q, a]) => html`<details class="faq"><summary>${t(locale, q)}</summary><p class="muted" style="font-size:13px">${t(locale, a)}</p></details>`)}
-            </details>
-            <div id="method" style="margin-top:12px">
-                <h2 style="margin:0 0 8px; font-size:17px">${t(locale, 'method.title')}</h2>
-                <p class="muted" style="font-size:13px; margin:0 0 6px">${t(locale, 'method.xirr')}</p>
+            <h2 class="faq-heading">${t(locale, 'home.faqTitle')}</h2>
+            <div class="faq-list">
+                ${FAQS.map(([id, q, a]) => html`<details class="faq" id=${id}>
+                    <summary>${t(locale, q)}</summary>
+                    <p class="muted" style="font-size:13px">${t(locale, a)}</p>
+                </details>`)}
+            </div>
+            <details class="method" id="method">
+                <summary>${t(locale, 'method.title')}</summary>
+                <p class="muted" style="font-size:13px; margin:8px 0 6px">${t(locale, 'method.xirr')}</p>
                 <p class="muted" style="font-size:13px; margin:0 0 6px">${t(locale, 'method.adjClose')}</p>
                 <p class="muted" style="font-size:13px; margin:0 0 6px">${t(locale, 'method.flat')}</p>
                 <p class="muted" style="font-size:13px; margin:0 0 6px">${t(locale, 'method.wealth')}</p>
                 <p class="muted" style="font-size:13px; margin:0 0 6px">${t(locale, 'method.retire')}</p>
                 <p class="muted" style="font-size:13px; margin:0">${t(locale, 'method.disclaimer')}</p>
-            </div>
+            </details>
         </section>
     </div>`;
 }
