@@ -58,7 +58,7 @@ export function Ev({ settings }) {
             data.calculatedAt = new Date().toISOString();
             setResult(data);
             if (inputsOverride) setForm({ ...DEFAULTS, ...inputsOverride });
-            requestAnimationFrame(() => document.querySelector('[data-results]')?.scrollIntoView());
+            requestAnimationFrame(() => { document.querySelector('[data-results]')?.scrollIntoView(); document.getElementById('results-heading')?.focus({ preventScroll: true }); });
         } catch (e) { setError(e.detail ? JSON.stringify(e.detail) : e.message); }
         finally { setLoading(false); }
     }
@@ -88,7 +88,8 @@ export function Ev({ settings }) {
             </div>
             ${error && html`<p style="color:var(--danger)" role="alert">${error}</p>`}
         </div>
-        ${result && html`<div data-results class="results-anchor">
+        ${result && html`<div data-results class="results-anchor" aria-labelledby="results-heading">
+            <h2 id="results-heading" class="results-heading" tabindex="-1">${t(locale, 'results.title')}</h2>
             <div class="summary-cards">
                 <div class="card"><div class="smallcaps">${t(locale, 'ev.monthlyIce')}</div><div class="amount">${formatCurrency(result.monthly_ice, locale, currency)}</div></div>
                 <div class="card"><div class="smallcaps">${t(locale, 'ev.monthlyEv')}</div><div class="amount">${formatCurrency(result.monthly_ev, locale, currency)}</div></div>

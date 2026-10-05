@@ -5,5 +5,5 @@ import { t } from '../i18n.js';
 // e.g. `glossary.xirr`. Falls back to plain text when the key is missing.
 export function InfoTip({ locale, tipKey, text }) {
     const tip = text || t(locale, tipKey || 'glossary.moM');
-    return html`<span class="info-tip" data-tip=${tip} tabindex="0" title=${tip}>ⓘ</span>`;
+    return html`<button type="button" class="info-tip" data-tip=${tip} aria-label=${tip} title=${tip}>ⓘ</button>`;
 }

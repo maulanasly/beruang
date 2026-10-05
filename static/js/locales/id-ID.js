@@ -37,6 +37,11 @@ export default {
     showRawJson: 'Tampilkan JSON Mentah',
     hideRawJson: 'Sembunyikan JSON Mentah',
   },
+  results: {
+    title: 'Hasil Anda',
+    staleTitle: 'Input berubah.',
+    staleBody: 'Hitung ulang untuk memperbarui hasil ini.',
+  },
   form: {
     date: 'Tanggal',
     installmentAmount: 'Jumlah Cicilan',
@@ -46,6 +51,7 @@ export default {
     dividends: 'Dividen',
     dividendYield: 'Imbal Hasil Dividen (%)',
     apy: 'APY',
+    percentExample: 'Masukkan persentase, misalnya 6 untuk 6%.',
     termMonths: 'Jangka Waktu (bulan)',
     maturityDate: 'Tanggal Jatuh Tempo',
     maturityAuto: 'Otomatis: mulai + tenor',
@@ -83,6 +89,7 @@ export default {
     seriesInvested: 'Total Kontribusi',
     seriesValue: 'Nilai Pasar Saat Ini',
     seriesExpected: 'Nilai Ekspektasi',
+    summary: 'Terkini: {value} dibandingkan {invested}; selisih {difference}.',
   },
   overview: {
     totalInvested: 'Total Investasi',
@@ -94,6 +101,7 @@ export default {
     perAsset: 'Per Kelas Aset',
     invested: 'Investasi',
     valueByAsset: 'Nilai per Kelas Aset',
+    allocationSummary: '{asset} adalah alokasi terbesar Anda sebesar {percent}%.',
     subtitle:
       'Portofolio Anda sekilas: berapa yang telah Anda masukkan, berapa nilainya kini, dan bagaimana dana terbagi lintas kelas aset.',
     noData: 'Tambahkan entri ke halaman aset Anda dan hitung hasil untuk mengisi ringkasan ini.',
@@ -106,6 +114,10 @@ export default {
     estimated: 'Estimasi — belum dihitung',
     dataWindow: 'Data {from} – {to}',
     calculatedAt: 'Dihitung {time}',
+    attentionTitle: 'Perlu perhatian',
+    attentionEdited: '{assets} berubah sejak hitungan terakhir.',
+    attentionEstimated: '{assets} masih berupa estimasi.',
+    attentionAction: 'Hitung ulang {asset}',
   },
   ledger: {
     empty: 'Isi baris di atas dan klik Hitung Hasil untuk melihat buku besar bulanan Anda di sini.',
@@ -113,7 +125,7 @@ export default {
   error: {
     atLeastOneRow: 'Setidaknya satu baris buku besar diperlukan.',
     everyRowDate: 'Setiap baris harus menyertakan tanggal.',
-    badApy: 'APY harus di antara 0 dan 1 (mis. 0,06 = 6%).',
+    badApy: 'APY harus antara 0% dan 100%.',
     badAmount: 'Nominal tidak boleh negatif.',
     badMaturity: 'Tanggal jatuh tempo harus pada atau setelah tanggal mulai.',
     validationFailed: 'Validasi gagal. Mohon perbaiki bidang berikut.',
@@ -139,6 +151,8 @@ export default {
     updatedRow: 'Memperbarui baris {row} menggunakan {symbol} ({currency}).',
     helperNote:
       'Kode saham memakai format ticker IDX, mis. BBCA.JK (BBCA di Bursa Efek Indonesia). Harga bersumber dari perusahaan terdaftar Kompas 100.',
+    ledgerTitle: 'Buku besar investasi',
+    ledgerHint: 'Tambahkan satu baris untuk setiap setoran atau pembaruan nilai. Gunakan harga langsung di atas saat perlu memperbarui.',
   },
   stock: {
     codesCount: '{count} kode saham',
@@ -325,6 +339,7 @@ export default {
     title: 'Cadangan Seluruh Portofolio',
     exportAll: 'Cadangkan Semua Data',
     pasteHint: 'Tempel JSON cadangan di sini, atau pilih file di atas',
+    pasteAdvanced: 'Tempel JSON sebagai gantinya',
     validSummary: 'Cadangan berisi {assets} kelas aset dan {rows} baris.',
     invalidCount: '{errors} masalah dalam cadangan ini',
     confirmRestore: 'Konfirmasi Pemulihan',
@@ -363,7 +378,7 @@ export default {
     mfSubtitle: 'MoM yang disesuaikan arus kas \u00b7 XIRR memakai tanggal persis.',
     stSubtitle: 'MoM + ROI + XIRR \u00b7 dividend yield opsional (%).',
     tdSubtitle: 'Bunga prorata APY \u00b7 pelacak jatuh tempo & rollover.',
-    apyHint: 'mis. 0,06 = 6%',
+    apyHint: 'mis. 6%',
     apyAppliesAll: 'Berlaku untuk semua baris di bawah',
   },
   home: {

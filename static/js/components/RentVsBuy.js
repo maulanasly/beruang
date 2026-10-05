@@ -149,7 +149,7 @@ export function RentVsBuy({ settings }) {
             };
             setResult(data);
             if (inputsOverride) setForm({ ...inputs });
-            requestAnimationFrame(() => document.querySelector('[data-results]')?.scrollIntoView());
+            requestAnimationFrame(() => { document.querySelector('[data-results]')?.scrollIntoView(); document.getElementById('results-heading')?.focus({ preventScroll: true }); });
         } catch (e) { setError(e.detail ? JSON.stringify(e.detail) : e.message); }
         finally { setLoading(false); }
     }
@@ -342,7 +342,8 @@ export function RentVsBuy({ settings }) {
             </div>
             ${error && html`<p style="color:var(--danger)" role="alert">${error}</p>`}
         </div>
-        ${result && html`<div data-results class="results-anchor">
+        ${result && html`<div data-results class="results-anchor" aria-labelledby="results-heading">
+            <h2 id="results-heading" class="results-heading" tabindex="-1">${t(locale, 'results.title')}</h2>
             ${v && html`<div class="card" style=${`border-left:4px solid ${v.tone}`}>
                 <div class="amount" style=${`font-size:17px; color:${v.tone}`}>${v.text}</div>
                 ${why && html`<div style="font-size:13px; margin-top:4px">${why}</div>`}

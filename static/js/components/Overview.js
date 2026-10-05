@@ -179,11 +179,29 @@ export function Overview({ settings }) {
         editedAny ? editedText : null,
     ].filter(Boolean).join(' · ');
 
+    const attention = [
+        mfEdited || mfEst ? { name: t(locale, 'nav.mutualFunds'), to: '/kalkulator/reksa-dana', edited: mfEdited } : null,
+        stEdited || stEst ? { name: t(locale, 'nav.stocks'), to: '/kalkulator/saham', edited: stEdited } : null,
+        tdEdited || tdEst ? { name: t(locale, 'nav.termDeposits'), to: '/kalkulator/deposito', edited: tdEdited } : null,
+    ].filter(Boolean);
+    const editedNames = attention.filter(a => a.edited).map(a => a.name).join(', ');
+    const estimatedNames = attention.filter(a => !a.edited).map(a => a.name).join(', ');
+
     return html`<div>
         <div class="card">
             <h1 style="font-size:22px; margin:0 0 4px">${t(locale, 'nav.portfolio')}</h1>
             <p class="muted">${t(locale, 'overview.subtitle')}</p>
             ${provenance && html`<p class="muted" style="font-size:12px">${provenance}</p>`}
+            ${attention.length > 0 && html`<div class="attention-panel" role="status">
+                <div>
+                    <strong>${t(locale, 'overview.attentionTitle')}</strong>
+                    ${editedNames && html`<span class="muted"> ${t(locale, 'overview.attentionEdited', { assets: editedNames })}</span>`}
+                    ${estimatedNames && html`<span class="muted"> ${t(locale, 'overview.attentionEstimated', { assets: estimatedNames })}</span>`}
+                </div>
+                <div class="attention-panel__actions">
+                    ${attention.map(a => html`<a href=${a.to} onClick=${e=>go(e,a.to)}>${t(locale, 'overview.attentionAction', { asset: a.name })} →</a>`)}
+                </div>
+            </div>`}
             <div class="summary-cards">
                 <div class="card"><div class="smallcaps">${t(locale, 'overview.totalInvested')} <${InfoTip} locale=${locale} tipKey="glossary.capitalInvested" /></div><div class="amount">${formatCurrency(totalInv, locale, settings.currency)}</div></div>
                 <div class="card"><div class="smallcaps">${t(locale, 'overview.totalValue')}</div><div class="amount">${formatCurrency(total, locale, settings.currency)}</div></div>

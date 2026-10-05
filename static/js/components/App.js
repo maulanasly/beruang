@@ -180,7 +180,7 @@ export function App() {
                             <span class="topnav__label" aria-hidden="true">${t(locale, 'nav.calculators')}</span>
                             ${calcLinks.map(l => html`<a href=${l.to} class=${route===l.key?'active sub':'sub'} aria-current=${route===l.key ? 'page' : null} onClick=${e=>go(e, l.to)}>${t(locale, l.labelKey)}</a>`)}
                         </div>
-                        <a href="/portofolio" class=${route==='portofolio'?'active':''} aria-current=${route==='portofolio' ? 'page' : null} onClick=${e=>go(e, '/portofolio')}>${t(locale, 'nav.portfolio')}</a>
+                        <a href="/portofolio" class=${route==='portofolio'?'active topnav__portfolio':'topnav__portfolio'} aria-current=${route==='portofolio' ? 'page' : null} onClick=${e=>go(e, '/portofolio')}>${t(locale, 'nav.portfolio')}</a>
                     </nav>
                 </div>
             </header>

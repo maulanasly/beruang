@@ -15,6 +15,7 @@ import { HowTo } from './HowTo.js';
 import { Crumbs } from './Crumbs.js';
 import { RelatedCalcs } from './RelatedCalcs.js';
 import { InfoTip } from './InfoTip.js';
+import { ResultsSection, ResultStatus } from './ResultStatus.js';
 
 function addMonths(dateString, months) {
     if (!dateString) return '';
@@ -142,18 +143,24 @@ export function TermDeposits({ settings }) {
             const l=loadLedgers(); l['term-deposits']={apy:Number(rate), entries:rows}; l.results['term-deposits']=data; saveLedgers(l);
             if (rowsOverride) setEntries(rowsOverride);
             if (apyOverride !== undefined) setApy(apyOverride);
-            requestAnimationFrame(() => document.querySelector('[data-results]')?.scrollIntoView());
+            requestAnimationFrame(() => {
+                document.querySelector('[data-results]')?.scrollIntoView();
+                document.getElementById('results-heading')?.focus({ preventScroll: true });
+            });
         }catch(e){ setError(String(e.detail ?? e.message)); } finally{ setLoading(false); }
     }
 
     const locale = settings.locale;
+    const stale = !!result?.calcSnapshot && calcSnapshot('term-deposits', entries, apy) !== result.calcSnapshot;
     return html`<div>
         <${Crumbs} locale=${locale} currentKey="nav.termDeposits" />
         <div class="page-head"><h1>${t(locale, 'nav.termDeposits')}</h1><p class="muted">${t(locale, 'calc.tdSubtitle')} <${InfoTip} locale=${locale} tipKey="glossary.apy" /> <${InfoTip} locale=${locale} tipKey="glossary.depositMaturity" /></p></div>
         <${HowTo} locale=${locale} startOpen=${!result} steps=${[t(locale,'howto.td1'), t(locale,'howto.td2'), t(locale,'howto.td3')]} />
         <div class="card">
-            <label>${t(locale, 'form.apy')} (${t(locale, 'calc.apyHint')}) <${InfoTip} locale=${locale} tipKey="glossary.apy" /> <input type="number" step="0.001" value=${apy} onInput=${e=>setApySave(e.target.value)} /></label>
-            <p class="muted" style="font-size:12px; margin:6px 0 0">${t(locale, 'calc.apyAppliesAll')}</p>
+            <label>${t(locale, 'form.apy')} (${t(locale, 'calc.apyHint')}) <${InfoTip} locale=${locale} tipKey="glossary.apy" />
+                <input type="number" min="0" max="100" step="0.01" value=${(Number(apy) * 100).toFixed(2)} onInput=${e=>setApySave((Number(e.target.value) || 0) / 100)} aria-describedby="apy-help" />
+            </label>
+            <p id="apy-help" class="muted" style="font-size:12px; margin:6px 0 0">${t(locale, 'calc.apyAppliesAll')} ${t(locale, 'form.percentExample')}</p>
         </div>
         <div class="card">
             ${entries.map((e,idx)=> html`<div class="deposit-row">
@@ -178,11 +185,12 @@ export function TermDeposits({ settings }) {
                 <${ShareLink} route="term-deposits" state=${{ entries, apy: Number(apy) || 0 }} locale=${locale} />
                 <span class="muted" style="font-size:12px" title=${t(locale, 'share.autoCalc')}>${t(locale, 'share.rowCount', { count: entries.length })}</span>
             </div>
+            <${ResultStatus} locale=${locale} stale=${stale} />
             ${error && html`<p style="color:var(--danger)" role="alert">${error}</p>`}
             ${notice && html`<p style="color:var(--success); font-size:13px" role="status">${notice}</p>`}
         </div>
         <${LedgerIo} asset="term-deposits" entries=${entries} locale=${locale} onImport=${importRows} />
-        ${result && html`<div data-results class="results-anchor">
+        ${result && html`<${ResultsSection} locale=${locale} stale=${stale}>
             <${MomentumKpi} ledger=${result.ledger} summary=${result.summary} asset="term-deposits" settings=${settings} />
             <${AssetChart} ledger=${result.ledger} asset="term-deposits" settings=${settings} />
             <${MaturityPanel} summary=${result.summary} ledger=${result.ledger} settings=${settings} onRollover=${rollover} />
@@ -202,7 +210,7 @@ export function TermDeposits({ settings }) {
                 {key:'current_value', label:t(locale, 'column.currentValue'), fmt:'currency'},
                 {key:'maturity_status', label:t(locale, 'depositMaturity.status')},
             ]} />
-        </div>`}
+        </${ResultsSection}>`}
         <${RelatedCalcs} current="term-deposits" settings=${settings} />
     </div>`;
 }

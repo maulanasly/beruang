@@ -1,7 +1,7 @@
 import { html } from '../vendor/preact-htm-signals.js';
 import { t } from '../i18n.js';
 import { navigate } from '../router.js';
-import { SAMPLE_MF, SAMPLE_STOCKS, SAMPLE_TD } from '../store.js';
+import { SAMPLE_MF, SAMPLE_STOCKS, SAMPLE_TD, loadLedgers } from '../store.js';
 import { buildShareUrl } from '../share.js';
 import { HeroCalc } from './HeroCalc.js';
 import { ProductDiagram, StatStrip, FlowSteps, ConceptBand, CalcThumb } from './HomeVisuals.js';
@@ -111,6 +111,14 @@ export function Landing({ settings }) {
         navigate(u.pathname + u.search);
     };
     const popular = [['/kalkulator/bunga-flat', 'nav.flatLoan'], ['/kalkulator/lunas-utang', 'nav.debtPayoff'], ['/kalkulator/dana-pensiun', 'nav.retire']];
+    const ledgers = loadLedgers();
+    const hasPortfolio = Boolean(
+        ledgers['mutual-funds']?.length || ledgers.stocks?.length || ledgers['term-deposits']?.entries?.length,
+    );
+    const primaryPath = hasPortfolio ? '/portofolio' : '/kalkulator/reksa-dana';
+    const primaryLabel = hasPortfolio ? t(locale, 'home.ctaApp') : t(locale, 'home.ctaCalc');
+    const secondaryPath = hasPortfolio ? '/kalkulator/reksa-dana' : '/portofolio';
+    const secondaryLabel = hasPortfolio ? t(locale, 'home.ctaCalc') : t(locale, 'home.ctaApp');
     return html`<div>
         <section class="masthead">
             <div class="masthead__copy">
@@ -118,8 +126,8 @@ export function Landing({ settings }) {
                 <h1>${t(locale, 'home.title')}</h1>
                 <p class="muted masthead__sub">${t(locale, 'home.subtitle')}</p>
                 <div class="masthead__cta">
-                    <button onClick=${e => go(e, '/kalkulator/reksa-dana')}>${t(locale, 'home.ctaCalc')}</button>
-                    <button class="btn-ghost" onClick=${e => go(e, '/portofolio')}>${t(locale, 'home.ctaApp')}</button>
+                    <button onClick=${e => go(e, primaryPath)}>${primaryLabel}</button>
+                    <button class="btn-ghost" onClick=${e => go(e, secondaryPath)}>${secondaryLabel}</button>
                 </div>
                 <div class="masthead__popular">
                     <span class="muted" style="font-size:12px">${t(locale, 'home.popularLabel')}</span>

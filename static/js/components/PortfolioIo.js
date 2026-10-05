@@ -181,13 +181,16 @@ export function PortfolioIo({ settings }) {
         <div style="display:flex; gap:8px; flex-wrap:wrap; margin:8px 0">
             <button class="btn-ghost btn-sm" onClick=${exportAll}>${t(locale, 'backup.exportAll')}</button>
         </div>
-        <textarea value=${text} onInput=${e => { setText(e.target.value); setFileMeta(''); setPending(null); }} placeholder=${t(locale, 'backup.pasteHint')} aria-label=${t(locale, 'backup.title')} style="width:100%; min-height:96px; font-family:monospace; font-size:12px"></textarea>
         <div style="margin-top:8px">
             <label class="muted" style="font-size:12px">${t(locale, 'io.chooseFile')}
                 <input type="file" accept=".json,application/json" onChange=${onFile} style="font-size:12px" />
             </label>
         </div>
         ${fileMeta && html`<p class="muted" style="font-size:12px; margin:4px 0 0">${fileMeta}</p>`}
+        <details style="margin-top:10px">
+            <summary>${t(locale, 'backup.pasteAdvanced')}</summary>
+            <textarea value=${text} onInput=${e => { setText(e.target.value); setFileMeta(''); setPending(null); }} placeholder=${t(locale, 'backup.pasteHint')} aria-label=${t(locale, 'backup.title')} style="width:100%; min-height:96px; margin-top:8px; font-family:monospace; font-size:12px"></textarea>
+        </details>
         ${!pending && html`<div style="margin-top:8px"><button class="btn-sm" onClick=${reviewBackup} disabled=${!text.trim()}>${t(locale, 'backup.reviewRestore')}</button></div>`}
         ${pending && html`<div class="io-preview">
             <p style="font-size:13px">${t(locale, 'backup.validSummary', { assets: pending.assetCount, rows: pending.rowCount })}</p>

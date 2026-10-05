@@ -11,6 +11,7 @@ import { HowTo } from './HowTo.js';
 import { Crumbs } from './Crumbs.js';
 import { RelatedCalcs } from './RelatedCalcs.js';
 import { InfoTip } from './InfoTip.js';
+import { ResultsSection, ResultStatus } from './ResultStatus.js';
 
 export function MutualFunds({ settings }) {
     const [entries, setEntries] = useState(()=> loadLedgers()['mutual-funds']);
@@ -75,12 +76,16 @@ export function MutualFunds({ settings }) {
             setResult(data);
             const ledgers = loadLedgers(); ledgers['mutual-funds']=rows; ledgers.results['mutual-funds']=data; saveLedgers(ledgers);
             if (rowsOverride) setEntries(rowsOverride);
-            requestAnimationFrame(() => document.querySelector('[data-results]')?.scrollIntoView());
+            requestAnimationFrame(() => {
+                document.querySelector('[data-results]')?.scrollIntoView();
+                document.getElementById('results-heading')?.focus({ preventScroll: true });
+            });
         }catch(e){ setError(e.detail ? JSON.stringify(e.detail) : e.message); }
         finally{ setLoading(false); }
     }
 
     const locale = settings.locale;
+    const stale = !!result?.calcSnapshot && calcSnapshot('mutual-funds', entries) !== result.calcSnapshot;
     return html`<div>
         <${Crumbs} locale=${locale} currentKey="nav.mutualFunds" />
         <div class="page-head"><h1>${t(locale, 'nav.mutualFunds')}</h1><p class="muted">${t(locale, 'calc.mfSubtitle')} <${InfoTip} locale=${locale} tipKey="glossary.moM" /> <${InfoTip} locale=${locale} tipKey="glossary.xirr" /></p></div>
@@ -98,10 +103,11 @@ export function MutualFunds({ settings }) {
                 <button onClick=${()=>onCalc()} disabled=${loading}>${loading ? t(locale, 'common.calculating') : t(locale, 'common.calculateReturns')}</button>
                 <${ShareLink} route="mutual-funds" state=${{ entries }} locale=${locale} />
             </div>
+            <${ResultStatus} locale=${locale} stale=${stale} />
             ${error && html`<p style="color:var(--danger)" role="alert">${error}</p>`}
         </div>
         <${LedgerIo} asset="mutual-funds" entries=${entries} locale=${locale} onImport=${importRows} />
-        ${result && html`<div data-results class="results-anchor">
+        ${result && html`<${ResultsSection} locale=${locale} stale=${stale}>
             <${MomentumKpi} ledger=${result.ledger} summary=${result.summary} asset="mutual-funds" settings=${settings} />
             <${AssetChart} ledger=${result.ledger} asset="mutual-funds" settings=${settings} />
             <${SummaryCards} summary=${result.summary} settings=${settings} />
@@ -112,7 +118,7 @@ export function MutualFunds({ settings }) {
                 {key:'month_start_value', label:t(locale, 'column.startValue'), fmt:'currency'},
                 {key:'mom_return', label:t(locale, 'column.momReturn'), fmt:'percent'},
             ]} />
-        </div>`}
+        </${ResultsSection}>`}
         <${RelatedCalcs} current="mutual-funds" settings=${settings} />
     </div>`;
 }
