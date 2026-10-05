@@ -83,14 +83,14 @@ struct PageMeta {
 fn page_meta(path: &str) -> PageMeta {
     match path {
         "" => PageMeta {
-            title_id: "Beruang — Kalkulator Keuangan Gratis: Investasi, Kredit, Pensiun",
-            title_en: "Beruang — Free Finance Calculators: Invest, Borrow, Retire",
-            desc_id: "Hitung XIRR reksa dana, return saham, bunga deposito, tarif flat asli, pelunasan utang, sewa-vs-beli, dan target pensiun. Gratis, tanpa daftar, data tersimpan di perangkatmu.",
-            desc_en: "Free calculators for mutual-fund XIRR, stocks, deposits, flat-loan truth, debt payoff, rent-vs-buy, and retirement. No signup; your data stays on your device.",
+            title_id: "Beruang — Kalkulator Return Investasi, Kredit & Pensiun",
+            title_en: "Beruang — Free Investment Return & Finance Calculators",
+            desc_id: "Lihat return asli reksa dana, saham, dan depositomu, lalu uji bunga flat, pelunasan utang, sewa-vs-beli, dan target pensiun. Gratis, tanpa akun, catatan tersimpan di browser-mu.",
+            desc_en: "See what your mutual funds, stocks, and deposits really earn, then test flat loans, debt payoff, rent-vs-buy, and retirement. Free, no account; records stay in your browser.",
             canonical: "/",
             hreflang_en: None,
             og_image: "og-image.png",
-            noscript: "Beruang adalah kalkulator keuangan gratis: XIRR reksa dana, saham, deposito, bunga flat, pelunasan utang, sewa-vs-beli, dan pensiun. Aktifkan JavaScript untuk memakai kalkulator interaktif.",
+            noscript: "Beruang adalah kalkulator keuangan gratis: return reksa dana, saham, dan deposito, plus kredit, sewa-vs-beli, dan pensiun. Aktifkan JavaScript untuk memakai kalkulator interaktif.",
         },
         "portofolio" | "overview" => PageMeta {
             title_id: "Portofolio Saya — Beruang",
@@ -105,7 +105,7 @@ fn page_meta(path: &str) -> PageMeta {
         "mutual-funds" | "kalkulator/reksa-dana" | "calculators/mutual-funds" => PageMeta {
             title_id: "Kalkulator XIRR Reksa Dana — Beruang",
             title_en: "Mutual Fund XIRR Calculator — Beruang",
-            desc_id: "Hitung XIRR dan return bulanan (MoM) reksa dana dari setoran cicilan. Tempel data CSV atau isi manual.",
+            desc_id: "Hitung XIRR dan return bulanan (MoM) reksa dana dari setoran rutin. Tempel data CSV atau isi manual.",
             desc_en: "Compute mutual-fund XIRR and month-over-month returns from installment entries. Paste CSV or type manually.",
             canonical: "/kalkulator/reksa-dana",
             hreflang_en: Some("/calculators/mutual-funds"),
@@ -154,7 +154,7 @@ fn page_meta(path: &str) -> PageMeta {
         "flat-loan" | "kalkulator/bunga-flat" | "calculators/flat-rate-loan" => PageMeta {
             title_id: "Kalkulator Bunga Flat vs Efektif — Beruang",
             title_en: "Flat-Rate vs Effective Loan Calculator — Beruang",
-            desc_id: "Flat 5% ≈ 9,4% efektif. Ungkap tarif asli di balik kuotasi bunga flat dealer beserta cicilan dan totalnya.",
+            desc_id: "Flat 5% ≈ 9,4% efektif. Ungkap tarif asli di balik penawaran bunga flat dealer beserta cicilan dan totalnya.",
             desc_en: "A 5% flat quote is ~9.4% effective. Reveal the true rate behind dealer flat quotes with installments and totals.",
             canonical: "/kalkulator/bunga-flat",
             hreflang_en: Some("/calculators/flat-rate-loan"),
@@ -174,7 +174,7 @@ fn page_meta(path: &str) -> PageMeta {
         "retirement" | "kalkulator/dana-pensiun" | "calculators/retirement" => PageMeta {
             title_id: "Kalkulator Target Dana Pensiun — Beruang",
             title_en: "Retirement Target Calculator — Beruang",
-            desc_id: "Ubah kebutuhan bulanan menjadi target dana pensiun dan cicilan investasi bulanan.",
+            desc_id: "Ubah kebutuhan bulanan menjadi target dana pensiun dan setoran investasi bulanan.",
             desc_en: "Turn a monthly retirement need into a target fund and monthly invest plan.",
             canonical: "/kalkulator/dana-pensiun",
             hreflang_en: Some("/calculators/retirement"),
