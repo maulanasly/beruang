@@ -7,6 +7,7 @@ import { HowTo } from './HowTo.js';
 import { Crumbs } from './Crumbs.js';
 import { RelatedCalcs } from './RelatedCalcs.js';
 import { DebtChart } from './DebtChart.js';
+import { ResultStatus } from './ResultStatus.js';
 
 const BLANK_DEBT = { name: '', balance: '', annual_rate: '', rate_kind: 'effective', tenor_months: '', min_payment: '' };
 
@@ -25,6 +26,7 @@ export function DebtPayoff({ settings }) {
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [calculatedInputs, setCalculatedInputs] = useState(null);
 
     useEffect(() => {
         const shared = readSharedState();
@@ -68,6 +70,7 @@ export function DebtPayoff({ settings }) {
             const data = await debtPayoffComparison(payload);
             data.calculatedAt = new Date().toISOString();
             setResult(data);
+            setCalculatedInputs(JSON.stringify({ debts: ds.map(d => ({ ...BLANK_DEBT, ...d })), extra_payment: ex }));
             if (inputsOverride) {
                 setDebts(ds.map(d => ({ ...BLANK_DEBT, ...d })));
                 setExtra(ex);
@@ -90,6 +93,8 @@ export function DebtPayoff({ settings }) {
             sub: t(locale, 'debt.method'),
         };
     }
+
+    const stale = !!result && calculatedInputs !== JSON.stringify({ debts, extra_payment: extra });
 
     const cc = (value) => formatCompactCurrency(value, locale, currency);
     const full = (value) => formatCurrency(value, locale, currency);
@@ -153,10 +158,12 @@ export function DebtPayoff({ settings }) {
                 <button onClick=${() => onCompare()} disabled=${loading}>${loading ? t(locale, 'debt.comparing') : t(locale, 'debt.compare')}</button>
                 <${ShareLink} route="debt-payoff" state=${{ inputs: { debts, extra_payment: extra, rates_pct: 1 } }} locale=${locale} />
             </div>
+            <${ResultStatus} locale=${locale} stale=${stale} />
             ${error && html`<p style="color:var(--danger)" role="alert">${error}</p>`}
         </div>
         ${result && html`<div data-results class="results-anchor" aria-labelledby="results-heading">
             <h2 id="results-heading" class="results-heading" tabindex="-1">${t(locale, 'results.title')}</h2>
+            <${ResultStatus} locale=${locale} stale=${stale} />
             ${v && html`<div class="card" style=${`border-left:4px solid ${v.tone}`}>
                 <div class="amount" style=${`font-size:17px; color:${v.tone}`}>${v.text}</div>
                 <div class="muted" style="font-size:13px; margin-top:4px">${v.sub}</div>

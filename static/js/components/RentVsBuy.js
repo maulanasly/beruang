@@ -6,6 +6,7 @@ import { readSharedState, ShareLink } from '../share.js';
 import { HowTo } from './HowTo.js';
 import { Crumbs } from './Crumbs.js';
 import { RelatedCalcs } from './RelatedCalcs.js';
+import { ResultStatus } from './ResultStatus.js';
 import { InfoTip } from './InfoTip.js';
 import { RentBuyChart } from './RentBuyChart.js';
 import { NetWorthChart } from './NetWorthChart.js';
@@ -93,6 +94,7 @@ export function RentVsBuy({ settings }) {
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [calculatedInputs, setCalculatedInputs] = useState(null);
 
     useEffect(() => {
         const shared = readSharedState();
@@ -148,6 +150,7 @@ export function RentVsBuy({ settings }) {
                 i: payload.invest_return_annual,
             };
             setResult(data);
+            setCalculatedInputs(JSON.stringify(inputs));
             if (inputsOverride) setForm({ ...inputs });
             requestAnimationFrame(() => { document.querySelector('[data-results]')?.scrollIntoView(); document.getElementById('results-heading')?.focus({ preventScroll: true }); });
         } catch (e) { setError(e.detail ? JSON.stringify(e.detail) : e.message); }
@@ -185,6 +188,8 @@ export function RentVsBuy({ settings }) {
             sub: `${t(locale, 'rentbuy.totalBuy')} ${formatCurrency(result.total_buy, locale, currency)} · ${t(locale, 'rentbuy.totalRent')} ${formatCurrency(result.total_rent, locale, currency)}`,
         };
     }
+
+    const stale = !!result && calculatedInputs !== JSON.stringify(form);
 
     // The finding: when wealth never crosses at the input appreciation,
     // name the nearest appreciation that flips the verdict (from the
@@ -340,10 +345,12 @@ export function RentVsBuy({ settings }) {
                 <button onClick=${() => onCompare()} disabled=${loading}>${loading ? t(locale, 'rentbuy.comparing') : t(locale, 'rentbuy.compare')}</button>
                 <${ShareLink} route="rent-buy" state=${{ inputs: { ...form, rates_pct: 1 } }} locale=${locale} />
             </div>
+            <${ResultStatus} locale=${locale} stale=${stale} />
             ${error && html`<p style="color:var(--danger)" role="alert">${error}</p>`}
         </div>
         ${result && html`<div data-results class="results-anchor" aria-labelledby="results-heading">
             <h2 id="results-heading" class="results-heading" tabindex="-1">${t(locale, 'results.title')}</h2>
+            <${ResultStatus} locale=${locale} stale=${stale} />
             ${v && html`<div class="card" style=${`border-left:4px solid ${v.tone}`}>
                 <div class="amount" style=${`font-size:17px; color:${v.tone}`}>${v.text}</div>
                 ${why && html`<div style="font-size:13px; margin-top:4px">${why}</div>`}
