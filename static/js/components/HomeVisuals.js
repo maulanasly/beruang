@@ -78,7 +78,7 @@ export function CalcThumb({ kind }) {
 const STATS = [
     { value: '8', labelKey: 'home.statCalcsLabel', icon: 'grid' },
     { value: '3', labelKey: 'home.statAssetsLabel', icon: 'layers' },
-    { labelKey: 'home.statSignupLabel', icon: 'lock' },
+    { value: '0', labelKey: 'home.statSignupLabel', icon: 'lock' },
 ];
 
 function StatIcon({ name }) {
@@ -122,11 +122,11 @@ const CONCEPTS = [
 export function ConceptBand({ settings, go }) {
     const locale = settings.locale;
     return html`<section aria-label=${t(locale, 'home.conceptTitle')}>
-        <p class="smallcaps" style="margin:14px 0 8px">${t(locale, 'home.conceptTitle')}</p>
+        <h2 class="concept-band__heading">${t(locale, 'home.conceptTitle')}</h2>
         <div class="concept-band">
             ${CONCEPTS.map(c => html`<a class="card concept-card" href=${c.path} onClick=${e => go(e, c.path)}>
                 <${CalcThumbWrapper} visual=${c.visual} />
-                <span class="concept-card__title">${t(locale, c.titleKey)}</span>
+                <h3 class="concept-card__title">${t(locale, c.titleKey)}</h3>
                 <span class="muted concept-card__desc">${t(locale, c.descKey)}</span>
                 <span class="concept-card__link">${t(locale, 'home.cardOpenBlank')} →</span>
             </a>`)}
