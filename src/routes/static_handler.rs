@@ -83,14 +83,14 @@ struct PageMeta {
 fn page_meta(path: &str) -> PageMeta {
     match path {
         "" => PageMeta {
-            title_id: "Beruang — Kalkulator Keuangan Gratis: Investasi, Kredit, Pensiun",
-            title_en: "Beruang — Free Finance Calculators: Invest, Borrow, Retire",
-            desc_id: "Hitung XIRR reksa dana, return saham, bunga deposito, tarif flat asli, pelunasan utang, sewa-vs-beli, dan target pensiun. Gratis, tanpa daftar, data tersimpan di perangkatmu.",
-            desc_en: "Free calculators for mutual-fund XIRR, stocks, deposits, flat-loan truth, debt payoff, rent-vs-buy, and retirement. No signup; your data stays on your device.",
+            title_id: "Beruang — Kalkulator Return Investasi, Kredit & Pensiun",
+            title_en: "Beruang — Free Investment Return & Finance Calculators",
+            desc_id: "Lihat return asli reksa dana, saham, dan depositomu, lalu uji bunga flat, pelunasan utang, sewa-vs-beli, dan target pensiun. Gratis, tanpa akun, catatan tersimpan di browser-mu.",
+            desc_en: "See what your mutual funds, stocks, and deposits really earn, then test flat loans, debt payoff, rent-vs-buy, and retirement. Free, no account; records stay in your browser.",
             canonical: "/",
             hreflang_en: None,
             og_image: "og-image.png",
-            noscript: "Beruang adalah kalkulator keuangan gratis: XIRR reksa dana, saham, deposito, bunga flat, pelunasan utang, sewa-vs-beli, dan pensiun. Aktifkan JavaScript untuk memakai kalkulator interaktif.",
+            noscript: "Beruang adalah kalkulator keuangan gratis: return reksa dana, saham, dan deposito, plus kredit, sewa-vs-beli, dan pensiun. Aktifkan JavaScript untuk memakai kalkulator interaktif.",
         },
         "portofolio" | "overview" => PageMeta {
             title_id: "Portofolio Saya — Beruang",
@@ -105,7 +105,7 @@ fn page_meta(path: &str) -> PageMeta {
         "mutual-funds" | "kalkulator/reksa-dana" | "calculators/mutual-funds" => PageMeta {
             title_id: "Kalkulator XIRR Reksa Dana — Beruang",
             title_en: "Mutual Fund XIRR Calculator — Beruang",
-            desc_id: "Hitung XIRR dan return bulanan (MoM) reksa dana dari setoran cicilan. Tempel data CSV atau isi manual.",
+            desc_id: "Hitung XIRR dan return bulanan (MoM) reksa dana dari setoran rutin. Tempel data CSV atau isi manual.",
             desc_en: "Compute mutual-fund XIRR and month-over-month returns from installment entries. Paste CSV or type manually.",
             canonical: "/kalkulator/reksa-dana",
             hreflang_en: Some("/calculators/mutual-funds"),
@@ -154,7 +154,7 @@ fn page_meta(path: &str) -> PageMeta {
         "flat-loan" | "kalkulator/bunga-flat" | "calculators/flat-rate-loan" => PageMeta {
             title_id: "Kalkulator Bunga Flat vs Efektif — Beruang",
             title_en: "Flat-Rate vs Effective Loan Calculator — Beruang",
-            desc_id: "Flat 5% ≈ 9,4% efektif. Ungkap tarif asli di balik kuotasi bunga flat dealer beserta cicilan dan totalnya.",
+            desc_id: "Flat 5% ≈ 9,4% efektif. Ungkap tarif asli di balik penawaran bunga flat dealer beserta cicilan dan totalnya.",
             desc_en: "A 5% flat quote is ~9.4% effective. Reveal the true rate behind dealer flat quotes with installments and totals.",
             canonical: "/kalkulator/bunga-flat",
             hreflang_en: Some("/calculators/flat-rate-loan"),
@@ -174,7 +174,7 @@ fn page_meta(path: &str) -> PageMeta {
         "retirement" | "kalkulator/dana-pensiun" | "calculators/retirement" => PageMeta {
             title_id: "Kalkulator Target Dana Pensiun — Beruang",
             title_en: "Retirement Target Calculator — Beruang",
-            desc_id: "Ubah kebutuhan bulanan menjadi target dana pensiun dan cicilan investasi bulanan.",
+            desc_id: "Ubah kebutuhan bulanan menjadi target dana pensiun dan setoran investasi bulanan.",
             desc_en: "Turn a monthly retirement need into a target fund and monthly invest plan.",
             canonical: "/kalkulator/dana-pensiun",
             hreflang_en: Some("/calculators/retirement"),
@@ -226,23 +226,28 @@ fn json_ld_for(title: &str, description: &str, meta: &PageMeta, canonical: &str)
             "mainEntity": [
                 {
                     "@type": "Question",
-                    "name": "Apakah kalkulator Beruang gratis?",
-                    "acceptedAnswer": { "@type": "Answer", "text": "Ya. Semua kalkulator gratis, tanpa daftar, dan datamu tersimpan di perangkatmu sendiri." }
+                    "name": "Apakah angkaku dikirim ke server?",
+                    "acceptedAnswer": { "@type": "Answer", "text": "Catatanmu tersimpan di browser, bukan di akun. Angka dikirim ke server hanya untuk dihitung. Tautan berbagi yang kamu buat memuat angkamu di URL." }
                 },
                 {
                     "@type": "Question",
                     "name": "Apa itu XIRR?",
-                    "acceptedAnswer": { "@type": "Answer", "text": "XIRR adalah return tahunan yang memperhitungkan setoran dan penarikan pada tanggal yang berbeda." }
+                    "acceptedAnswer": { "@type": "Answer", "text": "XIRR adalah return per tahun yang memperhitungkan kapan tiap setoran masuk. Rupiah yang masuk lebih awal bekerja lebih lama, jadi bobotnya lebih besar." }
                 },
                 {
                     "@type": "Question",
                     "name": "Dari mana harga saham berasal?",
-                    "acceptedAnswer": { "@type": "Answer", "text": "Harga live IDX beserta riwayatnya diambil dari Yahoo Finance saat kamu menekan tombol kuotasi." }
+                    "acceptedAnswer": { "@type": "Answer", "text": "Harga live IDX beserta riwayatnya diambil dari Yahoo Finance saat kamu menekan tombol kuotasi. Data bisa tertunda." }
                 },
                 {
                     "@type": "Question",
-                    "name": "Kalkulator apa saja yang tersedia selain investasi?",
-                    "acceptedAnswer": { "@type": "Answer", "text": "Ada pengungkap tarif flat, perencana pelunasan utang avalanche vs snowball, perbandingan sewa vs beli rumah, dan perencana target dana pensiun." }
+                    "name": "Apakah ini nasihat keuangan?",
+                    "acceptedAnswer": { "@type": "Answer", "text": "Bukan. Beruang adalah sarana edukasi. Data pasar bersifat indikatif dan bisa tertunda." }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Mulai dari kalkulator mana?",
+                    "acceptedAnswer": { "@type": "Answer", "text": "Jawab “Mau menghitung apa?” di atas — tiap pertanyaan membuka alat yang tepat, sudah terisi contoh yang bisa dihitung." }
                 }
             ]
         });
@@ -567,6 +572,35 @@ mod tests {
         assert!(content_type_for("favicon.svg").contains("svg"));
         assert!(content_type_for("sitemap.xml").contains("charset=utf-8"));
         assert!(!app_version().is_empty());
+    }
+
+    #[test]
+    fn home_faq_json_ld_matches_visible_locale() {
+        // Structured data must never drift from what the homepage shows.
+        let locale = include_str!("../../static/js/locales/id-ID.js");
+        let meta = page_meta("");
+        let out = json_ld_for(meta.title_id, meta.desc_id, &meta, "http://localhost:8000");
+        let parsed: serde_json::Value = serde_json::from_str(&out).unwrap();
+        let faq = parsed
+            .as_array()
+            .and_then(|arr| arr.iter().find(|x| x["@type"] == "FAQPage"))
+            .expect("home page emits an FAQPage block");
+        let items = faq["mainEntity"]
+            .as_array()
+            .expect("mainEntity is an array");
+        assert_eq!(items.len(), 5);
+        for item in items {
+            let question = item["name"].as_str().unwrap();
+            let answer = item["acceptedAnswer"]["text"].as_str().unwrap();
+            assert!(
+                locale.contains(question),
+                "FAQ question missing from id-ID locale: {question}"
+            );
+            assert!(
+                locale.contains(answer),
+                "FAQ answer missing from id-ID locale: {answer}"
+            );
+        }
     }
 
     #[test]

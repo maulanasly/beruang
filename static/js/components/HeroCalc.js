@@ -1,4 +1,4 @@
-import { html, useState, useEffect } from '../vendor/preact-htm-signals.js';
+import { html, useState } from '../vendor/preact-htm-signals.js';
 import { calculateReturns } from '../api.js';
 import { formatPercent } from '../utils.js';
 import { t } from '../i18n.js';
@@ -20,10 +20,6 @@ export function HeroCalc({ settings }) {
     const [xirr, setXirr] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-
-    // Single-job hero: run once on mount so the demo result (and the
-    // deep link carrying the same inputs) is visible without a first click.
-    useEffect(() => { onCount(); }, []);
 
     function buildEntries() {
         const p = Number(monthly) || 0;
@@ -61,7 +57,7 @@ export function HeroCalc({ settings }) {
         </div>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:8px">
             <button class="btn-sm" onClick=${onCount} disabled=${loading}>${loading ? t(locale, 'common.calculating') : t(locale, 'home.heroWidgetGo')}</button>
-            ${xirr != null && html`<strong class="amount" style="font-size:18px">XIRR ${formatPercent(xirr, locale)}</strong>
+            ${xirr != null && html`<strong class="amount" style="font-size:18px">${t(locale, 'home.heroWidgetResult')} ${formatPercent(xirr, locale)}</strong>
             <a href="/kalkulator/reksa-dana" onClick=${openFull}>${t(locale, 'home.heroWidgetOpen')}</a>`}
         </div>
         ${error && html`<p style="color:var(--danger); font-size:13px" role="alert">${error}</p>`}
