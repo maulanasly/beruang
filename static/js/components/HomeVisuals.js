@@ -49,23 +49,6 @@ export function MiniBars({ values, colors, titles, color = 'var(--chart-blue)', 
     </svg>`;
 }
 
-/** Ring gauge with a centred value (static illustration of a rate). */
-export function MiniGauge({ pct = 0.226, text, label, size = 96, color = 'var(--accent)' }) {
-    const r = (size - 14) / 2;
-    const c = 2 * Math.PI * r;
-    const cx = size / 2;
-    const cy = size / 2;
-    const frac = Math.max(0, Math.min(1, pct));
-    return html`<svg class="mini-gauge" viewBox="0 0 ${size} ${size}" width=${size} height=${size}
-        role=${label ? 'img' : 'presentation'} aria-label=${label || null} aria-hidden=${label ? null : 'true'}>
-        <circle cx=${cx} cy=${cy} r=${r} fill="none" style="stroke:var(--chart-track)" stroke-width="8" />
-        <circle cx=${cx} cy=${cy} r=${r} fill="none" stroke=${color} stroke-width="8" stroke-linecap="round"
-            stroke-dasharray=${`${(frac * c).toFixed(1)} ${c.toFixed(1)}`}
-            transform=${`rotate(-90 ${cx} ${cy})`} />
-        <text x=${cx} y=${cy + 5} text-anchor="middle" font-size="17" font-weight="700" style="fill:currentColor">${text}</text>
-    </svg>`;
-}
-
 // Per-calculator thumbnail: a tiny shape hinting at what the tool outputs.
 const THUMBS = {
     'mutual-funds': () => html`<${MiniLines} filledFirst=${true} series=${[{ points: [4, 6, 9, 13, 18, 24, 31, 40], color: 'var(--chart-blue)' }]} />`,
@@ -92,37 +75,10 @@ export function CalcThumb({ kind }) {
     return html`<div class="calc-thumb" aria-hidden="true">${render ? render() : ''}</div>`;
 }
 
-// Masthead composite: three asset streams converging on one return figure.
-export function ProductDiagram({ settings }) {
-    const locale = settings.locale;
-    const assets = [
-        { name: t(locale, 'nav.mutualFunds'), color: '#7aa5ff', points: [4, 6, 9, 13, 18, 24, 31, 40] },
-        { name: t(locale, 'nav.stocks'), color: '#34d399', points: [3, 5, 6, 10, 13, 17, 22, 28] },
-        { name: t(locale, 'nav.termDeposits'), color: '#ffb27a', points: [2, 4, 6, 8, 10, 12, 14, 16] },
-    ];
-    return html`<div class="product-diagram" role="group" aria-label=${t(locale, 'home.mastheadDiagramLabel')}>
-        <div class="product-diagram__assets">
-            ${assets.map(a => html`<div class="asset-row">
-                <span class="asset-row__dot" style=${`background:${a.color}`} aria-hidden="true"></span>
-                <span class="asset-row__name">${a.name}</span>
-                <${MiniLines} series=${[{ points: a.points, color: a.color }]} w=${92} h=${28} />
-            </div>`)}
-        </div>
-        <div class="product-diagram__arrow" aria-hidden="true">↓</div>
-        <div class="product-diagram__result">
-            <${MiniGauge} pct=${0.226} text="22.6%" color="var(--accent)" label=${t(locale, 'home.mastheadResultLabel')} />
-            <div class="result-metrics" aria-hidden="true">
-                ${['XIRR', 'ROI', 'APY'].map(m => html`<span class="metric-pill">${m}</span>`)}
-            </div>
-        </div>
-    </div>`;
-}
-
 const STATS = [
     { value: '8', labelKey: 'home.statCalcsLabel', icon: 'grid' },
     { value: '3', labelKey: 'home.statAssetsLabel', icon: 'layers' },
-    { value: '0', labelKey: 'home.statSignupLabel', icon: 'lock' },
-    { value: '100%', labelKey: 'home.statDeviceLabel', icon: 'device' },
+    { labelKey: 'home.statSignupLabel', icon: 'lock' },
 ];
 
 function StatIcon({ name }) {
@@ -138,33 +94,9 @@ export function StatStrip({ settings }) {
     return html`<section class="stat-strip" aria-label=${t(locale, 'home.statStripLabel')}>
         ${STATS.map((s, i) => html`<div class="stat-tile" style=${`animation-delay:${i * 70}ms`}>
             <span class="stat-tile__icon"><${StatIcon} name=${s.icon} /></span>
-            <span class="stat-tile__value">${s.value}</span>
+            ${s.value && html`<span class="stat-tile__value">${s.value}</span>`}
             <span class="stat-tile__label">${s.labelKey && t(locale, s.labelKey)}</span>
         </div>`)}
-    </section>`;
-}
-
-/** Strip the leading "N. " so the badge number and title don't duplicate. */
-const stripNum = s => String(s).replace(/^\s*\d+\.\s*/, '');
-
-export function FlowSteps({ settings }) {
-    const locale = settings.locale;
-    const steps = [1, 2, 3, 4].map(n => ({
-        n,
-        title: stripNum(t(locale, `home.step${n}Title`)),
-        desc: t(locale, `home.step${n}Desc`),
-    }));
-    return html`<section class="flow" aria-label=${t(locale, 'home.flowTitle')}>
-        <h2 class="flow__title">${t(locale, 'home.flowTitle')}</h2>
-        <ol class="flow-steps">
-            ${steps.map(s => html`<li class="flow-step">
-                <span class="flow-step__badge" aria-hidden="true">${s.n}</span>
-                <span class="flow-step__body">
-                    <strong>${s.title}</strong>
-                    <span class="muted">${s.desc}</span>
-                </span>
-            </li>`)}
-        </ol>
     </section>`;
 }
 
