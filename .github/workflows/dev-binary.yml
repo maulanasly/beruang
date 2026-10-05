@@ -35,9 +35,9 @@ jobs:
       - name: Package binary and checksum
         run: |
           mkdir -p dist
-          archive="$PWD/dist/beruang-dev-linux-x86_64-${GITHUB_SHA}.tar.gz"
-          tar -czf "$archive" -C target/release beruang-gateway
-          sha256sum "$archive" > "${archive}.sha256"
+          archive="beruang-dev-linux-x86_64-${GITHUB_SHA}.tar.gz"
+          tar -czf "$PWD/dist/$archive" -C target/release beruang-gateway
+          (cd dist && sha256sum "$archive" > "$archive.sha256")
 
       - name: Upload development artifact
         uses: actions/upload-artifact@v4
