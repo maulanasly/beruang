@@ -39,5 +39,6 @@ export function DonutChart({ series, settings }) {
                 </div>`)}
             </div>
         </div>
+        <p class="chart-summary">${t(locale, 'overview.allocationSummary', { asset: segs[0].label, percent: (segs[0].frac * 100).toFixed(1) })}</p>
     </div>`;
 }

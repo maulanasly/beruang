@@ -23,13 +23,20 @@ export function LedgerTable({ rows, settings, columns }) {
 
 export function SummaryCards({ summary, settings }) {
     if (!summary) return html``;
+    const labels = {
+        xirr: 'kpi.latestXirr', roi: 'glossary.roi', apy: 'kpi.currentApy',
+        monthly_rate: 'depositMaturity.monthlyRate', estimated_annual_dividend: 'kpi.latestAnnualDividend',
+        estimated_monthly_dividend: 'kpi.latestMonthlyDividend', projected_fv_constant_installment: 'depositMaturity.projectedFv',
+        ending_value: 'depositMaturity.endingValue', next_maturity_date: 'overview.depositNextMaturity',
+    };
     const entries = Object.entries(summary);
     return html`<div class="summary-cards">
         ${entries.map(([k,v])=> {
             const isPct = ['xirr','roi','apy','monthly_rate','dividend_yield'].includes(k);
             const isDate = k.includes('date');
             const display = v==null ? '-' : isDate ? String(v) : isPct ? formatPercent(v, settings.locale) : typeof v==='number' ? formatCurrency(v, settings.locale, settings.currency) : String(v);
-            return html`<div class="card"><div class="smallcaps">${k}</div><div class="amount" style="font-size:15px">${display}</div></div>`;
+            const label = labels[k] ? t(settings.locale, labels[k]) : k.replaceAll('_', ' ');
+            return html`<div class="card"><div class="smallcaps">${label}</div><div class="amount" style="font-size:15px">${display}</div></div>`;
         })}
     </div>`;
 }

@@ -7,6 +7,7 @@ import { HowTo } from './HowTo.js';
 import { Crumbs } from './Crumbs.js';
 import { RelatedCalcs } from './RelatedCalcs.js';
 import { InfoTip } from './InfoTip.js';
+import { ResultStatus } from './ResultStatus.js';
 
 const FIELDS = [
     ['price_ice', 'ev.priceIce'],
@@ -34,6 +35,7 @@ export function Ev({ settings }) {
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [calculatedInputs, setCalculatedInputs] = useState(null);
 
     useEffect(() => {
         const shared = readSharedState();
@@ -57,8 +59,9 @@ export function Ev({ settings }) {
             const data = await evComparison(payload);
             data.calculatedAt = new Date().toISOString();
             setResult(data);
+            setCalculatedInputs(JSON.stringify(inputs));
             if (inputsOverride) setForm({ ...DEFAULTS, ...inputsOverride });
-            requestAnimationFrame(() => document.querySelector('[data-results]')?.scrollIntoView());
+            requestAnimationFrame(() => { document.querySelector('[data-results]')?.scrollIntoView(); document.getElementById('results-heading')?.focus({ preventScroll: true }); });
         } catch (e) { setError(e.detail ? JSON.stringify(e.detail) : e.message); }
         finally { setLoading(false); }
     }
@@ -71,6 +74,7 @@ export function Ev({ settings }) {
     }
 
     const maxBar = result ? Math.max(result.monthly_ice, result.monthly_ev, 1) : 1;
+    const stale = !!result && calculatedInputs !== JSON.stringify(form);
 
     return html`<div>
         <${Crumbs} locale=${locale} currentKey="nav.ev" />
@@ -86,9 +90,12 @@ export function Ev({ settings }) {
                 <button onClick=${()=>onCompare()} disabled=${loading}>${loading ? t(locale, 'ev.comparing') : t(locale, 'ev.compare')}</button>
                 <${ShareLink} route="ev" state=${{ inputs: form }} locale=${locale} />
             </div>
+            <${ResultStatus} locale=${locale} stale=${stale} />
             ${error && html`<p style="color:var(--danger)" role="alert">${error}</p>`}
         </div>
-        ${result && html`<div data-results class="results-anchor">
+        ${result && html`<div data-results class="results-anchor" aria-labelledby="results-heading">
+            <h2 id="results-heading" class="results-heading" tabindex="-1">${t(locale, 'results.title')}</h2>
+            <${ResultStatus} locale=${locale} stale=${stale} />
             <div class="summary-cards">
                 <div class="card"><div class="smallcaps">${t(locale, 'ev.monthlyIce')}</div><div class="amount">${formatCurrency(result.monthly_ice, locale, currency)}</div></div>
                 <div class="card"><div class="smallcaps">${t(locale, 'ev.monthlyEv')}</div><div class="amount">${formatCurrency(result.monthly_ev, locale, currency)}</div></div>

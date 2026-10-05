@@ -38,6 +38,11 @@ export default {
     showRawJson: 'Show Raw JSON',
     hideRawJson: 'Hide Raw JSON',
   },
+  results: {
+    title: 'Your results',
+    staleTitle: 'Inputs changed.',
+    staleBody: 'Recalculate to refresh these results.',
+  },
   form: {
     date: 'Date',
     installmentAmount: 'Installment Amount',
@@ -47,6 +52,7 @@ export default {
     dividends: 'Dividends',
     dividendYield: 'Dividend Yield (%)',
     apy: 'APY',
+    percentExample: 'Enter a percentage, e.g. 6 for 6%.',
     termMonths: 'Term (months)',
     maturityDate: 'Maturity Date',
     maturityAuto: 'Auto: start + term',
@@ -85,6 +91,7 @@ export default {
     seriesInvested: 'Total Contribution',
     seriesValue: 'Current Market Value',
     seriesExpected: 'Expected Value',
+    summary: 'Latest: {value} versus {invested}; difference {difference}.',
   },
   overview: {
     totalInvested: 'Total Invested',
@@ -96,9 +103,12 @@ export default {
     perAsset: 'Per Asset Class',
     invested: 'Invested',
     valueByAsset: 'Value by Asset Class',
+    allocationSummary: '{asset} is your largest allocation at {percent}%.',
     subtitle:
       'Your portfolio at a glance: how much you have put in, what it is worth now, and how your money is split across asset classes.',
     noData: 'Add entries to your asset pages and calculate returns to populate this overview.',
+    addFirstAsset: 'Add your first investment',
+    emptyHint: 'You can also restore a full backup below if you already have portfolio data.',
     depositInterestTitle: 'Term deposit interest',
     depositMonthlyInterest: 'Monthly interest',
     depositNext12: 'Next 12 months (net)',
@@ -108,6 +118,10 @@ export default {
     estimated: 'Estimate \u2014 not calculated yet',
     dataWindow: 'Data {from} \u2013 {to}',
     calculatedAt: 'Calculated {time}',
+    attentionTitle: 'Needs attention',
+    attentionEdited: '{assets} changed since the last calculation.',
+    attentionEstimated: '{assets} still use estimates.',
+    attentionAction: 'Recalculate {asset}',
   },
   ledger: {
     empty: 'Fill the rows above and click Calculate Returns to see your monthly ledger here.',
@@ -115,7 +129,7 @@ export default {
   error: {
     atLeastOneRow: 'At least one ledger row is required.',
     everyRowDate: 'Every row must include a date.',
-    badApy: 'APY must be between 0 and 1 (e.g. 0.06 = 6%).',
+    badApy: 'APY must be between 0% and 100%.',
     badAmount: 'Amounts must not be negative.',
     badMaturity: 'Maturity date must be on or after the start date.',
     validationFailed: 'Validation failed. Please fix the following fields.',
@@ -141,6 +155,8 @@ export default {
     updatedRow: 'Updated row {row} using {symbol} ({currency}).',
     helperNote:
       'Stock codes use the IDX ticker format, e.g. BBCA.JK (BBCA on the Indonesia Stock Exchange). Prices come from Kompas 100 listed companies.',
+    ledgerTitle: 'Investment ledger',
+    ledgerHint: 'Add one row for each contribution or valuation update. Use live prices above when you need a refresh.',
   },
   stock: {
     codesCount: '{count} stock codes',
@@ -326,6 +342,7 @@ export default {
     title: 'Full Portfolio Backup',
     exportAll: 'Backup All Data',
     pasteHint: 'Paste backup JSON here, or pick a file above',
+    pasteAdvanced: 'Paste JSON instead',
     validSummary: 'Backup holds {assets} asset class(es) and {rows} rows.',
     invalidCount: '{errors} problem(s) in this backup',
     confirmRestore: 'Confirm Restore',
@@ -364,7 +381,7 @@ export default {
     mfSubtitle: 'Cash-flow adjusted MoM \u00b7 XIRR via exact dates.',
     stSubtitle: 'MoM + ROI + XIRR \u00b7 optional dividend yield (%).',
     tdSubtitle: 'APY prorated interest \u00b7 maturity & rollover tracker.',
-    apyHint: 'e.g. 0.06 = 6%',
+    apyHint: 'e.g. 6%',
     apyAppliesAll: 'Applies to every row below',
   },
   home: {

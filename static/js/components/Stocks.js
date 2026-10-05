@@ -14,6 +14,7 @@ import { RelatedCalcs } from './RelatedCalcs.js';
 import { InfoTip } from './InfoTip.js';
 import { t } from '../i18n.js';
 import { readSharedState, ShareLink, normalizeLedgerEntries, calcSnapshot } from '../share.js';
+import { ResultsSection, ResultStatus } from './ResultStatus.js';
 
 let searchTimer = null;
 
@@ -164,7 +165,10 @@ export function Stocks({ settings }) {
             setResult(data);
             const l=loadLedgers(); l.stocks=rows; l.results.stocks=data; saveLedgers(l);
             if (rowsOverride) setEntries(rowsOverride);
-            requestAnimationFrame(() => document.querySelector('[data-results]')?.scrollIntoView());
+            requestAnimationFrame(() => {
+                document.querySelector('[data-results]')?.scrollIntoView();
+                document.getElementById('results-heading')?.focus({ preventScroll: true });
+            });
         }catch(e){ setError(e.detail ? JSON.stringify(e.detail) : e.message); } finally{ setLoading(false); }
     }
     async function syncAll(){
@@ -187,6 +191,7 @@ export function Stocks({ settings }) {
     }
 
     const symbols = [...new Set(entries.map(e => e.symbol).filter(s => typeof s === 'string' && s))];
+    const stale = !!result?.calcSnapshot && calcSnapshot('stocks', entries) !== result.calcSnapshot;
     const resultSymbolLabel = symbols.length === 0 ? ''
         : symbols.length === 1 ? show(symbols[0])
         : t(locale, 'stock.codesCount', { count: symbols.length });
@@ -232,6 +237,10 @@ export function Stocks({ settings }) {
             ${syncMsg && html`<p class="muted" style="font-size:13px">${syncMsg}</p>`}
         </details>
         <div class="card">
+            <div class="section-intro">
+                <strong>${t(locale, 'market.ledgerTitle')}</strong>
+                <span class="muted">${t(locale, 'market.ledgerHint')}</span>
+            </div>
             ${entries.map((e,idx)=> html`<div>
                 <div class="entry-grid" style="--cols:6">
                     <label>${t(locale, 'form.stockCode')} <input value=${e.symbol||''} onInput=${ev=>upd(idx,'symbol',ev.target.value)} placeholder="BBCA.JK" /></label>
@@ -252,10 +261,11 @@ export function Stocks({ settings }) {
                 <button onClick=${()=>onCalc()} disabled=${loading}>${loading ? t(locale, 'common.calculating') : t(locale, 'common.calculateReturns')}</button>
                 <${ShareLink} route="stocks" state=${{ entries }} locale=${locale} />
             </div>
+            <${ResultStatus} locale=${locale} stale=${stale} />
             ${error && html`<p style="color:var(--danger)" role="alert">${error}</p>`}
         </div>
         <${LedgerIo} asset="stocks" entries=${entries} locale=${locale} onImport=${importRows} />
-        ${result && html`<div data-results class="results-anchor">
+        ${result && html`<${ResultsSection} locale=${locale} stale=${stale}>
             <${MomentumKpi} ledger=${result.ledger} summary=${result.summary} asset="stocks" settings=${settings} />
             <${AssetChart} ledger=${result.ledger} asset="stocks" settings=${settings} />
             <div class="card"><div class="smallcaps">${t(locale, 'common.summary')}${resultSymbolLabel ? html`<span class="muted"> · ${resultSymbolLabel}</span>` : ''}</div></div>
@@ -270,7 +280,7 @@ export function Stocks({ settings }) {
                 {key:'current_value', label:t(locale, 'column.currentValue'), fmt:'currency'},
                 {key:'mom_return', label:t(locale, 'column.momReturn'), fmt:'percent'},
             ]} />
-        </div>`}
+        </${ResultsSection}>`}
         <${DividendFocus} settings=${settings} onApply=${applyDividendFocus} />
         ${(result || lastQuote) && html`<${PriceHistory} symbol=${quoteSym} settings=${settings} />`}
         <${RelatedCalcs} current="stocks" settings=${settings} />

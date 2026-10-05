@@ -47,6 +47,9 @@ export function AssetChart({ ledger, asset, settings }) {
     const yTicks = Array.from({ length: ticks + 1 }, (_, i) => Math.round((max * i) / ticks));
 
     const svgLabel = `${t(locale, 'chart.title')}: ${investedLabel} vs ${valueLabel}`;
+    const latestExpected = invested[invested.length - 1];
+    const latestValue = values[values.length - 1];
+    const change = latestValue - latestExpected;
     return html`<div class="card">
         <div class="smallcaps">${t(locale, 'chart.title')}</div>
         <svg viewBox="0 0 ${w} ${h}" width="100%" height="220" role="img" aria-label=${svgLabel} style="background:var(--surface);border:1px solid var(--hairline);border-radius:10px; margin-top:8px">
@@ -66,5 +69,6 @@ export function AssetChart({ ledger, asset, settings }) {
             <span style="color:var(--chart-orange)">— ${valueLabel}</span> ·
             ${t(locale, 'ui.latest')} ${formatCurrency(values[values.length - 1], locale, settings.currency)}
         </div>
+        <p class="chart-summary">${t(locale, 'chart.summary', { invested: formatCurrency(latestExpected, locale, settings.currency), value: formatCurrency(latestValue, locale, settings.currency), difference: formatCurrency(change, locale, settings.currency) })}</p>
     </div>`;
 }
