@@ -1,4 +1,4 @@
-import { html, useState, useEffect } from '../vendor/preact-htm-signals.js';
+import { html, useState, useEffect, useRef } from '../vendor/preact-htm-signals.js';
 import { getCurrentRoute, navigate } from '../router.js';
 import { loadSettings, saveSettings, LOCALE_OPTIONS, CURRENCY_OPTIONS, MARKET_OPTIONS } from '../store.js';
 import { t } from '../i18n.js';
@@ -30,6 +30,8 @@ export function App() {
     const [menuOpen, setMenuOpen] = useState(false);
     const [calcOpen, setCalcOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
+    const settingsButtonRef = useRef(null);
+    const calcButtonRef = useRef(null);
     const locale = settings.locale;
 
     useEffect(() => {
@@ -47,7 +49,16 @@ export function App() {
         return () => window.removeEventListener('popstate', h);
     }, []);
     useEffect(() => {
-        const onKey = (e) => { if (e.key === 'Escape') { setMenuOpen(false); setCalcOpen(false); setSettingsOpen(false); } };
+        const onKey = (e) => {
+            if (e.key !== 'Escape') return;
+            const returnToSettings = settingsOpen;
+            const returnToCalculators = calcOpen;
+            setMenuOpen(false); setCalcOpen(false); setSettingsOpen(false);
+            requestAnimationFrame(() => {
+                if (returnToSettings) settingsButtonRef.current?.focus();
+                else if (returnToCalculators) calcButtonRef.current?.focus();
+            });
+        };
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
     }, []);
@@ -119,10 +130,10 @@ export function App() {
                     </div>
                     <div class="header-tools" role="group" aria-label=${t(locale, 'settings.groupLabel')}>
                         <div class="settings-drop">
-                            <button type="button" class="settings-toggle" title=${t(locale, 'settings.groupLabel')} aria-label=${t(locale, 'settings.groupLabel')} aria-haspopup="true" aria-expanded=${settingsOpen} aria-controls="settings-panel" onClick=${() => setSettingsOpen(!settingsOpen)}>
+                            <button ref=${settingsButtonRef} type="button" class="settings-toggle" title=${t(locale, 'settings.groupLabel')} aria-label=${t(locale, 'settings.groupLabel')} aria-haspopup="dialog" aria-expanded=${settingsOpen} aria-controls="settings-panel" onClick=${() => setSettingsOpen(!settingsOpen)}>
                                 ${gearIcon}
                             </button>
-                            ${settingsOpen && html`<div id="settings-panel" class="settings-drop__panel" role="group" aria-label=${t(locale, 'settings.groupLabel')}>
+                            ${settingsOpen && html`<div id="settings-panel" class="settings-drop__panel" role="dialog" aria-label=${t(locale, 'settings.groupLabel')}>
                                 <label>${t(locale, 'settings.locale')}
                                     <select value=${locale} onChange=${e=>setSettings({...settings, locale:e.target.value})}>
                                         ${LOCALE_OPTIONS.map(o=> html`<option value=${o.value}>${o.label}</option>`)}
@@ -153,7 +164,7 @@ export function App() {
                     <nav id="primary-nav" class=${menuOpen ? 'topnav open' : 'topnav'} aria-label=${t(locale, 'ui.navLabel')}>
                         <a href="/" class=${route==='home'?'active':''} aria-current=${route==='home' ? 'page' : null} onClick=${e=>go(e, '/')}>${t(locale, 'nav.home')}</a>
                         <div class="nav-drop" onPointerEnter=${() => { if (window.matchMedia?.('(hover: hover)').matches) setCalcOpen(true); }} onPointerLeave=${() => { if (window.matchMedia?.('(hover: hover)').matches) setCalcOpen(false); }}>
-                            <button type="button" class=${calcActive ? 'nav-drop__btn active' : 'nav-drop__btn'} aria-expanded=${calcOpen} aria-controls="calc-menu" onClick=${() => setCalcOpen(!calcOpen)} onKeyDown=${e => {
+                            <button ref=${calcButtonRef} type="button" class=${calcActive ? 'nav-drop__btn active' : 'nav-drop__btn'} aria-expanded=${calcOpen} aria-controls="calc-menu" onClick=${() => setCalcOpen(!calcOpen)} onKeyDown=${e => {
                                 if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
                                     e.preventDefault();
                                     setCalcOpen(true);

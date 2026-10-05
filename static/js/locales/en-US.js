@@ -107,6 +107,8 @@ export default {
     subtitle:
       'Your portfolio at a glance: how much you have put in, what it is worth now, and how your money is split across asset classes.',
     noData: 'Add entries to your asset pages and calculate returns to populate this overview.',
+    addFirstAsset: 'Add your first investment',
+    emptyHint: 'You can also restore a full backup below if you already have portfolio data.',
     depositInterestTitle: 'Term deposit interest',
     depositMonthlyInterest: 'Monthly interest',
     depositNext12: 'Next 12 months (net)',

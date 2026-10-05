@@ -105,6 +105,8 @@ export default {
     subtitle:
       'Portofolio Anda sekilas: berapa yang telah Anda masukkan, berapa nilainya kini, dan bagaimana dana terbagi lintas kelas aset.',
     noData: 'Tambahkan entri ke halaman aset Anda dan hitung hasil untuk mengisi ringkasan ini.',
+    addFirstAsset: 'Tambahkan investasi pertama',
+    emptyHint: 'Anda juga dapat memulihkan cadangan lengkap di bawah jika sudah memiliki data portofolio.',
     depositInterestTitle: 'Bunga deposito',
     depositMonthlyInterest: 'Bunga bulanan',
     depositNext12: '12 bulan ke depan (neto)',

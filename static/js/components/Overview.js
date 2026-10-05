@@ -163,10 +163,11 @@ export function Overview({ settings }) {
             <div class="card">
                 <h1 style="font-size:22px; margin:0 0 4px">${t(locale, 'nav.portfolio')}</h1>
                 <p class="muted">${t(locale, 'overview.noData')}</p>
-                <p style="display:flex; gap:8px; flex-wrap:wrap">
-                    <button onClick=${loadDemo}>${t(locale, 'overview.loadDemo')}</button>
+                <p class="empty-actions">
+                    <a class="btn-link" href="/kalkulator/reksa-dana" onClick=${e=>go(e,'/kalkulator/reksa-dana')}>${t(locale, 'overview.addFirstAsset')}</a>
+                    <button class="btn-ghost" onClick=${loadDemo}>${t(locale, 'overview.loadDemo')}</button>
                 </p>
-                <p><a href="/kalkulator/reksa-dana" onClick=${e=>go(e,'/kalkulator/reksa-dana')}>${t(locale, 'nav.mutualFunds')}</a> · <a href="/kalkulator/saham" onClick=${e=>go(e,'/kalkulator/saham')}>${t(locale, 'nav.stocks')}</a> · <a href="/kalkulator/deposito" onClick=${e=>go(e,'/kalkulator/deposito')}>${t(locale, 'nav.termDeposits')}</a></p>
+                <p class="muted" style="font-size:13px">${t(locale, 'overview.emptyHint')}</p>
             </div>
             <${PortfolioIo} settings=${settings} />
         </div>`;
