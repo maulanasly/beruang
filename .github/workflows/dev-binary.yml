@@ -1,0 +1,51 @@
+name: Development binary
+
+on:
+  push:
+    branches:
+      - "feature/**"
+      - "dev/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build Linux x86_64 artifact
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run tests
+        run: cargo test --locked
+
+      - name: Build release binary
+        run: cargo build --release --locked
+
+      - name: Package binary and checksum
+        run: |
+          mkdir -p dist
+          archive="$PWD/dist/beruang-dev-linux-x86_64-${GITHUB_SHA}.tar.gz"
+          tar -czf "$archive" -C target/release beruang-gateway
+          sha256sum "$archive" > "${archive}.sha256"
+
+      - name: Upload development artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: beruang-dev-linux-x86_64-${{ github.sha }}
+          path: |
+            dist/beruang-dev-linux-x86_64-${{ github.sha }}.tar.gz
+            dist/beruang-dev-linux-x86_64-${{ github.sha }}.tar.gz.sha256
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
