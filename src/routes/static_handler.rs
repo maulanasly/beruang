@@ -181,6 +181,16 @@ fn page_meta(path: &str) -> PageMeta {
             og_image: "og-dana-pensiun.png",
             noscript: "Kalkulator dana pensiun: isi tahun, kebutuhan bulanan, inflasi, imbal, dan tabungan untuk melihat target dana dan grafik trayek. Aktifkan JavaScript untuk menghitung.",
         },
+        "bonds" | "kalkulator/obligasi" | "calculators/government-bonds" => PageMeta {
+            title_id: "Kalkulator Obligasi Ritel (SBN) · Beruang",
+            title_en: "Retail Government Bond Calculator · Beruang",
+            desc_id: "Hitung kupon bersih bulanan dan YTM obligasi ritel kupon tetap (ORI/SR) setelah pajak final 10%.",
+            desc_en: "Compute net monthly coupons and YTM for fixed-coupon retail government bonds after the 10% final tax.",
+            canonical: "/kalkulator/obligasi",
+            hreflang_en: Some("/calculators/government-bonds"),
+            og_image: "og-obligasi.png",
+            noscript: "Kalkulator obligasi ritel: isi nominal, kupon, tenor, harga beli, dan pajak untuk melihat kupon bersih dan YTM. Aktifkan JavaScript untuk menghitung.",
+        },
         _ => PageMeta {
             title_id: "Beruang — Kalkulator Keuangan",
             title_en: "Beruang — Finance Calculators",
@@ -528,6 +538,7 @@ fn canonical_redirect(path: &str) -> Option<&'static str> {
         "flat-loan" => "/kalkulator/bunga-flat",
         "debt-payoff" => "/kalkulator/lunas-utang",
         "retirement" => "/kalkulator/dana-pensiun",
+        "bonds" => "/kalkulator/obligasi",
         "overview" => "/portofolio",
         _ => return None,
     })

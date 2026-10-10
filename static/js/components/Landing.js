@@ -17,6 +17,10 @@ const GROUPS = [
             { route: 'mutual-funds', path: '/kalkulator/reksa-dana', titleKey: 'home.calcMfTitle', descKey: 'home.calcMfDesc', sample: () => ({ entries: SAMPLE_MF }) },
             { route: 'stocks', path: '/kalkulator/saham', titleKey: 'home.calcStocksTitle', descKey: 'home.calcStocksDesc', sample: () => ({ entries: SAMPLE_STOCKS }) },
             { route: 'term-deposits', path: '/kalkulator/deposito', titleKey: 'home.calcTdTitle', descKey: 'home.calcTdDesc', sample: () => ({ entries: SAMPLE_TD.entries, apy: SAMPLE_TD.apy }) },
+            {
+                route: 'bonds', path: '/kalkulator/obligasi', titleKey: 'home.calcBondsTitle', descKey: 'home.calcBondsDesc',
+                sample: () => ({ inputs: { nominal: 10000000, coupon_annual: 6.9, tenor_months: 36, price_pct: 100, tax_rate: 10, rates_pct: 1 } }),
+            },
         ],
     },
     {

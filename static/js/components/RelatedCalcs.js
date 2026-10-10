@@ -12,6 +12,7 @@ const LINKS = {
         { path: '/kalkulator/bunga-flat', titleKey: 'related.toFlatLoan', descKey: 'related.toFlatLoanDesc' },
         { path: '/kalkulator/lunas-utang', titleKey: 'related.toDebt', descKey: 'related.toDebtDesc' },
         { path: '/kalkulator/dana-pensiun', titleKey: 'related.toRetire', descKey: 'related.toRetireDesc' },
+        { path: '/kalkulator/obligasi', titleKey: 'related.toBonds', descKey: 'related.toBondsDesc' },
     ],
     stocks: [
         { path: '/kalkulator/reksa-dana', titleKey: 'related.toMf', descKey: 'related.toMfDesc' },
@@ -21,6 +22,7 @@ const LINKS = {
         { path: '/kalkulator/bunga-flat', titleKey: 'related.toFlatLoan', descKey: 'related.toFlatLoanDesc' },
         { path: '/kalkulator/lunas-utang', titleKey: 'related.toDebt', descKey: 'related.toDebtDesc' },
         { path: '/kalkulator/dana-pensiun', titleKey: 'related.toRetire', descKey: 'related.toRetireDesc' },
+        { path: '/kalkulator/obligasi', titleKey: 'related.toBonds', descKey: 'related.toBondsDesc' },
     ],
     'term-deposits': [
         { path: '/kalkulator/reksa-dana', titleKey: 'related.toMf', descKey: 'related.toMfDesc' },
@@ -30,6 +32,7 @@ const LINKS = {
         { path: '/kalkulator/bunga-flat', titleKey: 'related.toFlatLoan', descKey: 'related.toFlatLoanDesc' },
         { path: '/kalkulator/lunas-utang', titleKey: 'related.toDebt', descKey: 'related.toDebtDesc' },
         { path: '/kalkulator/dana-pensiun', titleKey: 'related.toRetire', descKey: 'related.toRetireDesc' },
+        { path: '/kalkulator/obligasi', titleKey: 'related.toBonds', descKey: 'related.toBondsDesc' },
     ],
     ev: [
         { path: '/kalkulator/reksa-dana', titleKey: 'related.toMf', descKey: 'related.toMfDesc' },
@@ -39,6 +42,7 @@ const LINKS = {
         { path: '/kalkulator/bunga-flat', titleKey: 'related.toFlatLoan', descKey: 'related.toFlatLoanDesc' },
         { path: '/kalkulator/lunas-utang', titleKey: 'related.toDebt', descKey: 'related.toDebtDesc' },
         { path: '/kalkulator/dana-pensiun', titleKey: 'related.toRetire', descKey: 'related.toRetireDesc' },
+        { path: '/kalkulator/obligasi', titleKey: 'related.toBonds', descKey: 'related.toBondsDesc' },
     ],
     'rent-buy': [
         { path: '/kalkulator/reksa-dana', titleKey: 'related.toMf', descKey: 'related.toMfDesc' },
@@ -48,6 +52,7 @@ const LINKS = {
         { path: '/kalkulator/bunga-flat', titleKey: 'related.toFlatLoan', descKey: 'related.toFlatLoanDesc' },
         { path: '/kalkulator/lunas-utang', titleKey: 'related.toDebt', descKey: 'related.toDebtDesc' },
         { path: '/kalkulator/dana-pensiun', titleKey: 'related.toRetire', descKey: 'related.toRetireDesc' },
+        { path: '/kalkulator/obligasi', titleKey: 'related.toBonds', descKey: 'related.toBondsDesc' },
     ],
     'retire': [
         { path: '/kalkulator/reksa-dana', titleKey: 'related.toMf', descKey: 'related.toMfDesc' },
@@ -57,6 +62,7 @@ const LINKS = {
         { path: '/kalkulator/sewa-vs-beli', titleKey: 'related.toRentBuy', descKey: 'related.toRentBuyDesc' },
         { path: '/kalkulator/bunga-flat', titleKey: 'related.toFlatLoan', descKey: 'related.toFlatLoanDesc' },
         { path: '/kalkulator/lunas-utang', titleKey: 'related.toDebt', descKey: 'related.toDebtDesc' },
+        { path: '/kalkulator/obligasi', titleKey: 'related.toBonds', descKey: 'related.toBondsDesc' },
     ],
     'debt-payoff': [
         { path: '/kalkulator/reksa-dana', titleKey: 'related.toMf', descKey: 'related.toMfDesc' },
@@ -65,6 +71,7 @@ const LINKS = {
         { path: '/kalkulator/mobil-listrik', titleKey: 'related.toEv', descKey: 'related.toEvDesc' },
         { path: '/kalkulator/sewa-vs-beli', titleKey: 'related.toRentBuy', descKey: 'related.toRentBuyDesc' },
         { path: '/kalkulator/bunga-flat', titleKey: 'related.toFlatLoan', descKey: 'related.toFlatLoanDesc' },
+        { path: '/kalkulator/obligasi', titleKey: 'related.toBonds', descKey: 'related.toBondsDesc' },
     ],
     'flat-loan': [
         { path: '/kalkulator/reksa-dana', titleKey: 'related.toMf', descKey: 'related.toMfDesc' },
@@ -72,6 +79,17 @@ const LINKS = {
         { path: '/kalkulator/deposito', titleKey: 'related.toDeposits', descKey: 'related.toDepositsDesc' },
         { path: '/kalkulator/mobil-listrik', titleKey: 'related.toEv', descKey: 'related.toEvDesc' },
         { path: '/kalkulator/sewa-vs-beli', titleKey: 'related.toRentBuy', descKey: 'related.toRentBuyDesc' },
+        { path: '/kalkulator/lunas-utang', titleKey: 'related.toDebt', descKey: 'related.toDebtDesc' },
+        { path: '/kalkulator/dana-pensiun', titleKey: 'related.toRetire', descKey: 'related.toRetireDesc' },
+        { path: '/kalkulator/obligasi', titleKey: 'related.toBonds', descKey: 'related.toBondsDesc' },
+    ],
+    'bonds': [
+        { path: '/kalkulator/reksa-dana', titleKey: 'related.toMf', descKey: 'related.toMfDesc' },
+        { path: '/kalkulator/saham', titleKey: 'related.toStocks', descKey: 'related.toStocksDesc' },
+        { path: '/kalkulator/deposito', titleKey: 'related.toDeposits', descKey: 'related.toDepositsDesc' },
+        { path: '/kalkulator/mobil-listrik', titleKey: 'related.toEv', descKey: 'related.toEvDesc' },
+        { path: '/kalkulator/sewa-vs-beli', titleKey: 'related.toRentBuy', descKey: 'related.toRentBuyDesc' },
+        { path: '/kalkulator/bunga-flat', titleKey: 'related.toFlatLoan', descKey: 'related.toFlatLoanDesc' },
         { path: '/kalkulator/lunas-utang', titleKey: 'related.toDebt', descKey: 'related.toDebtDesc' },
         { path: '/kalkulator/dana-pensiun', titleKey: 'related.toRetire', descKey: 'related.toRetireDesc' },
     ],

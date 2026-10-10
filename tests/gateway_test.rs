@@ -1002,6 +1002,109 @@ async fn flat_loan_english_alias_meta() {
         .contains("<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/bunga-flat\">"));
 }
 
+/// Bonds: ORI-style retail series at par pays 51.750/mo net; bad input
+/// keeps 422 shape; the schedule cumulates to the totals.
+#[tokio::test]
+async fn bonds_comparison_matches_model() {
+    let app = beruang_gateway::routes::create_router();
+    let payload = serde_json::json!({
+        "nominal": 10000000.0, "coupon_annual": 0.069,
+        "tenor_months": 36.0, "price_pct": 100.0, "tax_rate": 0.10,
+    })
+    .to_string();
+    let response = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/bonds/comparison")
+                .header("content-type", "application/json")
+                .body(Body::from(payload))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_json(response).await;
+    assert_eq!(body["purchase_cost"].as_f64().unwrap(), 10_000_000.0);
+    // 10M x 6.9% / 12 x 0.9 net, to the rupiah.
+    assert_eq!(body["monthly_coupon_net"].as_f64().unwrap(), 51_750.0);
+    // Net YTM lands just above the 6.21% nominal (compounding).
+    let ytm = body["ytm_net_annual"].as_f64().unwrap();
+    assert!((0.06..0.07).contains(&ytm), "{ytm}");
+    assert!(body["ytm_gross_annual"].as_f64().unwrap() > ytm);
+    assert_eq!(body["capital_gain"].as_f64().unwrap(), 0.0);
+    let schedule = body["schedule"].as_array().unwrap();
+    assert_eq!(schedule.len(), 36);
+    assert_eq!(
+        schedule[35]["cum_net"].as_f64().unwrap().round(),
+        body["total_coupon_net"].as_f64().unwrap().round()
+    );
+
+    let bad = r#"{"nominal": 500000, "coupon_annual": 0.069, "tenor_months": 36}"#;
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method("POST")
+                .uri("/api/v1/bonds/comparison")
+                .header("content-type", "application/json")
+                .body(Body::from(bad))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+    assert!(response_body_json(response).await["detail"]
+        .as_str()
+        .unwrap()
+        .contains("nominal"));
+}
+
+/// Bonds page shares the Indonesian canonical like the calculators.
+#[tokio::test]
+async fn bonds_page_meta() {
+    let app = beruang_gateway::routes::create_router();
+    for uri in ["/kalkulator/obligasi"] {
+        let response = app
+            .clone()
+            .oneshot(Request::builder().uri(uri).body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(response.status(), StatusCode::OK, "{uri}");
+        let body = response_body_text(response).await;
+        assert!(
+            body.contains("<title>Kalkulator Obligasi Ritel (SBN) · Beruang</title>"),
+            "{uri}"
+        );
+        assert!(
+            body.contains(
+                "<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/obligasi\">"
+            ),
+            "{uri}"
+        );
+    }
+}
+
+/// English bonds alias serves English copy under the same canonical.
+#[tokio::test]
+async fn bonds_english_alias_meta() {
+    let app = beruang_gateway::routes::create_router();
+    let response = app
+        .oneshot(
+            Request::builder()
+                .uri("/calculators/government-bonds")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::OK);
+    let body = response_body_text(response).await;
+    assert!(body.contains("<title>Retail Government Bond Calculator · Beruang</title>"));
+    assert!(body
+        .contains("<link rel=\"canonical\" href=\"http://localhost:8000/kalkulator/obligasi\">"));
+}
+
 /// Debt payoff: avalanche beats snowball on the sample debts; bad input
 /// keeps 422 shape; both schedules amortize to zero.
 #[tokio::test]
@@ -1215,6 +1318,7 @@ async fn legacy_short_urls_redirect_to_canonical() {
     let app = beruang_gateway::routes::create_router();
     for (short, canonical) in [
         ("/flat-loan", "/kalkulator/bunga-flat"),
+        ("/bonds", "/kalkulator/obligasi"),
         ("/debt-payoff", "/kalkulator/lunas-utang"),
         ("/retirement", "/kalkulator/dana-pensiun"),
         ("/rent-vs-buy", "/kalkulator/sewa-vs-beli"),
@@ -1365,6 +1469,7 @@ async fn per_route_og_images() {
         ("/kalkulator/bunga-flat", "og-bunga-flat.png"),
         ("/kalkulator/lunas-utang", "og-lunas-utang.png"),
         ("/kalkulator/dana-pensiun", "og-dana-pensiun.png"),
+        ("/kalkulator/obligasi", "og-obligasi.png"),
         ("/calculators/debt-payoff", "og-lunas-utang.png"),
         ("/", "og-image.png"),
         ("/some-unknown-page", "og-image.png"),

@@ -21,6 +21,8 @@ const PATHS = {
     'debt-payoff': html`<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>`,
     // Retirement — umbrella.
     retire: html`<path d="M22 12a10 10 0 0 0-20 0z"/><path d="M12 12v7a2 2 0 0 0 4 0"/>`,
+    // Bonds — award seal.
+    bonds: html`<circle cx="12" cy="8" r="5"/><path d="M8.5 12.5 7 22l5-3 5 3-1.5-9.5"/>`,
 };
 
 export function CaseIcon({ kind, size = 18 }) {
