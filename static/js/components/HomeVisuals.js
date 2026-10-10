@@ -68,6 +68,7 @@ const THUMBS = {
         { points: [1, 2.2, 3.8, 6, 9, 13, 18], color: 'var(--chart-blue)' },
         { points: [18, 18, 18, 18, 18, 18, 18], color: 'var(--chart-tick)', dashed: true },
     ]} />`,
+    bonds: () => html`<${MiniBars} values=${[4, 8, 12, 16, 21, 26]} color="var(--chart-blue)" />`,
 };
 
 export function CalcThumb({ kind }) {
@@ -76,7 +77,7 @@ export function CalcThumb({ kind }) {
 }
 
 const STATS = [
-    { value: '8', labelKey: 'home.statCalcsLabel', icon: 'grid' },
+    { value: '9', labelKey: 'home.statCalcsLabel', icon: 'grid' },
     { value: '3', labelKey: 'home.statAssetsLabel', icon: 'layers' },
     { value: '0', labelKey: 'home.statSignupLabel', icon: 'lock' },
 ];

@@ -24,6 +24,9 @@ const routes = {
     '/flat-loan': 'flat-loan',
     '/kalkulator/bunga-flat': 'flat-loan',
     '/calculators/flat-rate-loan': 'flat-loan',
+    '/bonds': 'bonds',
+    '/kalkulator/obligasi': 'bonds',
+    '/calculators/government-bonds': 'bonds',
     '/debt-payoff': 'debt-payoff',
     '/kalkulator/lunas-utang': 'debt-payoff',
     '/calculators/debt-payoff': 'debt-payoff',
@@ -42,6 +45,7 @@ export const canonicalPath = {
     ev: '/kalkulator/mobil-listrik',
     'rent-buy': '/kalkulator/sewa-vs-beli',
     'flat-loan': '/kalkulator/bunga-flat',
+    'bonds': '/kalkulator/obligasi',
     'debt-payoff': '/kalkulator/lunas-utang',
     retire: '/kalkulator/dana-pensiun',
 };

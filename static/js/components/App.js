@@ -12,6 +12,7 @@ import { RentVsBuy } from './RentVsBuy.js';
 import { FlatLoan } from './FlatLoan.js';
 import { DebtPayoff } from './DebtPayoff.js';
 import { Retire } from './Retire.js';
+import { Bonds } from './Bonds.js';
 import { Footer } from './Footer.js';
 
 // No-JS fallback hook: without JS the nav panel stays visible (see CSS).
@@ -83,6 +84,7 @@ export function App() {
             'flat-loan': t(locale, 'nav.flatLoan'),
             'debt-payoff': t(locale, 'nav.debtPayoff'),
             retire: t(locale, 'nav.retire'),
+            bonds: t(locale, 'nav.bonds'),
         };
         document.title = `${titles[route] || 'Beruang'} · Beruang`;
     }, [route, locale]);
@@ -101,6 +103,7 @@ export function App() {
         'flat-loan': html`<${FlatLoan} settings=${settings} />`,
         'debt-payoff': html`<${DebtPayoff} settings=${settings} />`,
         retire: html`<${Retire} settings=${settings} />`,
+        bonds: html`<${Bonds} settings=${settings} />`,
     };
 
     // Canonical order everywhere (header, mobile menu, footer):
@@ -114,6 +117,7 @@ export function App() {
         { to: '/kalkulator/bunga-flat', key: 'flat-loan', labelKey: 'nav.flatLoan', descKey: 'home.flatDesc' },
         { to: '/kalkulator/lunas-utang', key: 'debt-payoff', labelKey: 'nav.debtPayoff', descKey: 'home.debtDesc' },
         { to: '/kalkulator/dana-pensiun', key: 'retire', labelKey: 'nav.retire', descKey: 'home.retireDesc' },
+        { to: '/kalkulator/obligasi', key: 'bonds', labelKey: 'nav.bonds', descKey: 'home.calcBondsDesc' },
     ];
     const calcActive = calcLinks.some(l => l.key === route);
     const go = (e, to) => { e.preventDefault(); setMenuOpen(false); setCalcOpen(false); navigate(to); };

@@ -3,6 +3,7 @@
 //! replaying `tests/fixtures/*.json` at 1e-9 relative tolerance).
 //! `logic.py` stays the frozen oracle — no new math here.
 
+pub mod bonds;
 pub mod debt;
 pub mod deposits;
 pub mod error;
@@ -14,6 +15,7 @@ pub mod retire;
 pub mod stock;
 pub mod xirr;
 
+pub use bonds::{bond_comparison, bond_monthly_ytm, BondComparison, BondInput, BondMonthPoint};
 pub use debt::{
     debt_payoff_comparison, DebtInput, DebtPayoffComparison, DebtPayoffInput, DebtResult,
     PayoffPlan, RateKind,
