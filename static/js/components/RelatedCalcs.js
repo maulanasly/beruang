@@ -86,10 +86,10 @@ export function RelatedCalcs({ current, settings }) {
         <div class="smallcaps" style="margin-bottom:8px">${t(locale, 'related.title')}</div>
         <div class="summary-cards" style="margin-bottom:0">
             ${links.map(l => html`<a href=${l.path} onClick=${e => go(e, l.path)} class="card" style="margin:0; text-decoration:none; color:inherit; display:block">
-                <div style="font-weight:700; font-size:14px">${t(locale, l.titleKey)} →</div>
+                <div style="font-weight:700; font-size:14px">${t(locale, l.titleKey)}</div>
                 <div class="muted" style="font-size:12px">${t(locale, l.descKey)}</div>
             </a>`)}
         </div>
-        <p style="margin:10px 0 0; font-size:13px"><a href="/portofolio" onClick=${e => go(e, '/portofolio')}>${t(locale, 'nav.portfolio')} →</a></p>
+        <p style="margin:10px 0 0; font-size:13px"><a href="/portofolio" onClick=${e => go(e, '/portofolio')}>${t(locale, 'nav.portfolio')}</a></p>
     </section>`;
 }

@@ -164,10 +164,10 @@ export function Landing({ settings }) {
                 <div class="home-questions__chips">
                     ${QUESTIONS.map(q => {
                         const url = buildShareUrl(q.route, SAMPLE_BY_ROUTE[q.sample]());
-                        return html`<a class="intent-link" href=${url} onClick=${e => goUrl(e, url)}>${t(locale, q.qKey)} <span aria-hidden="true">→</span></a>`;
+                        return html`<a class="intent-link" href=${url} onClick=${e => goUrl(e, url)}>${t(locale, q.qKey)}</a>`;
                     })}
                 </div>
-                <a class="home-questions__browse" href="#calculator-index">${t(locale, 'home.viewAllCalcs')} →</a>
+                <a class="home-questions__browse" href="#calculator-index">${t(locale, 'home.viewAllCalcs')}</a>
             </section>
         </section>
 

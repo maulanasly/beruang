@@ -24,7 +24,7 @@ function DepositScheduleRow({ row, monthlyRate, taxRate, settings, n }) {
     const titles = schedule.map(s => `${s.date}: ${formatCurrency(s.interest, locale, currency)}`);
     return html`<details class="deposit-schedule">
         <summary>
-            <span>${t(locale, 'depositSchedule.deposit', { n })} · ${row.date} → ${row.maturity_date || ''}</span>
+            <span>${t(locale, 'depositSchedule.deposit', { n })} · ${row.date} – ${row.maturity_date || ''}</span>
             <span class="muted">${t(locale, 'depositSchedule.total', { value: formatCurrency(totalGross, locale, currency) })} · ${t(locale, 'depositSchedule.net')} ${formatCurrency(totalNet, locale, currency)}</span>
         </summary>
         <${MiniBars} values=${values} titles=${titles} color="var(--chart-orange)" w=${360} h=${96} />

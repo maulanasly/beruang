@@ -130,7 +130,7 @@ export function Retire({ settings }) {
                 <div class="muted" style="font-size:12px; margin-top:4px">${t(locale, 'retire.sensCaption')}</div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px">
                     ${result.sensitivity.map((pt) => html`<span style="display:inline-block; padding:2px 10px; border-radius:999px; font-size:12px; background:var(--chart-track); white-space:nowrap" title=${full(pt.required_monthly)}>
-                        ${(pt.invest_return * 100).toFixed(0)}% → ${cc(pt.required_monthly)}${t(locale, 'retire.perMonth')}
+                        ${(pt.invest_return * 100).toFixed(0)}%: ${cc(pt.required_monthly)}${t(locale, 'retire.perMonth')}
                     </span>`)}
                 </div>
             </div>
