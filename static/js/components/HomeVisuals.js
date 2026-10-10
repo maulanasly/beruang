@@ -128,7 +128,7 @@ export function ConceptBand({ settings, go }) {
                 <${CalcThumbWrapper} visual=${c.visual} />
                 <h3 class="concept-card__title">${t(locale, c.titleKey)}</h3>
                 <span class="muted concept-card__desc">${t(locale, c.descKey)}</span>
-                <span class="concept-card__link">${t(locale, 'home.cardOpenBlank')} →</span>
+                <span class="concept-card__link">${t(locale, 'home.cardOpenBlank')}</span>
             </a>`)}
         </div>
     </section>`;

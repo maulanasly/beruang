@@ -49,7 +49,7 @@ export function GoalsPanel({ settings, totalValue, monthlyAvg }) {
         ${!editing && !goals.overall.target && !GOALS_ASSETS.some(a=>goals.assets[a].target)
             ? html`<p class="muted" style="font-size:13px">${t(locale, 'goals.noGoals')}</p>
                 <p style="font-size:13px; display:flex; gap:8px; flex-wrap:wrap">
-                    ${GOALS_ASSETS.map(a => html`<a href=${CALC_PATHS[a]} onClick=${e=>go(e,CALC_PATHS[a])}>${LABELS[a]} →</a>`)}
+                    ${GOALS_ASSETS.map(a => html`<a href=${CALC_PATHS[a]} onClick=${e=>go(e,CALC_PATHS[a])}>${LABELS[a]}</a>`)}
                 </p>`
             : html`<div>
                 <div style="margin-top:8px">

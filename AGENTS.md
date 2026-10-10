@@ -42,3 +42,27 @@ logic.py     frozen oracle — never add math here
 - Market: adjusted close wins (yfinance parity); yields fan-out cached 6h
 - Static: shell `no-cache`, versioned assets immutable 1y; scripts `'self'`-only
 - Forbidden: Python runtime, npm/CDN in `static/`
+
+## UX guide rail (anti-slop)
+
+Filter, not style: https://github.com/miqdadbadjuber/anti-slop
+(direction stays with Beruang's ledger/paper identity, `static/css/styles.css`
+tokens); the filter only rejects generic AI slop. Apply on any UI/copy work
+in `static/`; end with the repo's PASS/FAIL Delivery Gate before shipping.
+
+- Hard gate (FAIL if broken): no em dash `—` in UI copy (use `,`/`:`/`()`);
+  no invented stats, testimonials, or trust claims (empty beats deceptive);
+  every nav item points somewhere real; every button/link works or is removed;
+  empty + loading + error states on all data UI; WCAG AA contrast, keyboard
+  operable, visible focus, `Escape` closes dialogs; both themes must work.
+- Purpose gate (technique needs a written reason or it goes): gradients,
+  glass, glow, arrows (`→`/`↗`), badges, cards, icons, animation. Dose caps:
+  blur on max 1–2 elements, glow on max 1–2 focal elements, one accent only.
+- Quality locks: max 2–3 core colors + 1 accent; CTAs specific to the action
+  (never Get Started/Learn More); no buzzwords (AI Powered, Seamless, ...);
+  layout follows content need, never Hero + 3 cards + testimonials + FAQ
+  template; never clone Linear/Vercel/Stripe; every major decision gets a
+  one-line why (R-31).
+- Liveliness: declare dials per change, default ENERGY 1 / RHYTHM 1 / MOTION 1
+  (calm ledger tool); one focal point per screen, hierarchical contrast,
+  whitespace as structure, one deliberate accent + one identity motif.

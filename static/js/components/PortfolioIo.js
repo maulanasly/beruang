@@ -204,9 +204,9 @@ export function PortfolioIo({ settings }) {
         ${status && html`<p style="color:var(--success); font-size:13px">${status}</p>
             ${snapshotNote && html`<p class="muted" style="font-size:12px">${snapshotNote}</p>`}
             <p style="font-size:13px; display:flex; gap:8px; flex-wrap:wrap">
-                ${RECALC_LINKS.map(l => html`<a href=${l.to} onClick=${e=>go(e,l.to)}>${t(locale, l.labelKey)} →</a>`)}
+                ${RECALC_LINKS.map(l => html`<a href=${l.to} onClick=${e=>go(e,l.to)}>${t(locale, l.labelKey)}</a>`)}
             </p>`}
         ${error && html`<p style="color:var(--danger); font-size:13px" role="alert">${error}</p>`}
-        ${perAsset && html`<p style="font-size:13px"><a href=${ASSET_PATHS[perAsset]} onClick=${e=>go(e,ASSET_PATHS[perAsset])}>${t(locale, ASSET_LABEL_KEYS[perAsset])} →</a> — ${t(locale, 'backup.wrongFile')}</p>`}
+        ${perAsset && html`<p style="font-size:13px"><a href=${ASSET_PATHS[perAsset]} onClick=${e=>go(e,ASSET_PATHS[perAsset])}>${t(locale, ASSET_LABEL_KEYS[perAsset])}</a>: ${t(locale, 'backup.wrongFile')}</p>`}
     </div>`;
 }

@@ -84,7 +84,7 @@ export function App() {
             'debt-payoff': t(locale, 'nav.debtPayoff'),
             retire: t(locale, 'nav.retire'),
         };
-        document.title = `${titles[route] || 'Beruang'} — Beruang`;
+        document.title = `${titles[route] || 'Beruang'} · Beruang`;
     }, [route, locale]);
     useEffect(() => { saveSettings(settings); document.documentElement.lang = locale.split('-')[0]; }, [settings]);
     useEffect(() => { document.documentElement.dataset.theme = settings.theme === 'dark' ? 'dark' : 'light'; }, [settings.theme]);
@@ -123,7 +123,7 @@ export function App() {
             <header class="ledger-header">
                 <div class="topbar-main">
                     <div class="ledger-header__brand">
-                        <a href="/" onClick=${e => go(e, '/')} aria-label="Beruang — ${t(locale, 'nav.home')}" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:inherit">
+                        <a href="/" onClick=${e => go(e, '/')} aria-label="Beruang · ${t(locale, 'nav.home')}" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:inherit">
                             <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden="true"><rect x="2" y="2" width="60" height="60" rx="14" style="fill:var(--ledger)"/><circle cx="32" cy="32" r="20" fill="none" style="stroke:var(--paper)" stroke-width="3.5"/><text x="32" y="41.5" font-family="Georgia, serif" font-size="23" font-weight="bold" style="fill:var(--paper)" text-anchor="middle">Rp</text></svg>
                             ${t(locale, 'hero.brand')} <small>${t(locale, 'hero.title')}</small>
                         </a>

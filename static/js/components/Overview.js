@@ -200,7 +200,7 @@ export function Overview({ settings }) {
                     ${estimatedNames && html`<span class="muted"> ${t(locale, 'overview.attentionEstimated', { assets: estimatedNames })}</span>`}
                 </div>
                 <div class="attention-panel__actions">
-                    ${attention.map(a => html`<a href=${a.to} onClick=${e=>go(e,a.to)}>${t(locale, 'overview.attentionAction', { asset: a.name })} →</a>`)}
+                    ${attention.map(a => html`<a href=${a.to} onClick=${e=>go(e,a.to)}>${t(locale, 'overview.attentionAction', { asset: a.name })}</a>`)}
                 </div>
             </div>`}
             <div class="summary-cards">
@@ -221,7 +221,7 @@ export function Overview({ settings }) {
             { label: t(locale, 'nav.termDeposits'), value: tdVal, color: ASSET_COLORS['term-deposits'] },
         ]} />
         ${tdInterest && html`<div class="card">
-            <div class="smallcaps"><a href="/kalkulator/deposito" onClick=${e=>go(e,'/kalkulator/deposito')}>${t(locale, 'overview.depositInterestTitle')} →</a></div>
+            <div class="smallcaps"><a href="/kalkulator/deposito" onClick=${e=>go(e,'/kalkulator/deposito')}>${t(locale, 'overview.depositInterestTitle')}</a></div>
             <div class="summary-cards" style="margin:10px 0 0">
                 <div class="card" style="margin:0"><div class="smallcaps">${t(locale, 'overview.depositMonthlyInterest')}</div><div class="amount" style="font-size:15px">${formatCurrency(tdInterest.month, locale, settings.currency)}</div></div>
                 <div class="card" style="margin:0"><div class="smallcaps">${t(locale, 'overview.depositNext12')}</div><div class="amount" style="font-size:15px">${formatCurrency(tdInterest.next12Net, locale, settings.currency)}</div></div>
@@ -235,7 +235,7 @@ export function Overview({ settings }) {
                 { label: t(locale, 'nav.termDeposits'), to: '/kalkulator/deposito', value: tdVal, invested: tdInv, extra: tdEdited ? editedText : (tdEst ? t(locale, 'overview.estimated') : null) },
             ].map(a => {
                 const roi = a.invested > 0 ? (a.value - a.invested) / a.invested : null;
-                return html`<div class="card"><div class="smallcaps"><a href=${a.to} onClick=${e=>go(e,a.to)}>${a.label} →</a></div><div class="amount">${formatCurrency(a.value, settings.locale, settings.currency)}</div><div style="font-size:15px; font-weight:600">${roi != null ? formatPercent(roi, settings.locale) : '-'}</div><div class="muted" style="font-size:12px">${t(locale, 'overview.invested')} ${formatCurrency(a.invested, settings.locale, settings.currency)}</div>${a.div != null && a.div > 0 ? html`<div class="muted" style="font-size:12px">${t(locale, 'column.dividends')}: ${formatCurrency(a.div, settings.locale, settings.currency)}</div>` : ''}${a.extra ? html`<div class="muted" style="font-size:12px">⚠ ${a.extra}</div>` : ''}</div>`;
+                return html`<div class="card"><div class="smallcaps"><a href=${a.to} onClick=${e=>go(e,a.to)}>${a.label}</a></div><div class="amount">${formatCurrency(a.value, settings.locale, settings.currency)}</div><div style="font-size:15px; font-weight:600">${roi != null ? formatPercent(roi, settings.locale) : '-'}</div><div class="muted" style="font-size:12px">${t(locale, 'overview.invested')} ${formatCurrency(a.invested, settings.locale, settings.currency)}</div>${a.div != null && a.div > 0 ? html`<div class="muted" style="font-size:12px">${t(locale, 'column.dividends')}: ${formatCurrency(a.div, settings.locale, settings.currency)}</div>` : ''}${a.extra ? html`<div class="muted" style="font-size:12px">⚠ ${a.extra}</div>` : ''}</div>`;
             })}
         </div>
         <${GoalsPanel} settings=${settings} totalValue=${total} monthlyAvg=${monthlyAvg} />

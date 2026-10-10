@@ -355,7 +355,7 @@ export function RentVsBuy({ settings }) {
                 <div class="amount" style=${`font-size:17px; color:${v.tone}`}>${v.text}</div>
                 ${why && html`<div style="font-size:13px; margin-top:4px">${why}</div>`}
                 ${v.sub && html`<div class="muted" style="font-size:13px; margin-top:4px">${v.sub}</div>`}
-                ${flip && html`<div class="muted" style="font-size:13px; margin-top:4px">↗ ${flip}</div>`}
+                ${flip && html`<div class="muted" style="font-size:13px; margin-top:4px">${flip}</div>`}
             </div>`}
             <${signalsPanel} />
             <div class="summary-cards">
@@ -383,7 +383,7 @@ export function RentVsBuy({ settings }) {
                 <div class="muted" style="font-size:12px; margin-top:4px">${t(locale, 'rentbuy.sensCaption')}</div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px">
                     ${result.sensitivity.map((pt) => html`<span style="display:inline-block; padding:2px 10px; border-radius:999px; font-size:12px; background:var(--chart-track); white-space:nowrap">
-                        ${(pt.appreciation * 100).toFixed(0)}% → ${pt.break_even_year == null ? t(locale, 'rentbuy.sensNever') : `Y${pt.break_even_year}`}
+                        ${(pt.appreciation * 100).toFixed(0)}%: ${pt.break_even_year == null ? t(locale, 'rentbuy.sensNever') : `Y${pt.break_even_year}`}
                     </span>`)}
                 </div>
             </div>`}
