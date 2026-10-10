@@ -1,7 +1,7 @@
 import { html } from '../vendor/preact-htm-signals.js';
 import { t } from '../i18n.js';
 import { navigate } from '../router.js';
-import { SAMPLE_MF, SAMPLE_STOCKS, SAMPLE_TD, loadLedgers } from '../store.js';
+import { SAMPLE_MF, SAMPLE_STOCKS, SAMPLE_TD } from '../store.js';
 import { buildShareUrl } from '../share.js';
 import { HeroCalc } from './HeroCalc.js';
 import { StatStrip, ConceptBand } from './HomeVisuals.js';
@@ -82,16 +82,6 @@ const GROUPS = [
     },
 ];
 
-// Intent router: one click per question, asked in the user's own words.
-const QUESTIONS = [
-    { qKey: 'home.qMf', route: 'mutual-funds', path: '/kalkulator/reksa-dana', sample: 'mutual-funds' },
-    { qKey: 'home.qStocks', route: 'stocks', path: '/kalkulator/saham', sample: 'stocks' },
-    { qKey: 'home.qTd', route: 'term-deposits', path: '/kalkulator/deposito', sample: 'term-deposits' },
-    { qKey: 'home.qFlat', route: 'flat-loan', path: '/kalkulator/bunga-flat', sample: 'flat-loan' },
-];
-
-const SAMPLE_BY_ROUTE = Object.fromEntries(GROUPS.flatMap(g => g.items).map(it => [it.route, it.sample]));
-
 // Trust badges point at the specific FAQ or method section that backs them.
 const TRUST = [
     ['home.trustLocal', '#faq-server'],
@@ -135,17 +125,8 @@ export function Landing({ settings }) {
         const u = new URL(url, window.location.origin);
         navigate(u.pathname + u.search);
     };
-    const ledgers = loadLedgers();
-    const hasPortfolio = Boolean(
-        ledgers['mutual-funds']?.length || ledgers.stocks?.length || ledgers['term-deposits']?.entries?.length,
-    );
-    // New visitors get the worked example; returning visitors get their portfolio.
-    const samplePath = buildShareUrl('mutual-funds', { entries: SAMPLE_MF });
-    const primary = hasPortfolio
-        ? { to: '/portofolio', labelKey: 'home.ctaApp', sample: false }
-        : { to: samplePath, labelKey: 'home.ctaCalc', sample: true };
-    const openCta = (e, cta) => (cta.sample ? goUrl(e, cta.to) : go(e, cta.to));
-
+    // Design read: retail-investing homepage in a calm ledger language,
+    // ENERGY 1 / RHYTHM 2 / MOTION 1; calculation is primary, browsing secondary.
     return html`<div>
         <section class="home-top">
             <div class="masthead__copy home-top__copy">
@@ -153,7 +134,6 @@ export function Landing({ settings }) {
                 <h1>${t(locale, 'home.title')}</h1>
                 <p class="muted masthead__sub">${t(locale, 'home.subtitle')}</p>
                 <div class="masthead__cta">
-                    <a class="btn-primary" href=${primary.to} onClick=${e => openCta(e, primary)}>${t(locale, primary.labelKey)}</a>
                     <a class="masthead__cta-link" href="#calculator-index">${t(locale, 'home.ctaBrowse')}</a>
                 </div>
             </div>
@@ -162,17 +142,6 @@ export function Landing({ settings }) {
                 <${HeroCalc} settings=${settings} />
             </div>
 
-            <section class="card home-questions" aria-label=${t(locale, 'home.questionsTitle')}>
-                <h2 style="margin:0; font-size:17px">${t(locale, 'home.questionsTitle')}</h2>
-                <p class="home-questions__hint muted">${t(locale, 'home.quickStartHint')}</p>
-                <div class="home-questions__chips">
-                    ${QUESTIONS.map(q => {
-                        const url = buildShareUrl(q.route, SAMPLE_BY_ROUTE[q.sample]());
-                        return html`<a class="intent-link" href=${url} onClick=${e => goUrl(e, url)}>${t(locale, q.qKey)}</a>`;
-                    })}
-                </div>
-                <a class="home-questions__browse" href="#calculator-index">${t(locale, 'home.viewAllCalcs')}</a>
-            </section>
         </section>
 
         <${StatStrip} settings=${settings} />

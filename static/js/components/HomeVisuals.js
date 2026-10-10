@@ -1,36 +1,10 @@
 import { html } from '../vendor/preact-htm-signals.js';
 import { t } from '../i18n.js';
 
-// Zero-dependency, presentational SVG infographics for the homepage.
-// Everything here is a *static illustration*: no API calls, no data
-// fetching, so the landing always renders and stays fast/offline-safe.
-// Live-data charts live in the per-calculator components instead.
+// Zero-dependency SVG bars for actual deposit schedules. Homepage concepts
+// use text links instead of illustrative charts that could read as results.
 
 const PAD = 4;
-
-/** Multi-series mini line chart. `series`: [{ points, color, dashed, dots }]. */
-export function MiniLines({ series, w = 132, h = 48, label, filledFirst = false }) {
-    const all = series.flatMap(s => s.points);
-    const max = Math.max(...all);
-    const min = Math.min(...all);
-    const range = (max - min) || 1;
-    const y = v => h - PAD - ((v - min) / range) * (h - PAD * 2);
-    const paths = series.map(s => {
-        const xs = i => PAD + (i / Math.max(s.points.length - 1, 1)) * (w - PAD * 2);
-        const d = s.points.map((v, i) => `${i === 0 ? 'M' : 'L'}${xs(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
-        return { s, xs, d };
-    });
-    const first = paths[0];
-    const area = first ? `${first.d} L${first.xs(first.s.points.length - 1).toFixed(1)},${h - PAD} L${first.xs(0).toFixed(1)},${h - PAD} Z` : '';
-    return html`<svg class="mini" viewBox="0 0 ${w} ${h}" width=${w} height=${h}
-        role=${label ? 'img' : 'presentation'} aria-label=${label || null} aria-hidden=${label ? null : 'true'}>
-        ${filledFirst && first && html`<path d=${area} fill=${first.s.color} opacity="0.12" />`}
-        ${paths.map(p => html`<path class="draw" d=${p.d} fill="none" stroke=${p.s.color}
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-            stroke-dasharray=${p.s.dashed ? '4 3' : null} />`)}
-        ${series.flatMap(p => (p.dots || []).map(i => html`<circle cx=${paths[series.indexOf(p)].xs(i).toFixed(1)} cy=${y(p.points[i]).toFixed(1)} r="2.5" fill=${p.color} />`))}
-    </svg>`;
-}
 
 /** Mini bar chart. `colors` optional per-bar; `titles` per-bar tooltips. */
 export function MiniBars({ values, colors, titles, color = 'var(--chart-blue)', w = 132, h = 48 }) {
@@ -47,33 +21,6 @@ export function MiniBars({ values, colors, titles, color = 'var(--chart-blue)', 
                 >${titles && titles[i] ? html`<title>${titles[i]}</title>` : ''}</rect>`;
         })}
     </svg>`;
-}
-
-// Per-calculator thumbnail: a tiny shape hinting at what the tool outputs.
-const THUMBS = {
-    'mutual-funds': () => html`<${MiniLines} filledFirst=${true} series=${[{ points: [4, 6, 9, 13, 18, 24, 31, 40], color: 'var(--chart-blue)' }]} />`,
-    stocks: () => html`<${MiniLines} filledFirst=${true} series=${[{ points: [3, 5, 6, 10, 13, 17, 22, 28], color: 'var(--chart-green)', dots: [3, 6] }]} />`,
-    'term-deposits': () => html`<${MiniBars} values=${[6, 10, 14, 18, 23, 28]} color="var(--chart-orange)" />`,
-    ev: () => html`<${MiniBars} values=${[10, 4.5]} colors=${['var(--chart-orange)', 'var(--chart-blue)']} />`,
-    'rent-buy': () => html`<${MiniLines} series=${[
-        { points: [2, 3, 4, 5, 6, 7, 8], color: 'var(--chart-orange)' },
-        { points: [10, 8.5, 7, 5.5, 4, 2.5, 1], color: 'var(--chart-blue)' },
-    ]} />`,
-    'flat-loan': () => html`<${MiniBars} values=${[5, 9.4]} colors=${['var(--muted)', 'var(--accent)']} />`,
-    'debt-payoff': () => html`<${MiniLines} series=${[
-        { points: [10, 9, 7.5, 5.5, 3.5, 1.5], color: 'var(--chart-blue)' },
-        { points: [10, 9.4, 8.4, 6.6, 4.2, 1.8], color: 'var(--chart-orange)' },
-    ]} />`,
-    retire: () => html`<${MiniLines} series=${[
-        { points: [1, 2.2, 3.8, 6, 9, 13, 18], color: 'var(--chart-blue)' },
-        { points: [18, 18, 18, 18, 18, 18, 18], color: 'var(--chart-tick)', dashed: true },
-    ]} />`,
-    bonds: () => html`<${MiniBars} values=${[4, 8, 12, 16, 21, 26]} color="var(--chart-blue)" />`,
-};
-
-export function CalcThumb({ kind }) {
-    const render = THUMBS[kind];
-    return html`<div class="calc-thumb" aria-hidden="true">${render ? render() : ''}</div>`;
 }
 
 const STATS = [
@@ -93,7 +40,7 @@ function StatIcon({ name }) {
 export function StatStrip({ settings }) {
     const locale = settings.locale;
     return html`<section class="stat-strip" aria-label=${t(locale, 'home.statStripLabel')}>
-        ${STATS.map((s, i) => html`<div class="stat-tile" style=${`animation-delay:${i * 70}ms`}>
+        ${STATS.map(s => html`<div class="stat-tile">
             <span class="stat-tile__icon"><${StatIcon} name=${s.icon} /></span>
             ${s.value && html`<span class="stat-tile__value">${s.value}</span>`}
             <span class="stat-tile__label">${s.labelKey && t(locale, s.labelKey)}</span>
@@ -106,17 +53,14 @@ const CONCEPTS = [
     {
         path: '/kalkulator/reksa-dana',
         titleKey: 'home.conceptXirrTitle', descKey: 'home.conceptXirrDesc',
-        visual: () => html`<${MiniLines} filledFirst=${true} series=${[{ points: [8, 3, 9, 5, 12, 7, 16, 20], color: 'var(--chart-blue)' }]} />`,
     },
     {
         path: '/kalkulator/bunga-flat',
         titleKey: 'home.conceptFlatTitle', descKey: 'home.conceptFlatDesc',
-        visual: () => html`<${MiniBars} values=${[5, 9.4]} colors=${['var(--muted)', 'var(--accent)']} />`,
     },
     {
         path: '/kalkulator/dana-pensiun',
         titleKey: 'home.conceptCompoundTitle', descKey: 'home.conceptCompoundDesc',
-        visual: () => html`<${MiniLines} filledFirst=${true} series=${[{ points: [1, 1.5, 2.4, 3.8, 6, 9.5, 15], color: 'var(--chart-purple)' }]} />`,
     },
 ];
 
@@ -125,16 +69,10 @@ export function ConceptBand({ settings, go }) {
     return html`<section aria-label=${t(locale, 'home.conceptTitle')}>
         <h2 class="concept-band__heading">${t(locale, 'home.conceptTitle')}</h2>
         <div class="concept-band">
-            ${CONCEPTS.map(c => html`<a class="card concept-card" href=${c.path} onClick=${e => go(e, c.path)}>
-                <${CalcThumbWrapper} visual=${c.visual} />
-                <h3 class="concept-card__title">${t(locale, c.titleKey)}</h3>
-                <span class="muted concept-card__desc">${t(locale, c.descKey)}</span>
-                <span class="concept-card__link">${t(locale, 'home.cardOpenBlank')}</span>
+            ${CONCEPTS.map(c => html`<a class="concept-row" href=${c.path} onClick=${e => go(e, c.path)}>
+                <h3 class="concept-row__title">${t(locale, c.titleKey)}</h3>
+                <span class="muted concept-row__desc">${t(locale, c.descKey)}</span>
             </a>`)}
         </div>
     </section>`;
-}
-
-function CalcThumbWrapper({ visual }) {
-    return html`<div class="calc-thumb calc-thumb--wide" aria-hidden="true">${visual()}</div>`;
 }
