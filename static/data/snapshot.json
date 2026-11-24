@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-11-23",
+  "as_of": "2026-11-24",
   "histories": {
     "ADRO.JK": [
       {
@@ -957,6 +957,10 @@
       {
         "close": 2330.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 2340.0,
+        "date": "2026-11-24"
       }
     ],
     "AMMN.JK": [
@@ -1915,6 +1919,10 @@
       {
         "close": 3240.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 3300.0,
+        "date": "2026-11-24"
       }
     ],
     "ANTM.JK": [
@@ -2873,6 +2881,10 @@
       {
         "close": 2670.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 2670.0,
+        "date": "2026-11-24"
       }
     ],
     "ASII.JK": [
@@ -2885,7 +2897,7 @@
         "date": "2025-11-25"
       },
       {
-        "close": 6154.7587890625,
+        "close": 6154.75927734375,
         "date": "2025-11-26"
       },
       {
@@ -2893,7 +2905,7 @@
         "date": "2025-11-27"
       },
       {
-        "close": 6108.1318359375,
+        "close": 6108.13232421875,
         "date": "2025-11-28"
       },
       {
@@ -2901,15 +2913,15 @@
         "date": "2025-12-01"
       },
       {
-        "close": 6178.072265625,
+        "close": 6178.07275390625,
         "date": "2025-12-02"
       },
       {
-        "close": 6154.7587890625,
+        "close": 6154.75927734375,
         "date": "2025-12-03"
       },
       {
-        "close": 6271.32666015625,
+        "close": 6271.326171875,
         "date": "2025-12-04"
       },
       {
@@ -2917,15 +2929,15 @@
         "date": "2025-12-05"
       },
       {
-        "close": 6271.32666015625,
+        "close": 6271.326171875,
         "date": "2025-12-08"
       },
       {
-        "close": 6154.7587890625,
+        "close": 6154.75927734375,
         "date": "2025-12-09"
       },
       {
-        "close": 6178.072265625,
+        "close": 6178.07275390625,
         "date": "2025-12-10"
       },
       {
@@ -2933,27 +2945,27 @@
         "date": "2025-12-11"
       },
       {
-        "close": 6154.7587890625,
+        "close": 6154.75927734375,
         "date": "2025-12-12"
       },
       {
-        "close": 6154.7587890625,
+        "close": 6154.75927734375,
         "date": "2025-12-15"
       },
       {
-        "close": 6154.7587890625,
+        "close": 6154.75927734375,
         "date": "2025-12-16"
       },
       {
-        "close": 6154.7587890625,
+        "close": 6154.75927734375,
         "date": "2025-12-17"
       },
       {
-        "close": 6061.5048828125,
+        "close": 6061.50537109375,
         "date": "2025-12-18"
       },
       {
-        "close": 6084.818359375,
+        "close": 6084.81884765625,
         "date": "2025-12-19"
       },
       {
@@ -2961,11 +2973,11 @@
         "date": "2025-12-22"
       },
       {
-        "close": 6061.5048828125,
+        "close": 6061.50537109375,
         "date": "2025-12-23"
       },
       {
-        "close": 6178.072265625,
+        "close": 6178.07275390625,
         "date": "2025-12-24"
       },
       {
@@ -2981,15 +2993,15 @@
         "date": "2026-01-02"
       },
       {
-        "close": 6411.20751953125,
+        "close": 6411.20703125,
         "date": "2026-01-05"
       },
       {
-        "close": 6434.52099609375,
+        "close": 6434.5205078125,
         "date": "2026-01-06"
       },
       {
-        "close": 6551.08837890625,
+        "close": 6551.087890625,
         "date": "2026-01-07"
       },
       {
@@ -2997,7 +3009,7 @@
         "date": "2026-01-08"
       },
       {
-        "close": 6411.20751953125,
+        "close": 6411.20703125,
         "date": "2026-01-09"
       },
       {
@@ -3013,11 +3025,11 @@
         "date": "2026-01-14"
       },
       {
-        "close": 6574.40185546875,
+        "close": 6574.4013671875,
         "date": "2026-01-15"
       },
       {
-        "close": 6900.7900390625,
+        "close": 6900.79052734375,
         "date": "2026-01-19"
       },
       {
@@ -3025,7 +3037,7 @@
         "date": "2026-01-20"
       },
       {
-        "close": 6154.7587890625,
+        "close": 6154.75927734375,
         "date": "2026-01-21"
       },
       {
@@ -3037,7 +3049,7 @@
         "date": "2026-01-23"
       },
       {
-        "close": 6411.20751953125,
+        "close": 6411.20703125,
         "date": "2026-01-26"
       },
       {
@@ -3077,7 +3089,7 @@
         "date": "2026-02-06"
       },
       {
-        "close": 6201.3857421875,
+        "close": 6201.38623046875,
         "date": "2026-02-09"
       },
       {
@@ -3085,7 +3097,7 @@
         "date": "2026-02-10"
       },
       {
-        "close": 6294.64013671875,
+        "close": 6294.6396484375,
         "date": "2026-02-11"
       },
       {
@@ -3093,7 +3105,7 @@
         "date": "2026-02-12"
       },
       {
-        "close": 6201.3857421875,
+        "close": 6201.38623046875,
         "date": "2026-02-13"
       },
       {
@@ -3101,27 +3113,27 @@
         "date": "2026-02-18"
       },
       {
-        "close": 6154.7587890625,
+        "close": 6154.75927734375,
         "date": "2026-02-19"
       },
       {
-        "close": 6108.1318359375,
+        "close": 6108.13232421875,
         "date": "2026-02-20"
       },
       {
-        "close": 6178.072265625,
+        "close": 6178.07275390625,
         "date": "2026-02-23"
       },
       {
-        "close": 6108.1318359375,
+        "close": 6108.13232421875,
         "date": "2026-02-24"
       },
       {
-        "close": 6201.3857421875,
+        "close": 6201.38623046875,
         "date": "2026-02-25"
       },
       {
-        "close": 6271.32666015625,
+        "close": 6271.326171875,
         "date": "2026-02-26"
       },
       {
@@ -3165,7 +3177,7 @@
         "date": "2026-03-12"
       },
       {
-        "close": 5432.04052734375,
+        "close": 5432.041015625,
         "date": "2026-03-13"
       },
       {
@@ -3177,7 +3189,7 @@
         "date": "2026-03-17"
       },
       {
-        "close": 6154.7587890625,
+        "close": 6154.75927734375,
         "date": "2026-03-25"
       },
       {
@@ -3253,7 +3265,7 @@
         "date": "2026-04-21"
       },
       {
-        "close": 6154.7587890625,
+        "close": 6154.75927734375,
         "date": "2026-04-22"
       },
       {
@@ -3831,19 +3843,23 @@
       {
         "close": 5400.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 5450.0,
+        "date": "2026-11-24"
       }
     ],
     "BBCA.JK": [
       {
-        "close": 8009.47998046875,
+        "close": 8009.48095703125,
         "date": "2025-11-24"
       },
       {
-        "close": 8033.1064453125,
+        "close": 8033.107421875,
         "date": "2025-11-25"
       },
       {
-        "close": 7962.22705078125,
+        "close": 7962.22607421875,
         "date": "2025-11-26"
       },
       {
@@ -4789,6 +4805,10 @@
       {
         "close": 5675.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 5800.0,
+        "date": "2026-11-24"
       }
     ],
     "BBNI.JK": [
@@ -5747,6 +5767,10 @@
       {
         "close": 3540.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 3570.0,
+        "date": "2026-11-24"
       }
     ],
     "BBRI.JK": [
@@ -5755,7 +5779,7 @@
         "date": "2025-11-24"
       },
       {
-        "close": 3466.9267578125,
+        "close": 3466.927001953125,
         "date": "2025-11-25"
       },
       {
@@ -5763,11 +5787,11 @@
         "date": "2025-11-26"
       },
       {
-        "close": 3385.45849609375,
+        "close": 3385.458740234375,
         "date": "2025-11-27"
       },
       {
-        "close": 3331.146240234375,
+        "close": 3331.146484375,
         "date": "2025-11-28"
       },
       {
@@ -5783,11 +5807,11 @@
         "date": "2025-12-03"
       },
       {
-        "close": 3340.198486328125,
+        "close": 3340.1982421875,
         "date": "2025-12-04"
       },
       {
-        "close": 3303.990234375,
+        "close": 3303.990478515625,
         "date": "2025-12-05"
       },
       {
@@ -5795,7 +5819,7 @@
         "date": "2025-12-08"
       },
       {
-        "close": 3331.146240234375,
+        "close": 3331.146484375,
         "date": "2025-12-09"
       },
       {
@@ -5811,19 +5835,19 @@
         "date": "2025-12-12"
       },
       {
-        "close": 3421.666748046875,
+        "close": 3421.66650390625,
         "date": "2025-12-15"
       },
       {
-        "close": 3340.198486328125,
+        "close": 3340.1982421875,
         "date": "2025-12-16"
       },
       {
-        "close": 3394.5107421875,
+        "close": 3394.510498046875,
         "date": "2025-12-17"
       },
       {
-        "close": 3421.666748046875,
+        "close": 3421.66650390625,
         "date": "2025-12-18"
       },
       {
@@ -5831,7 +5855,7 @@
         "date": "2025-12-19"
       },
       {
-        "close": 3403.5625,
+        "close": 3403.562744140625,
         "date": "2025-12-22"
       },
       {
@@ -5843,7 +5867,7 @@
         "date": "2025-12-24"
       },
       {
-        "close": 3421.666748046875,
+        "close": 3421.66650390625,
         "date": "2025-12-29"
       },
       {
@@ -6705,11 +6729,15 @@
       {
         "close": 3070.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 3100.0,
+        "date": "2026-11-24"
       }
     ],
     "BMRI.JK": [
       {
-        "close": 4522.1767578125,
+        "close": 4522.17724609375,
         "date": "2025-11-24"
       },
       {
@@ -6721,7 +6749,7 @@
         "date": "2025-11-26"
       },
       {
-        "close": 4309.369140625,
+        "close": 4309.36865234375,
         "date": "2025-11-27"
       },
       {
@@ -6729,11 +6757,11 @@
         "date": "2025-11-28"
       },
       {
-        "close": 4309.369140625,
+        "close": 4309.36865234375,
         "date": "2025-12-01"
       },
       {
-        "close": 4300.501953125,
+        "close": 4300.50146484375,
         "date": "2025-12-02"
       },
       {
@@ -6753,7 +6781,7 @@
         "date": "2025-12-08"
       },
       {
-        "close": 4335.9697265625,
+        "close": 4335.97021484375,
         "date": "2025-12-09"
       },
       {
@@ -6773,7 +6801,7 @@
         "date": "2025-12-15"
       },
       {
-        "close": 4433.50732421875,
+        "close": 4433.5068359375,
         "date": "2025-12-16"
       },
       {
@@ -6785,11 +6813,11 @@
         "date": "2025-12-18"
       },
       {
-        "close": 4588.6796875,
+        "close": 4588.68017578125,
         "date": "2025-12-19"
       },
       {
-        "close": 4522.1767578125,
+        "close": 4522.17724609375,
         "date": "2025-12-22"
       },
       {
@@ -6805,7 +6833,7 @@
         "date": "2025-12-29"
       },
       {
-        "close": 4522.1767578125,
+        "close": 4522.17724609375,
         "date": "2025-12-30"
       },
       {
@@ -7663,6 +7691,10 @@
       {
         "close": 3880.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 3990.0,
+        "date": "2026-11-24"
       }
     ],
     "BRIS.JK": [
@@ -8621,6 +8653,10 @@
       {
         "close": 1185.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 1200.0,
+        "date": "2026-11-24"
       }
     ],
     "CPIN.JK": [
@@ -9579,6 +9615,10 @@
       {
         "close": 2290.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 2380.0,
+        "date": "2026-11-24"
       }
     ],
     "GOTO.JK": [
@@ -10537,6 +10577,10 @@
       {
         "close": 27.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 26.0,
+        "date": "2026-11-24"
       }
     ],
     "ICBP.JK": [
@@ -11495,6 +11539,10 @@
       {
         "close": 6900.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 7150.0,
+        "date": "2026-11-24"
       }
     ],
     "INDF.JK": [
@@ -12453,6 +12501,10 @@
       {
         "close": 6950.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 7175.0,
+        "date": "2026-11-24"
       }
     ],
     "INKP.JK": [
@@ -13411,6 +13463,10 @@
       {
         "close": 6425.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 6450.0,
+        "date": "2026-11-24"
       }
     ],
     "KLBF.JK": [
@@ -14369,6 +14425,10 @@
       {
         "close": 775.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 795.0,
+        "date": "2026-11-24"
       }
     ],
     "MDKA.JK": [
@@ -15327,6 +15387,10 @@
       {
         "close": 1840.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 1795.0,
+        "date": "2026-11-24"
       }
     ],
     "MEDC.JK": [
@@ -16285,6 +16349,10 @@
       {
         "close": 1165.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 1170.0,
+        "date": "2026-11-24"
       }
     ],
     "PGAS.JK": [
@@ -17243,6 +17311,10 @@
       {
         "close": 1520.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 1530.0,
+        "date": "2026-11-24"
       }
     ],
     "PTBA.JK": [
@@ -18201,6 +18273,10 @@
       {
         "close": 2970.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 2920.0,
+        "date": "2026-11-24"
       }
     ],
     "SMGR.JK": [
@@ -19159,6 +19235,10 @@
       {
         "close": 1605.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 1575.0,
+        "date": "2026-11-24"
       }
     ],
     "TLKM.JK": [
@@ -20117,6 +20197,10 @@
       {
         "close": 2040.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 2080.0,
+        "date": "2026-11-24"
       }
     ],
     "TOWR.JK": [
@@ -21075,6 +21159,10 @@
       {
         "close": 380.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 380.0,
+        "date": "2026-11-24"
       }
     ],
     "UNTR.JK": [
@@ -22033,6 +22121,10 @@
       {
         "close": 23100.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 23300.0,
+        "date": "2026-11-24"
       }
     ],
     "UNVR.JK": [
@@ -22045,19 +22137,19 @@
         "date": "2025-11-25"
       },
       {
-        "close": 2341.863037109375,
+        "close": 2341.86328125,
         "date": "2025-11-26"
       },
       {
-        "close": 2341.863037109375,
+        "close": 2341.86328125,
         "date": "2025-11-27"
       },
       {
-        "close": 2341.863037109375,
+        "close": 2341.86328125,
         "date": "2025-11-28"
       },
       {
-        "close": 2359.87744140625,
+        "close": 2359.877685546875,
         "date": "2025-12-01"
       },
       {
@@ -22065,11 +22157,11 @@
         "date": "2025-12-02"
       },
       {
-        "close": 2494.98486328125,
+        "close": 2494.985107421875,
         "date": "2025-12-03"
       },
       {
-        "close": 2494.98486328125,
+        "close": 2494.985107421875,
         "date": "2025-12-04"
       },
       {
@@ -22077,7 +22169,7 @@
         "date": "2025-12-05"
       },
       {
-        "close": 2359.87744140625,
+        "close": 2359.877685546875,
         "date": "2025-12-08"
       },
       {
@@ -22089,7 +22181,7 @@
         "date": "2025-12-10"
       },
       {
-        "close": 2377.89208984375,
+        "close": 2377.891845703125,
         "date": "2025-12-11"
       },
       {
@@ -22991,6 +23083,10 @@
       {
         "close": 1505.0,
         "date": "2026-11-23"
+      },
+      {
+        "close": 1555.0,
+        "date": "2026-11-24"
       }
     ]
   },
@@ -23949,8 +24045,12 @@
         "date": "2026-11-20"
       },
       {
-        "close": 540.1939697265625,
+        "close": 540.1900024414062,
         "date": "2026-11-23"
+      },
+      {
+        "close": 546.1300048828125,
+        "date": "2026-11-24"
       }
     ],
     "^JKSE": [
@@ -24909,224 +25009,228 @@
       {
         "close": 5215.85009765625,
         "date": "2026-11-23"
+      },
+      {
+        "close": 5241.5869140625,
+        "date": "2026-11-24"
       }
     ]
   },
   "quotes": {
     "ADRO.JK": {
-      "as_of": "2026-11-23",
+      "as_of": "2026-11-24",
       "currency": "IDR",
       "delayed": false,
-      "dividend_yield": 0.1019,
+      "dividend_yield": 0.1015,
       "name": "Alamtri Resources Indonesia Tbk",
-      "price": 2330.0,
+      "price": 2340.0,
       "symbol": "ADRO.JK"
     },
     "AMMN.JK": {
-      "as_of": "2026-11-23",
+      "as_of": "2026-11-24",
       "currency": "IDR",
       "delayed": false,
       "dividend_yield": 0.0,
       "name": "Amman Mineral Internasional Tbk",
-      "price": 3240.0,
+      "price": 3300.0,
       "symbol": "AMMN.JK"
     },
     "ANTM.JK": {
-      "as_of": "2026-11-23",
+      "as_of": "2026-11-24",
       "currency": "IDR",
       "delayed": false,
-      "dividend_yield": 0.0805,
+      "dividend_yield": 0.078600004,
       "name": "ANTAM (Persero) Tbk.",
       "price": 2670.0,
       "symbol": "ANTM.JK"
     },
     "ASII.JK": {
-      "as_of": "2026-11-23",
+      "as_of": "2026-11-24",
       "currency": "IDR",
       "delayed": false,
-      "dividend_yield": 0.0736,
+      "dividend_yield": 0.0722,
       "name": "Astra International Tbk",
-      "price": 5400.0,
+      "price": 5450.0,
       "symbol": "ASII.JK"
     },
     "BBCA.JK": {
-      "as_of": "2026-11-23",
+      "as_of": "2026-11-24",
       "currency": "IDR",
       "delayed": false,
-      "dividend_yield": 0.0686,
+      "dividend_yield": 0.0671,
       "name": "Bank Central Asia Tbk",
-      "price": 5675.0,
+      "price": 5800.0,
       "symbol": "BBCA.JK"
     },
     "BBNI.JK": {
-      "as_of": "2026-11-23",
+      "as_of": "2026-11-24",
       "currency": "IDR",
       "delayed": false,
-      "dividend_yield": 0.09819999,
+      "dividend_yield": 0.0987,
       "name": "Bank Negara Indonesia  (Persero",
-      "price": 3540.0,
+      "price": 3570.0,
       "symbol": "BBNI.JK"
     },
     "BBRI.JK": {
-      "as_of": "2026-11-23",
+      "as_of": "2026-11-24",
       "currency": "IDR",
       "delayed": false,
-      "dividend_yield": 0.1357,
+      "dividend_yield": 0.1362,
       "name": "Bank Rakyat Indonesia (Persero)",
-      "price": 3070.0,
+      "price": 3100.0,
       "symbol": "BBRI.JK"
     },
     "BMRI.JK": {
-      "as_of": "2026-11-23",
+      "as_of": "2026-11-24",
       "currency": "IDR",
       "delayed": false,
-      "dividend_yield": 0.1396,
+      "dividend_yield": 0.1399,
       "name": "Bank Mandiri (Persero) Tbk",
-      "price": 3880.0,
+      "price": 3990.0,
       "symbol": "BMRI.JK"
     },
     "BRIS.JK": {
-      "as_of": "2026-11-23",
+      "as_of": "2026-11-24",
       "currency": "IDR",
       "delayed": false,
-      "dividend_yield": 0.028299998,
+      "dividend_yield": 0.0277,
       "name": "Bank Syariah Indonesia (Persero",
-      "price": 1185.0,
+      "price": 1200.0,
       "symbol": "BRIS.JK"
     },
     "CPIN.JK": {
-      "as_of": "2026-11-23",
+      "as_of": "2026-11-24",
       "currency": "IDR",
       "delayed": false,
-      "dividend_yield": 0.0779,
+      "dividend_yield": 0.078600004,
       "name": "Charoen Pokphand Indonesia Tbk",
-      "price": 2290.0,
+      "price": 2380.0,
       "symbol": "CPIN.JK"
     },
     "GOTO.JK": {
-      "as_of": "2026-11-23",
+      "as_of": "2026-11-24",
       "currency": "IDR",
       "delayed": false,
       "dividend_yield": 0.0,
       "name": "GoTo Gojek Tokopedia Tbk.",
-      "price": 27.0,
+      "price": 26.0,
       "symbol": "GOTO.JK"
     },
     "ICBP.JK": {
-      "as_of": "2026-11-23",
-      "currency": "IDR",
-      "delayed": false,
-      "dividend_yield": 0.0381,
-      "name": "Indofood CBP Sukses Makmur Tbk.",
-      "price": 6900.0,
-      "symbol": "ICBP.JK"
-    },
-    "INDF.JK": {
-      "as_of": "2026-11-23",
-      "currency": "IDR",
-      "delayed": false,
-      "dividend_yield": 0.0403,
-      "name": "Indofood Sukses Makmur Tbk",
-      "price": 6950.0,
-      "symbol": "INDF.JK"
-    },
-    "INKP.JK": {
-      "as_of": "2026-11-23",
-      "currency": "IDR",
-      "delayed": false,
-      "dividend_yield": 0.0115,
-      "name": "Indah Kiat Pulp & Paper Tbk.",
-      "price": 6425.0,
-      "symbol": "INKP.JK"
-    },
-    "KLBF.JK": {
-      "as_of": "2026-11-23",
-      "currency": "IDR",
-      "delayed": false,
-      "dividend_yield": 0.0256,
-      "name": "Kalbe Farma Tbk",
-      "price": 775.0,
-      "symbol": "KLBF.JK"
-    },
-    "MDKA.JK": {
-      "as_of": "2026-11-23",
-      "currency": "IDR",
-      "delayed": false,
-      "dividend_yield": 0.0068,
-      "name": "Merdeka Copper Gold Tbk.",
-      "price": 1840.0,
-      "symbol": "MDKA.JK"
-    },
-    "MEDC.JK": {
-      "as_of": "2026-11-23",
-      "currency": "IDR",
-      "delayed": false,
-      "dividend_yield": 0.0558,
-      "name": "Medco Energi Internasional Tbk.",
-      "price": 1165.0,
-      "symbol": "MEDC.JK"
-    },
-    "PGAS.JK": {
-      "as_of": "2026-11-23",
-      "currency": "IDR",
-      "delayed": false,
-      "dividend_yield": 0.08180001,
-      "name": "Perusahaan Gas Negara (Persero)",
-      "price": 1520.0,
-      "symbol": "PGAS.JK"
-    },
-    "PTBA.JK": {
-      "as_of": "2026-11-23",
+      "as_of": "2026-11-24",
       "currency": "IDR",
       "delayed": false,
       "dividend_yield": 0.038399998,
+      "name": "Indofood CBP Sukses Makmur Tbk.",
+      "price": 7150.0,
+      "symbol": "ICBP.JK"
+    },
+    "INDF.JK": {
+      "as_of": "2026-11-24",
+      "currency": "IDR",
+      "delayed": false,
+      "dividend_yield": 0.0417,
+      "name": "Indofood Sukses Makmur Tbk",
+      "price": 7175.0,
+      "symbol": "INDF.JK"
+    },
+    "INKP.JK": {
+      "as_of": "2026-11-24",
+      "currency": "IDR",
+      "delayed": false,
+      "dividend_yield": 0.0117,
+      "name": "Indah Kiat Pulp & Paper Tbk.",
+      "price": 6450.0,
+      "symbol": "INKP.JK"
+    },
+    "KLBF.JK": {
+      "as_of": "2026-11-24",
+      "currency": "IDR",
+      "delayed": false,
+      "dividend_yield": 0.025799999,
+      "name": "Kalbe Farma Tbk",
+      "price": 795.0,
+      "symbol": "KLBF.JK"
+    },
+    "MDKA.JK": {
+      "as_of": "2026-11-24",
+      "currency": "IDR",
+      "delayed": false,
+      "dividend_yield": 0.0067000003,
+      "name": "Merdeka Copper Gold Tbk.",
+      "price": 1795.0,
+      "symbol": "MDKA.JK"
+    },
+    "MEDC.JK": {
+      "as_of": "2026-11-24",
+      "currency": "IDR",
+      "delayed": false,
+      "dividend_yield": 0.0554,
+      "name": "Medco Energi Internasional Tbk.",
+      "price": 1170.0,
+      "symbol": "MEDC.JK"
+    },
+    "PGAS.JK": {
+      "as_of": "2026-11-24",
+      "currency": "IDR",
+      "delayed": false,
+      "dividend_yield": 0.082600005,
+      "name": "Perusahaan Gas Negara (Persero)",
+      "price": 1530.0,
+      "symbol": "PGAS.JK"
+    },
+    "PTBA.JK": {
+      "as_of": "2026-11-24",
+      "currency": "IDR",
+      "delayed": false,
+      "dividend_yield": 0.038599998,
       "name": "Bukit Asam (Persero) Tbk.",
-      "price": 2970.0,
+      "price": 2920.0,
       "symbol": "PTBA.JK"
     },
     "SMGR.JK": {
-      "as_of": "2026-11-23",
+      "as_of": "2026-11-24",
       "currency": "IDR",
       "delayed": false,
       "dividend_yield": 0.0177,
       "name": "Semen Indonesia (Persero) Tbk.",
-      "price": 1605.0,
+      "price": 1575.0,
       "symbol": "SMGR.JK"
     },
     "TLKM.JK": {
-      "as_of": "2026-11-23",
+      "as_of": "2026-11-24",
       "currency": "IDR",
       "delayed": false,
-      "dividend_yield": 0.1078,
+      "dividend_yield": 0.1094,
       "name": "Telkom Indonesia (Persero) Tbk.",
-      "price": 2040.0,
+      "price": 2080.0,
       "symbol": "TLKM.JK"
     },
     "TOWR.JK": {
-      "as_of": "2026-11-23",
+      "as_of": "2026-11-24",
       "currency": "IDR",
       "delayed": false,
-      "dividend_yield": 0.0361,
+      "dividend_yield": 0.0363,
       "name": "Sarana Menara Nusantara Tbk.",
       "price": 380.0,
       "symbol": "TOWR.JK"
     },
     "UNTR.JK": {
-      "as_of": "2026-11-23",
+      "as_of": "2026-11-24",
       "currency": "IDR",
       "delayed": false,
-      "dividend_yield": 0.036,
+      "dividend_yield": 0.0372,
       "name": "United Tractors Tbk",
-      "price": 23100.0,
+      "price": 23300.0,
       "symbol": "UNTR.JK"
     },
     "UNVR.JK": {
-      "as_of": "2026-11-23",
+      "as_of": "2026-11-24",
       "currency": "IDR",
       "delayed": false,
-      "dividend_yield": 0.15,
+      "dividend_yield": 0.1515,
       "name": "Unilever Indonesia Tbk",
-      "price": 1505.0,
+      "price": 1555.0,
       "symbol": "UNVR.JK"
     }
   },
